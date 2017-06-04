@@ -54,6 +54,7 @@ contract TestNeurochain {
         Assert.notEqual(worker, address(0), "Hardware contract should be initialized");
     }
 
+    /*
     function testCreateNeurocontract() {
         KernelContract kernel = createKernelContract();
         DatasetContract dataset = createDatasetContract();
@@ -62,6 +63,7 @@ contract TestNeurochain {
         Neurocontract neurocontract = new Neurocontract(neurochain, kernel, dataset, HardwareContract.Type.GPU);
         Assert.notEqual(neurocontract, address(0), "Neurocontract should be initialized");
     }
+    */
 
     function testCreateNeurocontractFromNeurochain() {
         KernelContract kernel = createKernelContract();

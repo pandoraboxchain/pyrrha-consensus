@@ -19,10 +19,10 @@ contract('Neurochain', function (accounts) {
     it("Neurochain base contract should be deployed", function (done) {
         Neurochain.deployed().then(function (neurochain) {
             done()
-            console.log(neurochain.address)
         })
     })
 
+    /*
     it("Should be able to create new kernel contract", function (done) {
         KernelContract.new(
             'QmPhtLgduZaCJFQ4SReNMDnHo7Lb6YyVQU1wCiJdvw6CJa',
@@ -33,6 +33,7 @@ contract('Neurochain', function (accounts) {
             console.log(kernelContract.address)
         })
     })
+    */
 
     /*
     it("Neurochain initial token balance must be 1000 coins", function (done) {
