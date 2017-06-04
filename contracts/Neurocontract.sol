@@ -9,12 +9,11 @@ import './interfaces/MasternodeManaged.sol';
 import './KernelContract.sol';
 import './DatasetContract.sol';
 import './HardwareContract.sol';
-import './NeurochainLib.sol';
 
 contract Neurocontract is Destructible, MasternodeManaged {
     KernelContract kernelContract;
     DatasetContract datasetContract;
-    NeurochainLib.HardwareType compatibility;
+    HardwareContract.Type compatibility;
     address rootNeurochain;
 
     uint completedSamplesCount = 0;
@@ -23,13 +22,13 @@ contract Neurocontract is Destructible, MasternodeManaged {
         address _rootNeurochain,
         KernelContract _kernelContract,
         DatasetContract _datasetContract,
-        NeurochainLib.HardwareType _hardwareType
+        HardwareContract.Type _hardwareType
     ) {
         rootNeurochain = _rootNeurochain;
         kernelContract = _kernelContract;
         datasetContract = _datasetContract;
         compatibility = _hardwareType;
-        this.prepayWork();
+        //this.prepayWork();
     }
 
     function prepayWork() payable onlyOwner {

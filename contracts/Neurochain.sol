@@ -3,19 +3,18 @@ pragma solidity ^0.4.8;
 import './zeppelin/ownership/Multisig.sol';
 import './Neurocoin.sol';
 import './MasternodeContract.sol';
-import './KernelContract.sol';
-import './DatasetContract.sol';
-import './HardwareContract.sol';
 import './Neurocontract.sol';
-import './NeurochainLib.sol';
 
-contract Neurochain is Multisig, Neurocoin {
+contract Neurochain is Neurocoin {
     uint constant masternodeLimit = 1000;
 
     mapping(address => MasternodeContract) masternodes;
     mapping(address => Neurocontract) public contracts;
 
     mapping(address => uint) lockedBalances;
+
+    function Neurochain () {
+    }
 
     function registerMasternode(bytes pubKey) returns (MasternodeContract masternode) {
         MasternodeContract existingContract = masternodes[msg.sender];
@@ -35,9 +34,12 @@ contract Neurochain is Multisig, Neurocoin {
     function deployNeurocontract(
         KernelContract kernelContract,
         DatasetContract datasetContract,
-        NeurochainLib.HardwareType hardwareType
+        HardwareContract.Type hardwareType
     ) returns (Neurocontract workContract) {
         workContract = new Neurocontract(this, kernelContract, datasetContract, hardwareType);
         contracts[msg.sender] = workContract;
+        NewNeurocontract(workContract);
     }
+
+    event NewNeurocontract(Neurocontract contractAddresss);
 }

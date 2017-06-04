@@ -12,4 +12,12 @@ pragma solidity ^0.4.8;
 import './IntellectualPropertyContract.sol';
 
 contract KernelContract is IntellectualPropertyContract {
+    bytes ipfsWeights;
+
+    function KernelContract (
+        bytes _ipfsArch, bytes _ipfsWeights, uint _currentPrice
+    ) IntellectualPropertyContract(_ipfsArch, _currentPrice) {
+        ipfsWeights = _ipfsWeights;
+    }
+
 }
