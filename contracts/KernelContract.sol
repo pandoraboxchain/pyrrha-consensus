@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.8;
 
 /*
   Kernel Contract represents information about specific fixed machine learning kernel
@@ -9,7 +9,7 @@ pragma solidity ^0.4.0;
   Price can be edited
  */
 
-import 'IntellectualPropertyContract.sol';
+import './IntellectualPropertyContract.sol';
 
 contract KernelContract is IntellectualPropertyContract {
 }

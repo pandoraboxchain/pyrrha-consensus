@@ -4,7 +4,7 @@ pragma solidity ^0.4.8;
 
  */
 
-import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
+import './zeppelin/lifecycle/Destructible.sol';
 
 contract HardwareContract is Destructible {
     string serviceURL;
@@ -15,6 +15,7 @@ contract HardwareContract is Destructible {
         lowerPriceBoundary = _lowerPriceBoundary;
     }
 
+    /*
     function updateURL (string newServiceURL) external returns (oldServiceURL) {
         oldServiceURL = serviceURL;
         serviceURL = newServiceURL;
@@ -24,4 +25,5 @@ contract HardwareContract is Destructible {
         oldPriceBoundary = lowerPriceBoundary;
         lowerPriceBoundary = newPriceBoundary;
     }
+    */
 }

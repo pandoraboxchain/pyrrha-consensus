@@ -1,6 +1,6 @@
 pragma solidity ^0.4.8;
 
-import 'zeppelin-solidity/contracts/token/MintableToken.sol';
+import './zeppelin/token/MintableToken.sol';
 
 contract Neurocoin is MintableToken {
     string public name = "Neurochain Network Token";

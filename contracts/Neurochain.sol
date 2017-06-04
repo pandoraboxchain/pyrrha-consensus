@@ -1,15 +1,15 @@
 pragma solidity ^0.4.8;
 
-import 'Neurocoin.sol';
-import 'MasternodeContract.sol';
-import 'KernelContract.sol';
-import 'DatasetContract.sol';
-import 'HardwareContract.sol';
-import 'Neurocontract.sol';
+import './zeppelin/ownership/Multisig.sol';
+import './Neurocoin.sol';
+import './MasternodeContract.sol';
+import './KernelContract.sol';
+import './DatasetContract.sol';
+import './HardwareContract.sol';
+import './Neurocontract.sol';
+import './NeurochainLib.sol';
 
 contract Neurochain is Multisig, Neurocoin {
-    enum HardwareType { GPU, TPU, Android }
-
     uint constant masternodeLimit = 1000;
 
     mapping(address => MasternodeContract) masternodes;
@@ -19,20 +19,25 @@ contract Neurochain is Multisig, Neurocoin {
 
     function registerMasternode(bytes pubKey) returns (MasternodeContract masternode) {
         MasternodeContract existingContract = masternodes[msg.sender];
-        if (existingContract) {
+        if (existingContract == address(0)) {
             throw;
         }
         if (balances[msg.sender] < masternodeLimit) {
             throw;
         }
-        MasternodeContract newContract = MasternodeContract(this, pubKey);
+        MasternodeContract newContract = new MasternodeContract(this, pubKey);
         masternodes[msg.sender] = newContract;
         balances[msg.sender] -= masternodeLimit;
         lockedBalances[msg.sender] = masternodeLimit;
+        masternode = newContract;
     }
 
-    function deployNeurocontract(KernelContract kernelContract, DatasetContract datasetContract, HardwareType hardwareType) returns (Neurocontract workContract) {
-        workContract = Neurocontract(this, kernelContract, datasetContract, hardwareType);
+    function deployNeurocontract(
+        KernelContract kernelContract,
+        DatasetContract datasetContract,
+        NeurochainLib.HardwareType hardwareType
+    ) returns (Neurocontract workContract) {
+        workContract = new Neurocontract(this, kernelContract, datasetContract, hardwareType);
         contracts[msg.sender] = workContract;
     }
 }

@@ -4,14 +4,13 @@ pragma solidity ^0.4.8;
 
  */
 
-import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
-import 'Neurochain.sol';
+import './zeppelin/lifecycle/Destructible.sol';
 
 contract MasternodeContract is Destructible {
     bytes publicKey;
-    Neurochain rootNeurochain;
+    address rootNeurochain;
 
-    function MasternodeContract (Neurochain _rootNeurochain, bytes _publicKey) {
+    function MasternodeContract (address _rootNeurochain, bytes _publicKey) {
         publicKey = _publicKey;
         rootNeurochain = _rootNeurochain;
     }

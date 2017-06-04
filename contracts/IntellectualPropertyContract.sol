@@ -4,7 +4,7 @@ pragma solidity ^0.4.8;
 
  */
 
-import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
+import './zeppelin/lifecycle/Destructible.sol';
 
 contract IntellectualPropertyContract is Destructible {
     bytes public ipfsAddress;
@@ -20,11 +20,13 @@ contract IntellectualPropertyContract is Destructible {
         currentPrice = newPrice;
     }
 
+    /*
     function updateVersion (bytes newIPFSAddress) onlyOwner external returns (IntellectualPropertyContract newContract) {
-        newContract = IntellectualPropertyContract(newIPFSAddress, currentPrice);
+        newContract = new IntellectualPropertyContract(newIPFSAddress, currentPrice);
     }
 
     function updateVersionAndPrice (bytes newIPFSAddress, uint newPrice) onlyOwner external returns (IntellectualPropertyContract newContract) {
-        newContract = IntellectualPropertyContract(newIPFSAddress, newPrice);
+        newContract = new IntellectualPropertyContract(newIPFSAddress, newPrice);
     }
+    */
 }

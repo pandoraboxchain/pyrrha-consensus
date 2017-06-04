@@ -1,9 +1,9 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.8;
 
 /*
  */
 
-import 'IntellectualPropertyContract.sol';
+import './IntellectualPropertyContract.sol';
 
 contract DatasetContract is IntellectualPropertyContract {
     uint sampleCount;

@@ -4,26 +4,31 @@ pragma solidity ^0.4.8;
 
  */
 
-import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
-import 'interfaces/MasternodeManaged.sol';
-import 'KernelContract.sol';
-import 'DatasetContract.sol';
-import 'HardwareContract.sol';
-import 'Neurochain.sol';
+import './zeppelin/lifecycle/Destructible.sol';
+import './interfaces/MasternodeManaged.sol';
+import './KernelContract.sol';
+import './DatasetContract.sol';
+import './HardwareContract.sol';
+import './NeurochainLib.sol';
 
 contract Neurocontract is Destructible, MasternodeManaged {
     KernelContract kernelContract;
     DatasetContract datasetContract;
-    HardwareType compatibility;
-    Neurochain rootNeurochain;
+    NeurochainLib.HardwareType compatibility;
+    address rootNeurochain;
 
     uint completedSamplesCount = 0;
 
-    function Neurocontract(Neurochain _rootNeurochain, KernelContract _kernelContract, DatasetContract _datasetContract, HardwareType _hardwareType) {
+    function Neurocontract(
+        address _rootNeurochain,
+        KernelContract _kernelContract,
+        DatasetContract _datasetContract,
+        NeurochainLib.HardwareType _hardwareType
+    ) {
         rootNeurochain = _rootNeurochain;
         kernelContract = _kernelContract;
         datasetContract = _datasetContract;
-        hardwareType = _hardwareType;
+        compatibility = _hardwareType;
         this.prepayWork();
     }
 
