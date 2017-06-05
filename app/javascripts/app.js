@@ -7,17 +7,22 @@ import { default as contract } from 'truffle-contract'
 
 // Import our contract artifacts and turn them into usable abstractions.
 import neurochainArtifacts from '../../build/contracts/Neurochain.json'
+import kernelArtifacts from '../../build/contracts/KernelContract.json'
+import datasetArtifacts from '../../build/contracts/DatasetContract.json'
 
 // Neurochain is our usable abstraction, which we'll use through the code below.
 let Neurochain = contract(neurochainArtifacts)
+let Kernel = contract(kernelArtifacts)
+let Dataset = contract(datasetArtifacts)
 
 let accounts
 let account
 
 window.App = {
   start: function () {
-    // Bootstrap the Neurochain abstraction for Use.
     Neurochain.setProvider(web3.currentProvider)
+    Kernel.setProvider(web3.currentProvider)
+    Dataset.setProvider(web3.currentProvider)
 
     web3.eth.getAccounts(function (err, accs) {
       if (err !== null) {
@@ -37,7 +42,7 @@ window.App = {
     })
 
     Neurochain.deployed().then(function (neurochain) {
-      console.log(neurochain)
+      console.log('Deployed neurochain ' + neurochain.address)
       console.log('Waiting for events')
       neurochain.allEvents().watch(function (error, result) {
         if (!error) {
@@ -47,26 +52,31 @@ window.App = {
           console.error(error)
         }
       })
-            /*
-             var NeurochainContract = web3.eth.contract(Neurochain.abi)
-             var rootContract = NeurochainContract.at(neurochain.address)
-             var event = rootContract.NewNeurocontract()
-             console.log('Waiting for new neurocontracts')
-             event.watch(function (error, result) {
-             if (!error) {
-             console.log(result)
-             alert(result)
-             } else {
-             console.error(error)
-             }
-             })
-             */
+    })
+
+    Kernel.deployed().then(function (kernel) {
+      window.App.kernelContract = kernel
+      console.log('Deployed kernel ' + kernel.address)
+    })
+
+    Dataset.deployed().then(function (dataset) {
+      window.App.datasetContract = dataset
+      console.log('Deployed dataset ' + dataset.address)
     })
   },
 
   setStatus: function (message) {
     let status = document.getElementById('status')
     status.innerHTML = message
+  },
+
+  createKernel: function () {
+    this.setStatus('Creating kernel... (please wait)')
+
+  },
+
+  createDataset: function () {
+
   },
 
   deployNeurocontract: function () {
@@ -76,15 +86,15 @@ window.App = {
 
     Neurochain.deployed().then(function (neurochain) {
       return neurochain.deployNeurocontract(
-        '0x5294f483825c4e2502722ae0b00f3d00597347f6',
-        '0xb20fddd30b0153d322db3b0d84649bb646553532',
+        window.App.kernelContract.address,
+        window.App.datasetContract.address,
         1,
         { from: account, gas: 2000000 }
       )
     }).then(function (neurocontract) {
       self.setStatus('Neurocontract created with address ' + neurocontract)
       console.log('Neurocontract deployed')
-      // console.log(neurocontract)
+      console.log(neurocontract)
     }).catch(function (e) {
       console.log(e)
       self.setStatus('Error deploying neurocontract; see log.')
