@@ -9,9 +9,9 @@ import './zeppelin/lifecycle/Destructible.sol';
 contract HardwareContract is Destructible {
     enum Type { GPU, TPU, Android }
 
-    string serviceURL;
-    uint lowerPriceBoundary;
-    Type suppertedType;
+    string public serviceURL;
+    uint public lowerPriceBoundary;
+    Type public suppertedType;
 
     function HardwareContract (string _serviceURL, Type _supportedType, uint _lowerPriceBoundary) {
         suppertedType = _supportedType;

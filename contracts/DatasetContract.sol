@@ -6,7 +6,7 @@ pragma solidity ^0.4.8;
 import './IntellectualPropertyContract.sol';
 
 contract DatasetContract is IntellectualPropertyContract {
-    uint sampleCount;
+    uint public sampleCount;
 
     function DatasetContract (
         bytes _ipfsAddress, uint _currentPrice, uint _sampleCount
