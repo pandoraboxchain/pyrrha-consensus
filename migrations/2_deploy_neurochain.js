@@ -7,5 +7,5 @@ var MasternodeContract = artifacts.require("MasternodeContract");
 var Neurocontract = artifacts.require("Neurocontract");
 
 module.exports = function(deployer) {
-    deployer.deploy(Neurochain);
+    deployer.deploy(Neurochain, { gas: 8712388 });
 };

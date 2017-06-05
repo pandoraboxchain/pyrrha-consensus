@@ -13,6 +13,9 @@ contract Neurochain is Neurocoin {
 
     mapping(address => uint) lockedBalances;
 
+    event TestEvent();
+    event NewNeurocontract(address contractAddresss);
+
     function Neurochain () {
     }
 
@@ -40,6 +43,4 @@ contract Neurochain is Neurocoin {
         contracts[msg.sender] = workContract;
         NewNeurocontract(workContract);
     }
-
-    event NewNeurocontract(Neurocontract contractAddresss);
 }

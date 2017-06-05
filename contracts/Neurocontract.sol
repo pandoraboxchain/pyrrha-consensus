@@ -16,7 +16,7 @@ contract Neurocontract is Destructible, MasternodeManaged {
     HardwareContract.Type compatibility;
     address rootNeurochain;
 
-    uint completedSamplesCount = 0;
+    uint completedSamplesCount;
 
     function Neurocontract(
         address _rootNeurochain,
@@ -24,6 +24,7 @@ contract Neurocontract is Destructible, MasternodeManaged {
         DatasetContract _datasetContract,
         HardwareContract.Type _hardwareType
     ) {
+        completedSamplesCount = 0;
         rootNeurochain = _rootNeurochain;
         kernelContract = _kernelContract;
         datasetContract = _datasetContract;
