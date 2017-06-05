@@ -14,7 +14,7 @@ contract Neurochain is Neurocoin {
     mapping(address => uint) lockedBalances;
 
     event TestEvent();
-    event NewNeurocontract(address contractAddresss);
+    event NewNeurocontract(address contractAddress);
 
     function Neurochain () {
     }

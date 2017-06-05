@@ -11,12 +11,12 @@ import './DatasetContract.sol';
 import './HardwareContract.sol';
 
 contract Neurocontract is Destructible, MasternodeManaged {
-    KernelContract kernelContract;
-    DatasetContract datasetContract;
-    HardwareContract.Type compatibility;
-    address rootNeurochain;
+    KernelContract public kernelContract;
+    DatasetContract public datasetContract;
+    HardwareContract.Type public compatibility;
+    address public rootNeurochain;
 
-    uint completedSamplesCount;
+    uint public completedSamplesCount;
 
     function Neurocontract(
         address _rootNeurochain,
