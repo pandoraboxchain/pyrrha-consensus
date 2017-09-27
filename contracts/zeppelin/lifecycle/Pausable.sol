@@ -1,12 +1,13 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.8;
 
 
 import "../ownership/Ownable.sol";
 
 
-/**
- * @title Pausable
- * @dev Base contract which allows children to implement an emergency stop mechanism.
+/*
+ * Pausable
+ * Abstract contract that allows children to implement a
+ * pause mechanism.
  */
 contract Pausable is Ownable {
   event Pause();
@@ -14,36 +15,27 @@ contract Pausable is Ownable {
 
   bool public paused = false;
 
-
-  /**
-   * @dev Modifier to make a function callable only when the contract is not paused.
-   */
   modifier whenNotPaused() {
-    require(!paused);
+    if (paused) throw;
     _;
   }
 
-  /**
-   * @dev Modifier to make a function callable only when the contract is paused.
-   */
-  modifier whenPaused() {
-    require(paused);
+  modifier whenPaused {
+    if (!paused) throw;
     _;
   }
 
-  /**
-   * @dev called by the owner to pause, triggers stopped state
-   */
-  function pause() onlyOwner whenNotPaused public {
+  // called by the owner to pause, triggers stopped state
+  function pause() onlyOwner whenNotPaused returns (bool) {
     paused = true;
     Pause();
+    return true;
   }
 
-  /**
-   * @dev called by the owner to unpause, returns to normal state
-   */
-  function unpause() onlyOwner whenPaused public {
+  // called by the owner to unpause, returns to normal state
+  function unpause() onlyOwner whenPaused returns (bool) {
     paused = false;
     Unpause();
+    return true;
   }
 }

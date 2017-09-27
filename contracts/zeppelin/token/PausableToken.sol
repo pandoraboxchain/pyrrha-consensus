@@ -1,33 +1,25 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.8;
 
 import './StandardToken.sol';
 import '../lifecycle/Pausable.sol';
 
 /**
- * @title Pausable token
+ * Pausable token
  *
- * @dev StandardToken modified with pausable transfers.
+ * Simple ERC20 Token example, with pausable token creation
+ * Issue:
+ * https://github.com/OpenZeppelin/zeppelin-solidity/issues/194
+ * Based on code by BCAPtoken:
+ * https://github.com/BCAPtoken/BCAPToken/blob/5cb5e76338cc47343ba9268663a915337c8b268e/sol/BCAPToken.sol#L27
  **/
 
-contract PausableToken is StandardToken, Pausable {
+contract PausableToken is Pausable, StandardToken {
 
-  function transfer(address _to, uint256 _value) public whenNotPaused returns (bool) {
+  function transfer(address _to, uint _value) whenNotPaused {
     return super.transfer(_to, _value);
   }
 
-  function transferFrom(address _from, address _to, uint256 _value) public whenNotPaused returns (bool) {
+  function transferFrom(address _from, address _to, uint _value) whenNotPaused {
     return super.transferFrom(_from, _to, _value);
-  }
-
-  function approve(address _spender, uint256 _value) public whenNotPaused returns (bool) {
-    return super.approve(_spender, _value);
-  }
-
-  function increaseApproval(address _spender, uint _addedValue) public whenNotPaused returns (bool success) {
-    return super.increaseApproval(_spender, _addedValue);
-  }
-
-  function decreaseApproval(address _spender, uint _subtractedValue) public whenNotPaused returns (bool success) {
-    return super.decreaseApproval(_spender, _subtractedValue);
   }
 }

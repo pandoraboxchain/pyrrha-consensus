@@ -1,13 +1,14 @@
-pragma solidity ^0.4.11;
+pragma solidity ^0.4.8;
 
 
 import './payment/PullPayment.sol';
 import './lifecycle/Destructible.sol';
 
 
-/**
- * @title Bounty
- * @dev This bounty will pay out to a researcher if they break invariant logic of the contract.
+/*
+ * Bounty
+ * 
+ * This bounty will pay out to a researcher if they break invariant logic of the contract.
  */
 contract Bounty is PullPayment, Destructible {
   bool public claimed;
@@ -15,40 +16,30 @@ contract Bounty is PullPayment, Destructible {
 
   event TargetCreated(address createdAddress);
 
-  /**
-   * @dev Fallback function allowing the contract to receive funds, if they haven't already been claimed.
-   */
   function() payable {
-    require(!claimed);
+    if (claimed) {
+      throw;
+    }
   }
 
-  /**
-   * @dev Create and deploy the target contract (extension of Target contract), and sets the
-   * msg.sender as a researcher
-   * @return A target contract
-   */
-  function createTarget() public returns(Target) {
+  function createTarget() returns(Target) {
     Target target = Target(deployContract());
     researchers[target] = msg.sender;
     TargetCreated(target);
     return target;
   }
 
-  /**
-   * @dev Internal function to deploy the target contract.
-   * @return A target contract address
-   */
   function deployContract() internal returns(address);
 
-  /**
-   * @dev Sends the contract funds to the researcher that proved the contract is broken.
-   * @param target contract
-   */
-  function claim(Target target) public {
+  function claim(Target target) {
     address researcher = researchers[target];
-    require(researcher != 0);
+    if (researcher == 0) {
+      throw;
+    }
     // Check Target contract invariants
-    require(!target.checkInvariant());
+    if (target.checkInvariant()) {
+      throw;
+    }
     asyncSend(researcher, this.balance);
     claimed = true;
   }
@@ -56,17 +47,12 @@ contract Bounty is PullPayment, Destructible {
 }
 
 
-/**
- * @title Target
- * @dev Your main contract should inherit from this class and implement the checkInvariant method.
+/*
+ * Target
+ * 
+ * Your main contract should inherit from this class and implement the checkInvariant method. This is a function that should check everything your contract assumes to be true all the time. If this function returns false, it means your contract was broken in some way and is in an inconsistent state. This is what security researchers will try to acomplish when trying to get the bounty.
  */
 contract Target {
-
-   /**
-    * @dev Checks all values a contract assumes to be true all the time. If this function returns
-    * false, the contract is broken in some way and is in an inconsistent state.
-    * In order to win the bounty, security researchers will try to cause this broken state.
-    * @return True if all invariant values are correct, false otherwise.
-    */
-  function checkInvariant() public returns(bool);
+  function checkInvariant() returns(bool);
 }
+
