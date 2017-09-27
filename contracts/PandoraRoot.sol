@@ -3,7 +3,7 @@ pragma solidity ^0.5.0;
 import './zeppelin/token/ERC20Basic.sol';
 import "./PandoraProtocolIf.sol";
 
-contract PandoraRoot is ERC20Basic {
+contract PandoraRoot is BasicToken {
 
     /*
      * Non-changing part of ERC20 implementation
@@ -11,7 +11,6 @@ contract PandoraRoot is ERC20Basic {
     string public constant name = "Pandora";
     string public constant symbol = "PAN";
     uint public constant decimals = 18;
-    uint256 public totalSupply; //????
 
     PandoraProtocolIf activeProtocol;
     PandoraProtocolIf[] pastProtocols;
@@ -31,16 +30,6 @@ contract PandoraRoot is ERC20Basic {
      */
     function() payable {
         activeProtocol.transfer(msg.value);
-    }
-
-    /*
-     * Implementing ERC20 methods by translating the calls to the underlying protocol in its current implementation
-     */
-    function balanceOf(address who) public view returns (uint256) {
-        return activeProtocol.balanceOf(who);
-    }
-    function transfer(address to, uint256 value) public returns (bool) {
-        return activeProtocol.transfer(to, value);
     }
 
     /***
@@ -91,5 +80,9 @@ contract PandoraRoot is ERC20Basic {
         pastProtocols = protocolStack;
         activeProtocol = protocol;
         upgradingProtocol = false;
+    }
+
+    function changeBalance(address _addr, uint256 _newBalance) external onlyActiveProtocol hasActiveProtocol {
+
     }
 }
