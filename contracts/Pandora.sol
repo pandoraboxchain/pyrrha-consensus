@@ -1,11 +1,12 @@
 pragma solidity ^0.4.15;
 
 import './PAN.sol';
-import './LotteryEngine.sol';
 import './WorkerNode.sol';
 import './Kernel.sol';
 import './Dataset.sol';
 import './CognitiveJob.sol';
+import './lottery/LotteryEngine.sol';
+import './lottery/RoundRobinLottery.sol';
 
 /**
  * @title Pandora Smart Contract
@@ -27,7 +28,9 @@ contract Pandora is PAN /* final */ {
      * ## Storage
      */
 
-    uint8 constant WORKERNODE_WHITELIST_SIZE = 7;
+    uint256 constant private MAX_WORKER_LOTTERY_TRIES = 10;
+
+    uint8 constant private WORKERNODE_WHITELIST_SIZE = 7;
 
     // Constant literal for array size is not working yet
     /// @dev Whitelist of nodes allowed to perform cognitive work as a trusted environment for the first version of
@@ -76,6 +79,10 @@ contract Pandora is PAN /* final */ {
             // Store newly created worker node contract
             workerNodes[no] = worker;
         }
+
+        // Initializing worker lottery engine
+        // In Pyrrha we use round robin algorithm to give our whitelisted nodes equal and consequential chances
+        workerLotteryEngine = new RoundRobinLottery();
     }
 
     /**
@@ -181,8 +188,15 @@ contract Pandora is PAN /* final */ {
         /// @todo Add payments
 
         // Running lottery to select worker node to be assigned cognitive job contract
-        uint256 randomNo = workerLotteryEngine.getRandom(idleWorkers.length);
-        WorkerNode assignedWorker = idleWorkers[randomNo];
+        uint256 tryNo = 0;
+        uint256 randomNo;
+        WorkerNode assignedWorker;
+        do {
+            assert(tryNo < MAX_WORKER_LOTTERY_TRIES);
+            randomNo = workerLotteryEngine.getRandom(idleWorkers.length);
+            assignedWorker = idleWorkers[randomNo];
+            tryNo++;
+        } while (assignedWorker.currentState() != WorkerNode.State.Idle);
 
         // Change worker state
         assignedWorker.updateState(WorkerNode.State.Computing);
