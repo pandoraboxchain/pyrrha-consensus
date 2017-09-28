@@ -75,6 +75,64 @@ contract Pandora is PAN /* final */ {
         }
     }
 
+    /// @dev Checks that the function is called by the owner of one of the whitelisted nodes
+    modifier onlyWhitelistedNodes() {
+        bool found = false;
+        for (uint256 no = 0; no < workerNodes.length; no++) {
+            // Worker node must not be destroyed and its owner must be the sender of the current function call
+            if (workerNodes[no].currentState != WorkerNode.State.Destroyed &&
+                msg.sender == workerNodes[no].owner()) {
+                found = true;
+                _;
+                break;
+            }
+        }
+        // Failing if ownership conditions are not satisfied
+        require(found);
+    }
+
+    /// @notice Can only be used by one of existing whitelisted worker node in case the other whitelisted node
+    /// got somehow destroyed
+    /// @dev Replaces one of occasionally destroyed worker nodes and replaces it with the other one. Can be called
+    /// by the owner of one of existing worker nodes
+    function replaceDestroyedWorker (
+        /// Destroyed worker node contract (must be whitelisted before)
+        WorkerNode _destroyedWorker,
+        /// Replacement worker node contract, which will become whitelisted.
+        /// Must be in Ilde state and not whitelisted before
+        WorkerNode _replacedWorker
+    ) external
+        // Checking that only one of existing worker nodes calls this function
+        onlyWhitelistedNodes
+    {
+        // Checking that the node is really destroyed
+        require(_destroyedWorker.currentState() == WorkerNode.State.Destroyed);
+        // Checking that replacement node is idle
+        require(_replacedWorker.currentState() == WorkerNode.State.Idle);
+
+        // @todo Check worker stake
+
+        // Checking that replacement worker node was not already included in the white list
+        for (uint256 no = 0; no < workerNodes.length; no++) {
+            require(workerNodes[no] != _replacedWorker);
+        }
+
+        // Doing actual replacement work
+        for (uint256 no = 0; no < workerNodes.length; no++) {
+            // Finding destroyed node in the whitelist and replacing it
+            if (workerNodes[no] == _destroyedWorker) {
+                // We need to zero reputation in the worker node contract
+                _replasedWorker.resetReputation();
+                workerNodes[no] = _replacedWorker;
+                // Stopping here
+                return;
+            }
+        }
+
+        // Failing if `_destroyedWorker` was not whitelisted
+        revert();
+    }
+
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
     function createCognitiveJob(
