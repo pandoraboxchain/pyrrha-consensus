@@ -4,6 +4,7 @@ import 'zeppelin-solidity/contracts/token/StandardToken.sol';
 
 /**
  * @title PAN Token Contract (Pandora Artificial Neuronetwork Token) for Pyrrha cognitive network
+ * @author "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
  *
  * @dev PAN Tokens is a ERC20-compliant contract, derived from OpenZeppelin StandardToken contract.
  * [Core Pandora contract](Pandora.sol) inherits this contract; so all token-related functionality is removed from it

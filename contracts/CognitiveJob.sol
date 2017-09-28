@@ -8,11 +8,12 @@ import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
 import './Kernel.sol';
 import './Dataset.sol';
 import './Pandora.sol';
+import './WorkerNode.sol';
 
 contract CognitiveJob is Destructible {
     Kernel public kernel;
     Dataset public dataset;
-    address public workerNode;
+    WorkerNode public workerNode;
     Pandora public pandora;
     bool public completed = false;
 
@@ -22,7 +23,7 @@ contract CognitiveJob is Destructible {
         Pandora _pandora,
         Kernel _kernel,
         Dataset _dataset,
-        address _workerNode
+        WorkerNode _workerNode
     ) {
         pandora = _pandora;
         kernel = _kernel;
@@ -37,7 +38,8 @@ contract CognitiveJob is Destructible {
 
     function commitWork(bytes _ipfsResults) onlyWorker external {
         completed = true;
-        JobCompleted(_ipfsResults);
         pandora.finishCognitiveJob(this);
+
+        JobCompleted(_ipfsResults);
     }
 }

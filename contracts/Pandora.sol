@@ -63,6 +63,8 @@ contract Pandora is PAN /* final */ {
         assert(_workerNodeOwners.length == workerNodes.length);
 
         for (uint8 no = 0; no < WORKERNODE_WHITELIST_SIZE; no++) {
+            /// @todo Stakes thing
+
             // Creating new worker node contract for each of the seven pre-defined owners whitelisted at the moment
             // of creation of the main Pandora contract
             WorkerNode worker = new WorkerNode(this);
@@ -141,6 +143,9 @@ contract Pandora is PAN /* final */ {
     ) external payable returns (
         CognitiveJob o_cognitiveJob /// Newly created cognitive jobs (starts automatically)
     ) {
+        // Dimensions of the input data and neural network input layer must be equal
+        require(kernel.dataDim() == dataset.dataDim());
+
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
@@ -199,6 +204,7 @@ contract Pandora is PAN /* final */ {
 
         // Update worker state back to `Idle`
         worker.updateState(WorkerNode.State.Idle);
+        worker.increaseReputation();
 
         // Remove cognitive job contract from the storage
         delete activeJobs[_cognitiveJob.owner()];
