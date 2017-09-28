@@ -14,7 +14,7 @@ import './CognitiveJob.sol';
  * @dev # Pandora Smart Contract
  *
  * @dev Main & root contract implementing the first level of Pandora Boxchain consensus
- * See section ("3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper)[https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain]
+ * See section ["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
  * for more details.
  *
  * @dev Contract token functionality is separated into a separate contract named PAN (after the name of the token)

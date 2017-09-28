@@ -1,7 +1,17 @@
-# neuroether
-Core set of Ethereum contracts for neurochain functioning
+# Pandora Smart Contracts
 
-Example webpack project with Truffle. Includes contracts, migrations, tests, user interface and webpack build pipeline.
+Core set of Ethereum contracts for Pandora Boxchain implementing the first level of consensus. 
+For details on the first level of consensus please check 
+["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
+
+## Implementation Details
+
+Contracts implement [Pandora Protocol Specification](https://github.com/pandoraboxchain/techspecs/wiki)
+
+Current version is a limited implementation and is subjected for further development. We are working on the first
+cognitive network implementation codenamed "Pyrrha", after the first Pandora daughter.
+
+Core contract is [`Pandora.sol`](contracts/Pandora.sol), you can look through its [code](contracts/Pandora.sol).
 
 ## Usage
 
@@ -18,7 +28,7 @@ To initialize a project with this exapmple, run `truffle init webpack` inside an
 
 ## Common Errors
 
-* **Error: Can't resolve '../build/contracts/MetaCoin.json'**
+* `Error: Can't resolve '../build/contracts/MetaCoin.json'`
 
 This means you haven't compiled or migrated your contracts yet. Run `truffle compile` and `truffle migrate` first.
 
