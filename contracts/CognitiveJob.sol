@@ -17,6 +17,7 @@ contract CognitiveJob is Destructible {
     Pandora public pandora;
     bool public completed = false;
 
+    event JobProgress(uint8 progreess);
     event JobCompleted(bytes ipfsResults);
 
     function CognitiveJob(
@@ -32,8 +33,12 @@ contract CognitiveJob is Destructible {
     }
 
     modifier onlyWorker() {
-        require (msg.sender == workerNode);
+        require (msg.sender == address(workerNode));
         _;
+    }
+
+    function commitProgress(uint8 percent) onlyWorker external {
+        JobProgress(percent);
     }
 
     function commitWork(bytes _ipfsResults) onlyWorker external {

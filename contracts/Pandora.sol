@@ -13,11 +13,11 @@ import './CognitiveJob.sol';
  *
  * @dev # Pandora Smart Contract
  *
- * @dev Main & root contract implementing the first level of Pandora Boxchain consensus
+ * Main & root contract implementing the first level of Pandora Boxchain consensus
  * See section ["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
  * for more details.
  *
- * @dev Contract token functionality is separated into a separate contract named PAN (after the name of the token)
+ * Contract token functionality is separated into a separate contract named PAN (after the name of the token)
  * and Pandora contracts just simply inherits PAN contract.
  */
 
@@ -27,10 +27,11 @@ contract Pandora is PAN /* final */ {
      * ## Storage
      */
 
+    uint8 constant WORKERNODE_WHITELIST_SIZE = 7;
+
+    // Constant literal for array size is not working yet
     /// @dev Whitelist of nodes allowed to perform cognitive work as a trusted environment for the first version of
     /// the protocol implementation codenamed Pyrrha
-    uint8 constant WORKERNODE_WHITELIST_SIZE = 7;
-    // Constant literal for array size is not working yet
     WorkerNode[7 /* WORKERNODE_WHITELIST_SIZE */] public workerNodes;
 
     /// @dev List of active (=running) cognitive jobs mapped to their creators (owners of the corresponding
@@ -49,7 +50,7 @@ contract Pandora is PAN /* final */ {
     event CognitiveJobCreated(CognitiveJob cognitiveJob);
 
     /**
-     * ## Functions
+     * ## Constructor
      */
 
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
@@ -77,12 +78,16 @@ contract Pandora is PAN /* final */ {
         }
     }
 
+    /**
+     * ## Modifiers
+     */
+
     /// @dev Checks that the function is called by the owner of one of the whitelisted nodes
     modifier onlyWhitelistedNodes() {
         bool found = false;
         for (uint256 no = 0; no < workerNodes.length; no++) {
             // Worker node must not be destroyed and its owner must be the sender of the current function call
-            if (workerNodes[no].currentState != WorkerNode.State.Destroyed &&
+            if (workerNodes[no].currentState() != WorkerNode.State.Destroyed &&
                 msg.sender == workerNodes[no].owner()) {
                 found = true;
                 _;
@@ -92,6 +97,10 @@ contract Pandora is PAN /* final */ {
         // Failing if ownership conditions are not satisfied
         require(found);
     }
+
+    /**
+     * ## Functions
+     */
 
     /// @notice Can only be used by one of existing whitelisted worker node in case the other whitelisted node
     /// got somehow destroyed
@@ -112,7 +121,7 @@ contract Pandora is PAN /* final */ {
         // Checking that replacement node is idle
         require(_replacedWorker.currentState() == WorkerNode.State.Idle);
 
-        // @todo Check worker stake
+        /// @todo Check worker stake
 
         // Checking that replacement worker node was not already included in the white list
         for (uint256 no = 0; no < workerNodes.length; no++) {
@@ -120,11 +129,11 @@ contract Pandora is PAN /* final */ {
         }
 
         // Doing actual replacement work
-        for (uint256 no = 0; no < workerNodes.length; no++) {
+        for (no = 0; no < workerNodes.length; no++) {
             // Finding destroyed node in the whitelist and replacing it
             if (workerNodes[no] == _destroyedWorker) {
                 // We need to zero reputation in the worker node contract
-                _replasedWorker.resetReputation();
+                _replacedWorker.resetReputation();
                 workerNodes[no] = _replacedWorker;
                 // Stopping here
                 return;
@@ -197,7 +206,7 @@ contract Pandora is PAN /* final */ {
     ) external {
         // Get the actual worker assigned for the specified cognitive job contract
         CognitiveJob job = activeJobs[_cognitiveJob.owner()];
-        WorkerNode worker = WorkerNode(job.workerNode());
+        WorkerNode worker = job.workerNode();
 
         // Check that the caller is the worker performing cognitive job
         require(msg.sender == address(worker));

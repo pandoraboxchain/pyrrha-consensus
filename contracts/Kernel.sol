@@ -12,4 +12,14 @@ pragma solidity ^0.4.15;
 import './DataEntity.sol';
 
 contract Kernel is DataEntity {
+    uint256 public complexity;
+
+    function Kernel (
+        bytes _ipfsAddress,
+        uint256 _dataDim,
+        uint256 _complexity,
+        uint256 _initialPrice
+    ) DataEntity(_ipfsAddress, _dataDim, _initialPrice) {
+        complexity = _complexity;
+    }
 }

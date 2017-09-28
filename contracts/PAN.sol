@@ -13,11 +13,10 @@ import 'zeppelin-solidity/contracts/token/StandardToken.sol';
  * @dev You can read more on PAN Tokens in
  * [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain),
  * section "2. Economics Models".
- *
  */
 
 contract PAN is StandardToken {
-
+    // ERC20 standard variables
     string public constant name = "Pandora";
     string public constant symbol = "PAN";
     uint public constant decimals = 18;
