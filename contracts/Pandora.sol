@@ -27,7 +27,8 @@ contract Pandora is PAN /* final */ {
     /// Whitelist of nodes allowed to perform cognitive work as a trusted environment for the first version of
     /// the protocol implementation codenamed Pyrrha
     uint8 constant WORKERNODE_WHITELIST_SIZE = 7;
-    WorkerNode[WORKERNODE_WHITELIST_SIZE] public workerNodes;
+    // Constant literal for array size is not working yet
+    WorkerNode[7 /* WORKERNODE_WHITELIST_SIZE */] public workerNodes;
 
     /// List of active (=running) cognitive jobs mapped to their creators (owners of the corresponding
     /// cognitive job contracts)
@@ -50,7 +51,10 @@ contract Pandora is PAN /* final */ {
 
     /// Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
-    function Pandora (address[WORKERNODE_WHITELIST_SIZE] _workerNodeOwners) {
+    function Pandora (
+        // Constant literal for array size in function arguments not working yet
+        address[7 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners
+    ) {
         // Something is wrong with the compiler or Ethereum node if this check fails
         // (that's why its `assert`, not `require`)
         assert(_workerNodeOwners.length == workerNodes.length);
@@ -74,10 +78,18 @@ contract Pandora is PAN /* final */ {
         Kernel kernel,
         Dataset dataset
     ) external payable returns (CognitiveJob o_cognitiveJob) {
-        WorkerNode[] memory idleWorkers;
+        uint256 size = 0;
         for (uint256 no = 0; no < workerNodes.length; no++) {
-            if (workerNodes[no].currentState == WorkerNode.State.Idle) {
-                idleWorkers.push(workerNodes[no]);
+            if (workerNodes[no].currentState() == WorkerNode.State.Idle) {
+                size++;
+            }
+        }
+
+        size = 0;
+        WorkerNode[] memory idleWorkers = new WorkerNode[](size);
+        for (no = 0; no < workerNodes.length; no++) {
+            if (workerNodes[no].currentState() == WorkerNode.State.Idle) {
+                idleWorkers[size++] = workerNodes[no];
             }
         }
 
@@ -91,8 +103,9 @@ contract Pandora is PAN /* final */ {
     function finishCognitiveJob(
         CognitiveJob _cognitiveJob
     ) external {
-        CognitiveJob job = activeJobs[_cognitiveJob.owner];
-        job.workerNode.updateState(WorkerNode.State.Idle);
-        delete activeJobs[_cognitiveJob.owner];
+        CognitiveJob job = activeJobs[_cognitiveJob.owner()];
+        WorkerNode worker = WorkerNode(job.workerNode());
+        worker.updateState(WorkerNode.State.Idle);
+        delete activeJobs[_cognitiveJob.owner()];
     }
 }
