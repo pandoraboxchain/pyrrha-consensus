@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import './zeppelin/token/StandardToken.sol';
+import 'zeppelin-solidity/contracts/token/StandardToken.sol';
 
 contract PAN is StandardToken {
     string public name = "Pandora";

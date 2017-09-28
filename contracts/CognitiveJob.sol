@@ -4,7 +4,7 @@ pragma solidity ^0.4.15;
 
  */
 
-import './zeppelin/lifecycle/Destructible.sol';
+import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
 import './Kernel.sol';
 import './Dataset.sol';
 import './Pandora.sol';

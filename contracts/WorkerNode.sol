@@ -1,6 +1,6 @@
 pragma solidity ^0.4.15;
 
-import './zeppelin/ownership/Ownable.sol';
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import './Pandora.sol';
 
 /*
