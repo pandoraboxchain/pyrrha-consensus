@@ -94,7 +94,7 @@ contract Pandora is PAN /* final */ {
         bool found = false;
         for (uint256 no = 0; no < workerNodes.length; no++) {
             // Worker node must not be destroyed and its owner must be the sender of the current function call
-            if (workerNodes[no].currentState() != WorkerNode.State.Destroyed &&
+            if (workerNodes[no].currentState() != WorkerStateMachine.State.Destroyed &&
                 msg.sender == workerNodes[no].owner()) {
                 found = true;
                 _;
@@ -124,9 +124,9 @@ contract Pandora is PAN /* final */ {
         onlyWhitelistedNodes
     {
         // Checking that the node is really destroyed
-        require(_destroyedWorker.currentState() == WorkerNode.State.Destroyed);
+        require(_destroyedWorker.currentState() == WorkerStateMachine.State.Destroyed);
         // Checking that replacement node is idle
-        require(_replacedWorker.currentState() == WorkerNode.State.Idle);
+        require(_replacedWorker.currentState() == WorkerStateMachine.State.Idle);
 
         /// @todo Check worker stake
 
@@ -167,7 +167,7 @@ contract Pandora is PAN /* final */ {
         // first by counting array size and then by allocating and populating array itself
         uint256 estimatedSize = 0;
         for (uint256 no = 0; no < workerNodes.length; no++) {
-            if (workerNodes[no].currentState() == WorkerNode.State.Idle) {
+            if (workerNodes[no].currentState() == WorkerStateMachine.State.Idle) {
                 estimatedSize++;
             }
         }
@@ -178,7 +178,7 @@ contract Pandora is PAN /* final */ {
         WorkerNode[] memory idleWorkers = new WorkerNode[](estimatedSize);
         uint256 actualSize = 0;
         for (no = 0; no < workerNodes.length; no++) {
-            if (workerNodes[no].currentState() == WorkerNode.State.Idle) {
+            if (workerNodes[no].currentState() == WorkerStateMachine.State.Idle) {
                 idleWorkers[actualSize++] = workerNodes[no];
             }
         }
@@ -196,10 +196,10 @@ contract Pandora is PAN /* final */ {
             randomNo = workerLotteryEngine.getRandom(idleWorkers.length);
             assignedWorker = idleWorkers[randomNo];
             tryNo++;
-        } while (assignedWorker.currentState() != WorkerNode.State.Idle);
+        } while (assignedWorker.currentState() != WorkerStateMachine.State.Idle);
 
         // Change worker state
-        assignedWorker.updateState(WorkerNode.State.Computing);
+        assignedWorker.updateState(WorkerStateMachine.State.Computing);
 
         // Create cognitive job contract
         o_cognitiveJob = new CognitiveJob(this, kernel, dataset, assignedWorker);

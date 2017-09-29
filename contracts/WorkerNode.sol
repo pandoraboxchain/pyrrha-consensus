@@ -2,6 +2,7 @@ pragma solidity ^0.4.15;
 
 import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
 import './Pandora.sol';
+import './WorkerStateMachine.sol';
 
 /**
  * @title Worker Node Smart Contract
@@ -21,77 +22,12 @@ import './Pandora.sol';
  */
 
 contract WorkerNode is Destructible {
+    using WorkerStateMachine for WorkerStateMachine.StateMachine;
 
-    /**
-     * ## State machine
-     */
+    WorkerStateMachine.StateMachine internal stateMachine;
 
-    enum State {
-        // Since `destroyself()` zeroes values of all variables, we need the first state (corresponding to zero)
-        // to indicate that contract had being destroyed
-        Destroyed,
-
-        // Initial and base state
-        Idle,
-
-        // State when actual worker node performs cognitive job
-        Computing,
-
-        // When node goes offline it can mark itself as offline to prevent penalties.
-        // If node is not responding to Pandora events and does not submit updates on the cognitive work in time
-        // then it will be penaltied and put into `Offline` state
-        Offline,
-
-        // Intermediary state preventing from performing any type of work during penalty process
-        UnderPenalty
-    }
-
-    /// @dev Current state of worker node (as a state machine)
-    State public currentState;
-
-    modifier onlyIdle() {
-        assert(currentState == State.Idle);
-        _;
-    }
-
-    modifier onlyComputing() {
-        assert(currentState == State.Computing);
-        _;
-    }
-
-    modifier putUnderPenalty() {
-        assert(currentState != State.Computing);
-        State prevState = currentState;
-        currentState = State.UnderPenalty;
-        _;
-        currentState = prevState;
-    }
-
-    function updateState(
-        State _newState
-    ) external
-        onlyPandora
-    {
-        currentState = _newState;
-    }
-
-    function goOffline(
-        // No arguments
-    ) external
-        onlyOwner
-        onlyIdle
-    {
-        currentState = State.Offline;
-    }
-
-    function backOnline(
-        // No arguments
-    ) external
-        onlyOwner
-    {
-        require(currentState == State.Offline);
-
-        currentState = State.Idle;
+    function currentState() public returns (WorkerStateMachine.State) {
+        return stateMachine.currentState;
     }
 
     /**
@@ -105,8 +41,7 @@ contract WorkerNode is Destructible {
     function WorkerNode (Pandora _pandora) {
         pandora = _pandora;
         reputation = 0;
-
-        currentState = State.Idle;
+        stateMachine.initStateMachine();
     }
 
     modifier onlyPandora() {
@@ -118,7 +53,7 @@ contract WorkerNode is Destructible {
         reputation++;
     }
 
-    function decreaseReputation() external onlyPandora putUnderPenalty {
+    function decreaseReputation() external onlyPandora /* putUnderPenalty */ {
         if (reputation == 0) {
             destroyAndSend(pandora);
         } else {
@@ -132,7 +67,7 @@ contract WorkerNode is Destructible {
         // Only Pandora contract can put such penalty
         onlyPandora
         // State machine processes
-        putUnderPenalty
+    //    putUnderPenalty
     {
         reputation = 0;
     }
@@ -143,7 +78,7 @@ contract WorkerNode is Destructible {
         // Only Pandora contract can put such penalty
         onlyPandora
         // State machine processes
-        putUnderPenalty
+    //    putUnderPenalty
     {
         reputation = 0;
     }
@@ -156,7 +91,7 @@ contract WorkerNode is Destructible {
         // Only Pandora contract can put such penalty
         onlyPandora
         // State machine processes
-        putUnderPenalty
+    //    putUnderPenalty
     {
         // First, we put remove all reputation
         reputation = 0;
