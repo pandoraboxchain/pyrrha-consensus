@@ -19,13 +19,13 @@ contract PAN is StandardToken {
     // ERC20 standard variables
     string public constant name = "Pandora";
     string public constant symbol = "PAN";
-    uint public constant decimals = 18;
+    uint public constant decimals = 8;
 
     /// @dev Total token supply is equivalent to the initial supply and does not change with a time (Pyrrha network
     /// does not have cognitive mining). Thus, both initial ant total supply are the pre-mined tokens as described in
     /// the section "2.5. Token Emission" of
     /// [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
-    uint public constant INITIAL_SUPPLY = 5000000;
+    uint public constant INITIAL_SUPPLY = 5000000 * 100000000;
 
     function PAN() {
         totalSupply = INITIAL_SUPPLY;

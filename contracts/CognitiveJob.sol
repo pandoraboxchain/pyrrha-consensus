@@ -37,6 +37,13 @@ contract CognitiveJob is Destructible {
         _;
     }
 
+    function acceptWork() onlyWorker external {
+
+    }
+
+    function declineWork() onlyWorker external {
+    }
+
     function commitProgress(uint8 percent) onlyWorker external {
         JobProgress(percent);
     }
