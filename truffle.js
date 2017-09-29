@@ -8,6 +8,11 @@ module.exports = {
       host: 'localhost',
       port: 8545,
       network_id: '*' // Match any network id
+    },
+    ropsten: {
+      host: '91.225.166.101',
+      port: 30303,
+      network_id: '*' // Match any network id
     }
   }
 }
