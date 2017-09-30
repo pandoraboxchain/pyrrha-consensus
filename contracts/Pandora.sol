@@ -203,7 +203,7 @@ contract Pandora is PAN /* final */ {
         // Create cognitive job contract
         o_cognitiveJob = new CognitiveJob(this, kernel, dataset, assignedWorkers);
         // Save new contract to the storage
-        activeJobs[msg.sender] = o_cognitiveJob;
+        activeJobs[address(o_cognitiveJob)] = o_cognitiveJob;
 
         // Fire global event to notify the selected worker node
         CognitiveJobCreated(o_cognitiveJob);
@@ -215,20 +215,16 @@ contract Pandora is PAN /* final */ {
      * worker node back to `Idle` state (in smart contract) and removes job contract from the list of active contracts
      */
     function finishCognitiveJob(
-        CognitiveJob _cognitiveJob /// Cognitive job contract that has completed
+        // No arguments - cognitive job is taken from msg.sender
     ) external {
-        // Get the actual worker assigned for the specified cognitive job contract
-        CognitiveJob job = activeJobs[_cognitiveJob.owner()];
-        //WorkerNode worker = job.workerNode();
+        CognitiveJob job = activeJobs[msg.sender];
+        require(address(job) == msg.sender);
 
-        // Check that the caller is the worker performing cognitive job
-        ///require(msg.sender == address(worker));
-
-        // Update worker state back to `Idle`
-        //worker.updateState(WorkerNode.Idle);
-        //worker.increaseReputation();
+        for (uint no = 0; no < job.activeWorkersCount(); no++) {
+            job.activeWorkers(no).increaseReputation();
+        }
 
         // Remove cognitive job contract from the storage
-        delete activeJobs[_cognitiveJob.owner()];
+        delete activeJobs[msg.sender];
     }
 }

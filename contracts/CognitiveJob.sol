@@ -241,4 +241,8 @@ contract CognitiveJob is Destructible /* final */ {
 
         //JobCompleted();
     }
+
+    function activeWorkersCount() constant external returns(uint256) {
+        return activeWorkers.length;
+    }
 }
