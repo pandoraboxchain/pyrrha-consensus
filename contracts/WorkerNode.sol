@@ -21,12 +21,20 @@ import {StateMachineLib as SM} from './libraries/StateMachineLib.sol';
  * - Worker node contract itself
  */
 
-contract WorkerNode is Destructible {
+contract WorkerNode is Destructible /* final */ {
+    /**
+     * ## State Machine implementation
+     */
+
     using SM for SM.StateMachine;
 
     // Since `destroyself()` zeroes values of all variables, we need the first state (corresponding to zero)
     // to indicate that contract had being destroyed
     uint8 public constant Destroyed = 0xFF;
+
+    // Reserved system state not participating in transition table. Since contract creation all variables are
+    // initialized to zero and contract state will be zero until it will be initialized with some definite state
+    uint8 public constant Uninitialized = 0;
 
     // Initial and base state
     uint8 public constant Idle = 1;
@@ -49,7 +57,7 @@ contract WorkerNode is Destructible {
 
     SM.StateMachine internal stateMachine;
 
-    function currentState() public returns (uint8) {
+    function currentState() public constant returns (uint8) {
         return stateMachine.currentState;
     }
 
@@ -85,7 +93,7 @@ contract WorkerNode is Destructible {
         _;
     }
 
-    function initStateMachine() {
+    function _initStateMachine() private {
         var transitions = stateMachine.transitionTable;
         transitions[Offline] = [InsufficientStake, Idle];
         transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, ValidatingData];
@@ -104,9 +112,11 @@ contract WorkerNode is Destructible {
     uint256 public reputation;
 
     function WorkerNode (Pandora _pandora) {
+        require(_pandora != address(0));
+
         pandora = _pandora;
         reputation = 0;
-        stateMachine.initStateMachine();
+        _initStateMachine();
     }
 
     modifier onlyPandora() {
