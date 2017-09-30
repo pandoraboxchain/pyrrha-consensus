@@ -39,21 +39,23 @@ contract WorkerNode is Destructible /* final */ {
     // Initial and base state
     uint8 public constant Idle = 1;
 
+    uint8 public constant Assigned = 2;
+
     // When node goes offline it can mark itself as offline to prevent penalties.
     // If node is not responding to Pandora events and does not submit updates on the cognitive work in time
     // then it will be penaltied and put into `Offline` state
-    uint8 public constant Offline = 2;
+    uint8 public constant Offline = 3;
 
-    uint8 public constant InsufficientStake = 3;
+    uint8 public constant InsufficientStake = 4;
 
     // Intermediary state preventing from performing any type of work during penalty process
-    uint8 public constant UnderPenalty = 4;
+    uint8 public constant UnderPenalty = 5;
 
     // Worker node downloads and validates source data for correctness and consistency
-    uint8 public constant ValidatingData = 5;
+    uint8 public constant ValidatingData = 6;
 
     // State when actual worker node performs cognitive job
-    uint8 public constant Computing = 6;
+    uint8 public constant Computing = 7;
 
     SM.StateMachine internal stateMachine;
 
@@ -96,7 +98,8 @@ contract WorkerNode is Destructible /* final */ {
     function _initStateMachine() private {
         var transitions = stateMachine.transitionTable;
         transitions[Offline] = [InsufficientStake, Idle];
-        transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, ValidatingData];
+        transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, Assigned];
+        transitions[Assigned] = [Offline, InsufficientStake, UnderPenalty, ValidatingData];
         transitions[UnderPenalty] = [InsufficientStake, Idle];
         transitions[ValidatingData] = [Idle, UnderPenalty, Computing];
         transitions[Computing] = [UnderPenalty, Idle];
