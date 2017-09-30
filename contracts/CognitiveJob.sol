@@ -80,13 +80,13 @@ contract CognitiveJob is Destructible /* final */ {
 
     function _fireStateEvent() constant private {
         if (currentState() == InsufficientWorkers) {
-            InsufficientWorkers();
+            WorkersNotFound();
         } else if (currentState() == Validation) {
             DataValidationStarted();
         } else if (currentState() == InvalidData) {
             DataValidationFailed();
         } else if (currentState() == Cognition) {
-            ComputationsStarted();
+            CognitionStarted();
         } else if (currentState() == PartialResult) {
             CognitionCompleted(true);
         } else if (currentState() == Completed) {
@@ -110,11 +110,11 @@ contract CognitiveJob is Destructible /* final */ {
 
     event WorkersUpdated();
 
-    event InsufficientWorkers();
+    event WorkersNotFound();
     event DataValidationStarted();
     event DataValidationFailed();
     event CognitionStarted();
-    event CognitionProgressed();
+    event CognitionProgressed(uint8 precent);
     event CognitionCompleted(bool partialResult);
 
     function CognitiveJob(
@@ -123,20 +123,27 @@ contract CognitiveJob is Destructible /* final */ {
         Dataset _dataset,
         WorkerNode[] _workersPool
     ) {
+        var batches = _dataset.batchesCount();
+        require(batches != 0);
+        require(workersPool.length >= batches);
         require(_pandora != address(0));
         require(_kernel != address(0));
         require(_dataset != address(0));
-        require(_workersPool.length > 0);
 
         pandora = _pandora;
         kernel = _kernel;
         dataset = _dataset;
-        workersPool = _workerNode;
 
         // Select initial worker
-        workersResponses = [ false ];
-        activeWorkers.push(workersPool.length - 1);
-        workersPool.length = workersPool.length - 1;
+        activeWorkers = new WorkerNode[](batches);
+        workersResponses = new bool[](batches);
+        for (uint8 batch = 0; batch < batches; batch++) {
+            workersResponses[batch] = false;
+            activeWorkers[batch] = _workersPool[batch];
+        }
+        for (uint16 pool = batch; pool < _workersPool.length; pool++) {
+            workersPool[pool - batch] = _workersPool[pool];
+        }
 
         _initStateMachine();
 
@@ -146,7 +153,7 @@ contract CognitiveJob is Destructible /* final */ {
     modifier onlyActiveWorkers() {
         WorkerNode workerNode;
         (workerNode,) = _getWorkerFromSender();
-        require(workerNode != address(0));
+        require(workerNode != WorkerNode(0));
         require(msg.sender == address(workerNode));
         require(tx.origin == workerNode.owner());
         _;
@@ -162,8 +169,8 @@ contract CognitiveJob is Destructible /* final */ {
     }
 
     function _getWorkerFromSender() private constant returns (WorkerNode o_workerNode, uint256 o_workerIndex) {
-        o_workerNode = 0;
-        for (o_workerIndex = 0; no < activeWorkers.length; o_workerIndex++) {
+        o_workerNode = WorkerNode(0);
+        for (o_workerIndex = 0; o_workerIndex < activeWorkers.length; o_workerIndex++) {
             o_workerNode = activeWorkers[o_workerIndex];
             if (msg.sender == address(o_workerNode)) {
                 return;
@@ -171,27 +178,30 @@ contract CognitiveJob is Destructible /* final */ {
         }
     }
 
-    function _replaceWorker(uint256 workerIndex) private requireStates(Validation, Cognition) {
+    function _replaceWorker(uint256 workerIndex) private requireStates2(Validation, Cognition) {
         if (workersPool.length == 0) {
             _insufficientWorkers();
             return;
         }
         activeWorkers[workerIndex] = workersPool[workersPool.length - 1];
+        workersResponses[workerIndex] = false;
         workersPool.length = workersPool.length - 1;
         WorkersUpdated();
     }
 
-    function _insufficientWorkers() private requireStates(GatheringWorkers) transitionToState(InsufficientWorkers) {
+    function _insufficientWorkers() private requireState(GatheringWorkers) transitionToState(InsufficientWorkers) {
         activeWorkers.length = 0;
     }
 
 
     function _transitionIfReady(uint8 _newState) private checkReadiness transitionToState(_newState) {
-        // all actual work is performed by modifiers
+        for (uint256 no = 0; no < workersResponses.length; no++) {
+            workersResponses[no] = false;
+        }
     }
 
 
-    function gatheringResponse(bool _acceptanceFlag) external onlyActiveWorkers requireState(GatheringWorkers) {
+    function gatheringWorkersResponse(bool _acceptanceFlag) external onlyActiveWorkers requireState(GatheringWorkers) {
         var (reportingWorker, workerIndex) = _getWorkerFromSender();
         if (_acceptanceFlag == false) {
             _replaceWorker(workerIndex);
@@ -205,17 +215,25 @@ contract CognitiveJob is Destructible /* final */ {
         Accept, Decline, Invalid
     }
     function dataValidationResponse(DataValidationResponse _response) onlyActiveWorkers external {
-
+        /*
+        var (reportingWorker, workerIndex) = _getWorkerFromSender();
+        if (_response == DataValidationResponse.Decline) {
+            _replaceWorker(workerIndex);
+        } else {
+            workersResponses[workerIndex] = true;
+            _transitionIfReady(Validation);
+        }
+        */
     }
 
     function commitProgress(uint8 percent) onlyActiveWorkers external {
-        JobProgress(percent);
+        //CognitionProgressed(percent);
     }
 
     function completeWork(bytes _ipfsResults) onlyActiveWorkers external {
-        completed = true;
-        pandora.finishCognitiveJob(this);
+        //completed = true;
+        //pandora.finishCognitiveJob(this);
 
-        JobCompleted(_ipfsResults);
+        //JobCompleted();
     }
 }

@@ -198,11 +198,10 @@ contract Pandora is PAN /* final */ {
             tryNo++;
         } while (assignedWorker.currentState() != assignedWorker.Idle());
 
-        // Change worker state
-        assignedWorker.updateState(assignedWorker.Computing());
-
+        WorkerNode[] memory assignedWorkers = new WorkerNode[](1);
+        assignedWorkers[0] = assignedWorker;
         // Create cognitive job contract
-        o_cognitiveJob = new CognitiveJob(this, kernel, dataset, assignedWorker);
+        o_cognitiveJob = new CognitiveJob(this, kernel, dataset, assignedWorkers);
         // Save new contract to the storage
         activeJobs[msg.sender] = o_cognitiveJob;
 
@@ -220,14 +219,14 @@ contract Pandora is PAN /* final */ {
     ) external {
         // Get the actual worker assigned for the specified cognitive job contract
         CognitiveJob job = activeJobs[_cognitiveJob.owner()];
-        WorkerNode worker = job.workerNode();
+        //WorkerNode worker = job.workerNode();
 
         // Check that the caller is the worker performing cognitive job
-        require(msg.sender == address(worker));
+        ///require(msg.sender == address(worker));
 
         // Update worker state back to `Idle`
-        worker.updateState(WorkerNode.Idle);
-        worker.increaseReputation();
+        //worker.updateState(WorkerNode.Idle);
+        //worker.increaseReputation();
 
         // Remove cognitive job contract from the storage
         delete activeJobs[_cognitiveJob.owner()];
