@@ -179,13 +179,18 @@ contract CognitiveJob is Destructible /* final */ {
     }
 
     function _replaceWorker(uint256 workerIndex) private requireStates2(Validation, Cognition) {
-        if (workersPool.length == 0) {
-            _insufficientWorkers();
-            return;
-        }
-        activeWorkers[workerIndex] = workersPool[workersPool.length - 1];
+        WorkerNode replacementWorker;
+        do {
+            if (workersPool.length == 0) {
+                _insufficientWorkers();
+                return;
+            }
+            workersPool[workersPool.length - 1];
+            workersPool.length = workersPool.length - 1;
+        } while (replacementWorker.currentState() != replacementWorker.Idle());
+
         workersResponses[workerIndex] = false;
-        workersPool.length = workersPool.length - 1;
+        activeWorkers[workerIndex] = replacementWorker;
         WorkersUpdated();
     }
 
