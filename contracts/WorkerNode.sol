@@ -30,6 +30,32 @@ contract WorkerNode is Destructible {
         return stateMachine.currentState;
     }
 
+    modifier transitionToState(
+        WorkerStateMachine.State _newState
+    ) {
+        stateMachine.transitionToState(_newState);
+        _;
+        stateMachine.currentState = _newState;
+    }
+
+    modifier transitionThroughState(
+        WorkerStateMachine.State _transitionState
+    ) {
+        WorkerStateMachine.State initialState = stateMachine.currentState;
+
+        stateMachine.transitionThroughState(_transitionState);
+        stateMachine.currentState = _transitionState;
+        _;
+        stateMachine.currentState = initialState;
+    }
+
+    modifier requireState(
+        WorkerStateMachine.State _requiredState
+    ) {
+        require(stateMachine.currentState == _requiredState);
+        _;
+    }
+
     /**
      * ## Main implementation
      */
@@ -53,7 +79,7 @@ contract WorkerNode is Destructible {
         reputation++;
     }
 
-    function decreaseReputation() external onlyPandora /* putUnderPenalty */ {
+    function decreaseReputation() external onlyPandora transitionThroughState(WorkerStateMachine.State.UnderPenalty) {
         if (reputation == 0) {
             destroyAndSend(pandora);
         } else {

@@ -35,7 +35,7 @@ library WorkerStateMachine {
 
     /// @dev Current state of worker node (as a state machine)
 
-    modifier transitionToState(
+    function transitionToState(
         StateMachine storage _machine,
         State _newState
     ) {
@@ -43,19 +43,18 @@ library WorkerStateMachine {
         assert(_machine.currentState == State.Destroyed);
 
         // Checking if the state transition is allowed
+        bool transitionAllowed = false;
         State[] storage allowedStates = _machine.transitionTable[uint8(_machine.currentState)];
         for (uint no = 0; no < allowedStates.length; no++) {
             if (allowedStates[no] == _newState) {
-                _;
-                _machine.currentState = _newState;
-                return;
+                transitionAllowed = true;
             }
         }
 
-        revert();
+        require(transitionAllowed == true);
     }
 
-    modifier transitionThroughState(
+    function transitionThroughState(
         StateMachine storage _machine,
         State _transitionState
     ) {
@@ -83,19 +82,6 @@ library WorkerStateMachine {
             }
         }
         require(secondTransitionAllowed == true);
-
-        State initialState = _machine.currentState;
-        _machine.currentState = _transitionState;
-        _;
-        _machine.currentState = initialState;
-    }
-
-    modifier requireState(
-        StateMachine storage _machine,
-        State _requiredState
-    ) {
-        require(_machine.currentState == _requiredState);
-        _;
     }
 
     function initStateMachine(
