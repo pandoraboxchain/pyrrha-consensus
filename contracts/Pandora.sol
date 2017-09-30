@@ -94,7 +94,7 @@ contract Pandora is PAN /* final */ {
         bool found = false;
         for (uint256 no = 0; no < workerNodes.length; no++) {
             // Worker node must not be destroyed and its owner must be the sender of the current function call
-            if (workerNodes[no].currentState() != workerNodes[no].Destroyed() &&
+            if (workerNodes[no].Destroyed() != 0 &&
                 msg.sender == workerNodes[no].owner()) {
                 found = true;
                 _;
@@ -124,7 +124,7 @@ contract Pandora is PAN /* final */ {
         onlyWhitelistedNodes
     {
         // Checking that the node is really destroyed
-        require(_destroyedWorker.currentState() == _destroyedWorker.Destroyed());
+        require(_destroyedWorker.Destroyed() == 0);
         // Checking that replacement node is idle
         require(_replacedWorker.currentState() == _replacedWorker.Idle());
 

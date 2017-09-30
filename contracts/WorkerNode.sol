@@ -26,7 +26,7 @@ contract WorkerNode is Destructible {
 
     // Since `destroyself()` zeroes values of all variables, we need the first state (corresponding to zero)
     // to indicate that contract had being destroyed
-    uint8 public constant Destroyed = 0;
+    uint8 public constant Destroyed = 0xFF;
 
     // Initial and base state
     uint8 public constant Idle = 1;
