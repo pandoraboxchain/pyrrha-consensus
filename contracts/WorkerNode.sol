@@ -77,34 +77,21 @@ contract WorkerNode is Destructible {
         _;
     }
 
+    modifier requireStates2(
+        uint8 _requiredState1,
+        uint8 _requiredState2
+    ) {
+        stateMachine.requireStates2(_requiredState1, _requiredState2);
+        _;
+    }
+
     function initStateMachine() {
         var transitions = stateMachine.transitionTable;
+        transitions[Offline] = [InsufficientStake, Idle];
         transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, ValidatingData];
-        /*
-        uint8(State.Offline) => State.InsufficientStake,
-        State.Offline, State.Idle,
-
-        State.InsufficientStake, State.Offline,
-        State.InsufficientStake, State.UnderPenalty,
-        State.InsufficientStake, State.Idle,
-
-        State.Idle, State.Offline,
-        State.Idle, State.UnderPenalty,
-        State.Idle, State.ValidatingData,
-        State.Idle, State.InsufficientStake,
-
-        State.UnderPenalty, State.InsufficientStake,
-        State.UnderPenalty, State.Idle,
-
-        State.ValidatingData, State.InsufficientStake,
-        State.ValidatingData, State.Idle,
-        State.ValidatingData, State.UnderPenalty,
-        State.ValidatingData, State.Computing,
-
-        State.Computing, State.InsufficientStake,
-        State.Computing, State.UnderPenalty,
-        State.Computing, State.Idle
-        */
+        transitions[UnderPenalty] = [InsufficientStake, Idle];
+        transitions[ValidatingData] = [Idle, UnderPenalty, Computing];
+        transitions[Computing] = [UnderPenalty, Idle];
         stateMachine.initStateMachine();
     }
 
@@ -145,7 +132,7 @@ contract WorkerNode is Destructible {
         // Only Pandora contract can put such penalty
         onlyPandora
         // State machine processes
-    //    putUnderPenalty
+        transitionThroughState(UnderPenalty)
     {
         reputation = 0;
     }
@@ -156,7 +143,7 @@ contract WorkerNode is Destructible {
         // Only Pandora contract can put such penalty
         onlyPandora
         // State machine processes
-    //    putUnderPenalty
+        transitionThroughState(UnderPenalty)
     {
         reputation = 0;
     }
@@ -169,7 +156,7 @@ contract WorkerNode is Destructible {
         // Only Pandora contract can put such penalty
         onlyPandora
         // State machine processes
-    //    putUnderPenalty
+        transitionThroughState(UnderPenalty)
     {
         // First, we put remove all reputation
         reputation = 0;
@@ -183,6 +170,7 @@ contract WorkerNode is Destructible {
         // No arguments
     ) external // Can't be called internally
         onlyOwner // Can be called only by the owner
+        requireStates2(Idle, Offline)
     {
         /// @todo Handle stakes etc
         owner.transfer(this.balance);

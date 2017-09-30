@@ -11,7 +11,7 @@ library StateMachineLib {
     function transitionToState(
         StateMachine storage _machine,
         uint8 _newState
-    ) {
+    ) internal {
         // Should not happen
         assert(_machine.currentState == 0);
 
@@ -30,7 +30,7 @@ library StateMachineLib {
     function transitionThroughState(
         StateMachine storage _machine,
         uint8 _transitionState
-    ) {
+    ) internal {
         // Should not happen
         assert(_machine.currentState == 0);
 
@@ -57,6 +57,22 @@ library StateMachineLib {
         require(secondTransitionAllowed == true);
 
         _machine.currentState = _transitionState;
+    }
+
+    function requireStates2(
+        StateMachine storage _machine,
+        uint8 _requiredState1,
+        uint8 _requiredState2
+    ) internal {
+        bool properState = false;
+        var _requiredStates = [_requiredState1, _requiredState2];
+        for (uint no = 0; no < _requiredStates.length; no++) {
+            if (_requiredStates[no] == _machine.currentState) {
+                properState = true;
+                break;
+            }
+        }
+        require(properState == true);
     }
 
     function initStateMachine(
