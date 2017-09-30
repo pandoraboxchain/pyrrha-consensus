@@ -140,6 +140,7 @@ contract CognitiveJob is Destructible /* final */ {
         for (uint8 batch = 0; batch < batches; batch++) {
             workersResponses[batch] = false;
             activeWorkers[batch] = _workersPool[batch];
+            activeWorkers[batch].assignJob();
         }
         for (uint16 pool = batch; pool < _workersPool.length; pool++) {
             workersPool[pool - batch] = _workersPool[pool];
@@ -191,6 +192,7 @@ contract CognitiveJob is Destructible /* final */ {
 
         workersResponses[workerIndex] = false;
         activeWorkers[workerIndex] = replacementWorker;
+        replacementWorker.assignJob();
         WorkersUpdated();
     }
 

@@ -127,6 +127,17 @@ contract WorkerNode is Destructible /* final */ {
         _;
     }
 
+    modifier onlyActiveCognitiveJob() {
+        CognitiveJob sender = CognitiveJob(msg.sender);
+        require(pandora == sender.pandora());
+        require(pandora.activeJobs(msg.sender) == msg.sender);
+        _;
+    }
+
+    function assignJob() onlyActiveCognitiveJob transitionToState(Assigned) {
+        // actual work is done by modifiers
+    }
+
     function increaseReputation() external onlyPandora {
         reputation++;
     }
