@@ -2,7 +2,7 @@ pragma solidity ^0.4.15;
 
 import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
 import './Pandora.sol';
-import './WorkerStateMachine.sol';
+import {StateMachineLib as SM} from './libraries/StateMachineLib.sol';
 
 /**
  * @title Worker Node Smart Contract
@@ -22,16 +22,39 @@ import './WorkerStateMachine.sol';
  */
 
 contract WorkerNode is Destructible {
-    using WorkerStateMachine for WorkerStateMachine.StateMachine;
+    using SM for SM.StateMachine;
 
-    WorkerStateMachine.StateMachine internal stateMachine;
+    // Since `destroyself()` zeroes values of all variables, we need the first state (corresponding to zero)
+    // to indicate that contract had being destroyed
+    uint8 public constant Destroyed = 0;
 
-    function currentState() public returns (WorkerStateMachine.State) {
+    // Initial and base state
+    uint8 public constant Idle = 1;
+
+    // When node goes offline it can mark itself as offline to prevent penalties.
+    // If node is not responding to Pandora events and does not submit updates on the cognitive work in time
+    // then it will be penaltied and put into `Offline` state
+    uint8 public constant Offline = 2;
+
+    uint8 public constant InsufficientStake = 3;
+
+    // Intermediary state preventing from performing any type of work during penalty process
+    uint8 public constant UnderPenalty = 4;
+
+    // Worker node downloads and validates source data for correctness and consistency
+    uint8 public constant ValidatingData = 5;
+
+    // State when actual worker node performs cognitive job
+    uint8 public constant Computing = 6;
+
+    SM.StateMachine internal stateMachine;
+
+    function currentState() public returns (uint8) {
         return stateMachine.currentState;
     }
 
     modifier transitionToState(
-        WorkerStateMachine.State _newState
+        uint8 _newState
     ) {
         stateMachine.transitionToState(_newState);
         _;
@@ -39,21 +62,50 @@ contract WorkerNode is Destructible {
     }
 
     modifier transitionThroughState(
-        WorkerStateMachine.State _transitionState
+        uint8 _transitionState
     ) {
-        WorkerStateMachine.State initialState = stateMachine.currentState;
-
+        var initialState = stateMachine.currentState;
         stateMachine.transitionThroughState(_transitionState);
-        stateMachine.currentState = _transitionState;
         _;
         stateMachine.currentState = initialState;
     }
 
     modifier requireState(
-        WorkerStateMachine.State _requiredState
+        uint8 _requiredState
     ) {
         require(stateMachine.currentState == _requiredState);
         _;
+    }
+
+    function initStateMachine() {
+        var transitions = stateMachine.transitionTable;
+        transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, ValidatingData];
+        /*
+        uint8(State.Offline) => State.InsufficientStake,
+        State.Offline, State.Idle,
+
+        State.InsufficientStake, State.Offline,
+        State.InsufficientStake, State.UnderPenalty,
+        State.InsufficientStake, State.Idle,
+
+        State.Idle, State.Offline,
+        State.Idle, State.UnderPenalty,
+        State.Idle, State.ValidatingData,
+        State.Idle, State.InsufficientStake,
+
+        State.UnderPenalty, State.InsufficientStake,
+        State.UnderPenalty, State.Idle,
+
+        State.ValidatingData, State.InsufficientStake,
+        State.ValidatingData, State.Idle,
+        State.ValidatingData, State.UnderPenalty,
+        State.ValidatingData, State.Computing,
+
+        State.Computing, State.InsufficientStake,
+        State.Computing, State.UnderPenalty,
+        State.Computing, State.Idle
+        */
+        stateMachine.initStateMachine();
     }
 
     /**
@@ -79,7 +131,7 @@ contract WorkerNode is Destructible {
         reputation++;
     }
 
-    function decreaseReputation() external onlyPandora transitionThroughState(WorkerStateMachine.State.UnderPenalty) {
+    function decreaseReputation() external onlyPandora transitionThroughState(UnderPenalty) {
         if (reputation == 0) {
             destroyAndSend(pandora);
         } else {
