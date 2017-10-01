@@ -70,6 +70,13 @@ contract CognitiveJob is Destructible /* final */ {
         _;
     }
 
+    modifier requireActiveStates() {
+        require(stateMachine.currentState == GatheringWorkers);
+        require(stateMachine.currentState == Validation);
+        require(stateMachine.currentState == Cognition);
+        _;
+    }
+
     function _initStateMachine() private {
         var transitions = stateMachine.transitionTable;
         transitions[GatheringWorkers] = [InsufficientWorkers, Validation];
@@ -98,12 +105,14 @@ contract CognitiveJob is Destructible /* final */ {
      * ## Main functionality
      */
 
+    uint internal constant WORKER_TIMEOUT = 10 minutes;
+
     Pandora public pandora;
     Kernel public kernel;
     Dataset public dataset;
     WorkerNode[] public activeWorkers;
     WorkerNode[] public workersPool;
-    bool[] internal workersResponses;
+    uint[] internal workersResponses;
 
     uint8 public progress = 0;
     bytes public ipfsResults;
@@ -136,9 +145,9 @@ contract CognitiveJob is Destructible /* final */ {
 
         // Select initial worker
         activeWorkers = new WorkerNode[](batches);
-        workersResponses = new bool[](batches);
+        workersResponses = new uint[](batches);
         for (uint8 batch = 0; batch < batches; batch++) {
-            workersResponses[batch] = false;
+            workersResponses[batch] = 0; // no response given yet
             activeWorkers[batch] = _workersPool[batch];
             activeWorkers[batch].assignJob();
         }
@@ -169,14 +178,21 @@ contract CognitiveJob is Destructible /* final */ {
         _;
     }
 
-    function _getWorkerFromSender() private constant returns (WorkerNode o_workerNode, uint256 o_workerIndex) {
-        o_workerNode = WorkerNode(0);
-        for (o_workerIndex = 0; o_workerIndex < activeWorkers.length; o_workerIndex++) {
-            o_workerNode = activeWorkers[o_workerIndex];
-            if (msg.sender == address(o_workerNode)) {
-                return;
+    function _getWorkerIndex(WorkerNode _worker) private constant returns (uint256) {
+        for (uint256 index = 0; index < activeWorkers.length; index++) {
+            if (msg.sender == address(activeWorkers[index])) {
+                return index;
             }
         }
+        return uint256(-1);
+    }
+
+    function _getWorkerFromSender() private constant returns (WorkerNode o_workerNode, uint256 o_workerIndex) {
+        o_workerIndex = _getWorkerIndex(WorkerNode(msg.sender));
+        if (o_workerIndex > activeWorkers.length) {
+            return (WorkerNode(0), uint256(-1));
+        }
+        o_workerNode = activeWorkers[o_workerIndex];
     }
 
     function _replaceWorker(uint256 workerIndex) private requireStates2(Validation, Cognition) {
@@ -190,7 +206,7 @@ contract CognitiveJob is Destructible /* final */ {
             workersPool.length = workersPool.length - 1;
         } while (replacementWorker.currentState() != replacementWorker.Idle());
 
-        workersResponses[workerIndex] = false;
+        workersResponses[workerIndex] = 0; // again no response given
         activeWorkers[workerIndex] = replacementWorker;
         replacementWorker.assignJob();
         WorkersUpdated();
@@ -200,20 +216,49 @@ contract CognitiveJob is Destructible /* final */ {
         activeWorkers.length = 0;
     }
 
-
-    function _transitionIfReady(uint8 _newState) private checkReadiness transitionToState(_newState) {
+    function _trackOfflineWorkers() private requireActiveStates {
         for (uint256 no = 0; no < workersResponses.length; no++) {
-            workersResponses[no] = false;
+            if (workersResponses[no] - block.timestamp > WORKER_TIMEOUT) {
+                WorkerNode guiltyWorker = activeWorkers[no];
+                Pandora.WorkersPenalties penalty;
+                if (stateMachine.currentState == GatheringWorkers) {
+                    penalty = Pandora.WorkersPenalties.OfflineWhileGathering;
+                } else if (stateMachine.currentState == Validation) {
+                    penalty = Pandora.WorkersPenalties.OfflineWhileDataValidation;
+                } else if (stateMachine.currentState == Cognition) {
+                    penalty = Pandora.WorkersPenalties.OfflineWhileCognition;
+                } else {
+                    revert(); // This should not happen due to requireActiveStates function modifier
+                }
+                pandora.penaltizeWorker(guiltyWorker, penalty);
+                _replaceWorker(no);
+            }
         }
     }
 
+    function _transitionIfReady(uint8 _newState) private checkReadiness transitionToState(_newState) {
+        for (uint256 no = 0; no < workersResponses.length; no++) {
+            workersResponses[no] = 0; // no response or update is given
+        }
+    }
+
+    function reportOfflineWorker(WorkerNode _reportedWorker) payable external requireActiveStates {
+        /// @todo accept deposit
+        uint256 reportedIndex = _getWorkerIndex(_reportedWorker);
+        if (workersResponses[reportedIndex] - block.timestamp > WORKER_TIMEOUT) {
+            /// @todo pay reward and return deposit
+        }
+        _trackOfflineWorkers();
+    }
 
     function gatheringWorkersResponse(bool _acceptanceFlag) external onlyActiveWorkers requireState(GatheringWorkers) {
         var (reportingWorker, workerIndex) = _getWorkerFromSender();
         if (_acceptanceFlag == false) {
             _replaceWorker(workerIndex);
+            pandora.penaltizeWorker(reportingWorker, Pandora.WorkersPenalties.OfflineWhileGathering);
         } else {
-            workersResponses[workerIndex] = true;
+            workersResponses[workerIndex] = block.timestamp;
+            _trackOfflineWorkers();
             _transitionIfReady(Validation);
         }
     }

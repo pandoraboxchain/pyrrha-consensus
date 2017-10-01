@@ -2,6 +2,7 @@ pragma solidity ^0.4.15;
 
 import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
 import './Pandora.sol';
+import './CognitiveJob.sol';
 import {StateMachineLib as SM} from './libraries/StateMachineLib.sol';
 
 /**

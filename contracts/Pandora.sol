@@ -28,6 +28,14 @@ contract Pandora is PAN /* final */ {
      * ## Storage
      */
 
+    enum WorkersPenalties {
+        OfflineWhileGathering,
+        DeclinesJob,
+        OfflineWhileDataValidation,
+        FalseReportInvalidData,
+        OfflineWhileCognition
+    }
+
     uint256 constant private MAX_WORKER_LOTTERY_TRIES = 10;
 
     uint8 constant private WORKERNODE_WHITELIST_SIZE = 7;
@@ -149,6 +157,13 @@ contract Pandora is PAN /* final */ {
 
         // Failing if `_destroyedWorker` was not whitelisted
         revert();
+    }
+
+    function penaltizeWorker(
+        WorkerNode _guiltyWorker,
+        WorkersPenalties _reason
+    ) external {
+        /// @todo implement
     }
 
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
