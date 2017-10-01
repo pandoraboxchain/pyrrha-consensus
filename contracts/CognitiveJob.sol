@@ -30,7 +30,7 @@ contract CognitiveJob is Destructible /* final */ {
 
     uint8 public constant InsufficientWorkers = 2;
 
-    uint8 public constant Validation = 3;
+    uint8 public constant DataValidation = 3;
 
     uint8 public constant InvalidData = 4;
 
@@ -72,15 +72,15 @@ contract CognitiveJob is Destructible /* final */ {
 
     modifier requireActiveStates() {
         require(stateMachine.currentState == GatheringWorkers);
-        require(stateMachine.currentState == Validation);
+        require(stateMachine.currentState == DataValidation);
         require(stateMachine.currentState == Cognition);
         _;
     }
 
     function _initStateMachine() private {
         var transitions = stateMachine.transitionTable;
-        transitions[GatheringWorkers] = [InsufficientWorkers, Validation];
-        transitions[Validation] = [InvalidData, Cognition, InsufficientWorkers];
+        transitions[GatheringWorkers] = [InsufficientWorkers, DataValidation];
+        transitions[DataValidation] = [InvalidData, Cognition, InsufficientWorkers];
         transitions[Cognition] = [Completed, PartialResult, InsufficientWorkers];
         stateMachine.initStateMachine();
     }
@@ -88,7 +88,7 @@ contract CognitiveJob is Destructible /* final */ {
     function _fireStateEvent() constant private {
         if (currentState() == InsufficientWorkers) {
             WorkersNotFound();
-        } else if (currentState() == Validation) {
+        } else if (currentState() == DataValidation) {
             DataValidationStarted();
         } else if (currentState() == InvalidData) {
             DataValidationFailed();
@@ -195,7 +195,7 @@ contract CognitiveJob is Destructible /* final */ {
         o_workerNode = activeWorkers[o_workerIndex];
     }
 
-    function _replaceWorker(uint256 workerIndex) private requireStates2(Validation, Cognition) {
+    function _replaceWorker(uint256 workerIndex) private requireStates2(DataValidation, Cognition) {
         WorkerNode replacementWorker;
         do {
             if (workersPool.length == 0) {
@@ -206,7 +206,7 @@ contract CognitiveJob is Destructible /* final */ {
             workersPool.length = workersPool.length - 1;
         } while (replacementWorker.currentState() != replacementWorker.Idle());
 
-        workersResponses[workerIndex] = 0; // again no response given
+        workersResponses[workerIndex] = 0; // no response is given from the new worker yet
         activeWorkers[workerIndex] = replacementWorker;
         replacementWorker.assignJob();
         WorkersUpdated();
@@ -223,7 +223,7 @@ contract CognitiveJob is Destructible /* final */ {
                 Pandora.WorkersPenalties penalty;
                 if (stateMachine.currentState == GatheringWorkers) {
                     penalty = Pandora.WorkersPenalties.OfflineWhileGathering;
-                } else if (stateMachine.currentState == Validation) {
+                } else if (stateMachine.currentState == DataValidation) {
                     penalty = Pandora.WorkersPenalties.OfflineWhileDataValidation;
                 } else if (stateMachine.currentState == Cognition) {
                     penalty = Pandora.WorkersPenalties.OfflineWhileCognition;
@@ -242,6 +242,9 @@ contract CognitiveJob is Destructible /* final */ {
         }
     }
 
+    /// @dev Main entry point for
+    /// (Witnessing worker nodes going offline)[https://github.com/pandoraboxchain/techspecs/wiki/Witnessing-worker-nodes-going-offline]
+    /// workflow
     function reportOfflineWorker(WorkerNode _reportedWorker) payable external requireActiveStates {
         /// @todo accept deposit
         uint256 reportedIndex = _getWorkerIndex(_reportedWorker);
@@ -259,7 +262,7 @@ contract CognitiveJob is Destructible /* final */ {
         } else {
             workersResponses[workerIndex] = block.timestamp;
             _trackOfflineWorkers();
-            _transitionIfReady(Validation);
+            _transitionIfReady(DataValidation);
         }
     }
 
@@ -273,7 +276,7 @@ contract CognitiveJob is Destructible /* final */ {
             _replaceWorker(workerIndex);
         } else {
             workersResponses[workerIndex] = true;
-            _transitionIfReady(Validation);
+            _transitionIfReady(DataValidation);
         }
         */
     }
