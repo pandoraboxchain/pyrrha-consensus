@@ -105,13 +105,15 @@ contract WorkerNode is Destructible /* final */ {
         transitions[ValidatingData] = [Idle, UnderPenalty, Computing];
         transitions[Computing] = [UnderPenalty, Idle];
         stateMachine.initStateMachine();
+        /// @todo Replace to Offline until notification from the worker
+        stateMachine.currentState = Idle;
     }
 
     /**
      * ## Main implementation
      */
 
-    Pandora internal pandora;
+    Pandora public pandora;
 
     uint256 public reputation;
 

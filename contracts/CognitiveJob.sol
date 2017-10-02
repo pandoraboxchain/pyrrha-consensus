@@ -83,6 +83,7 @@ contract CognitiveJob is Destructible /* final */ {
         transitions[DataValidation] = [InvalidData, Cognition, InsufficientWorkers];
         transitions[Cognition] = [Completed, PartialResult, InsufficientWorkers];
         stateMachine.initStateMachine();
+        stateMachine.currentState = GatheringWorkers;
     }
 
     function _fireStateEvent() constant private {
