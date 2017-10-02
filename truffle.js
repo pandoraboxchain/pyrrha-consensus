@@ -20,7 +20,6 @@ module.exports = {
     },
     ropsten: {
       from: '0x549c05D76DaFBf452a34b97E7005D209Bf07bc7B',
-      //privateKey: 'f23190d747c23e1db19c9b52998033f66a04c4ad5f799b1b73b74e174bb65ea1',
       host: '52.232.79.62',
       port: 8545,
       network_id: '3' // Match any network id
