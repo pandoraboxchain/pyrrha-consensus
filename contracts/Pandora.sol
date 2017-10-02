@@ -68,7 +68,7 @@ contract Pandora is PAN /* final */ {
     /// of worker nodes contracts
     function Pandora (
         // Constant literal for array size in function arguments not working yet
-        address[7 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
+        WorkerNode[7 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
     ) {
         // Something is wrong with the compiler or Ethereum node if this check fails
         // (that's why its `assert`, not `require`)
@@ -81,13 +81,13 @@ contract Pandora is PAN /* final */ {
 
             // Creating new worker node contract for each of the seven pre-defined owners whitelisted at the moment
             // of creation of the main Pandora contract
-            WorkerNode worker = new WorkerNode(this);
+            //WorkerNode worker = new WorkerNode(this);
 
             // Change ownership of the worker node contract to a pre-defined owner passed to the constructor
-            worker.transferOwnership(_workerNodeOwners[no]);
+            //worker.transferOwnership(_workerNodeOwners[no]);
 
             // Store newly created worker node contract
-            workerNodes[no] = worker;
+            workerNodes[no] = _workerNodeOwners[0]; //worker;
         }
 
         // Initializing worker lottery engine

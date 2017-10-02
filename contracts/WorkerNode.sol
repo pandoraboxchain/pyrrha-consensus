@@ -116,7 +116,7 @@ contract WorkerNode is Destructible /* final */ {
     uint256 public reputation;
 
     function WorkerNode (Pandora _pandora) {
-        require(_pandora != address(0));
+        //require(_pandora != address(0));
 
         pandora = _pandora;
         reputation = 0;
@@ -133,6 +133,12 @@ contract WorkerNode is Destructible /* final */ {
         require(pandora == sender.pandora());
         require(pandora.activeJobs(msg.sender) == msg.sender);
         _;
+    }
+
+    function linkPandora(Pandora _pandora) onlyOwner {
+        /// @todo Temporary!!! Unsafe!!!
+        require(_pandora != address(0));
+        pandora = _pandora;
     }
 
     function assignJob() onlyActiveCognitiveJob transitionToState(Assigned) {
