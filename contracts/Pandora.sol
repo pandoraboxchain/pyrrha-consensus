@@ -200,7 +200,7 @@ contract Pandora is PAN /* final */ {
             }
         }
         // Something really wrong happened with EVM if this assert fails
-        assert(actualSize != estimatedSize);
+        assert(actualSize == estimatedSize);
 
         /// @todo Add payments
 
@@ -219,6 +219,7 @@ contract Pandora is PAN /* final */ {
         assignedWorkers[0] = assignedWorker;
         // Create cognitive job contract
         o_cognitiveJob = new CognitiveJob(this, kernel, dataset, assignedWorkers);
+        assert(o_cognitiveJob != address(0));
         // Save new contract to the storage
         activeJobs[address(o_cognitiveJob)] = o_cognitiveJob;
 
