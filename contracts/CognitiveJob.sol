@@ -171,7 +171,7 @@ contract CognitiveJob is Destructible /* final */ {
 
     modifier checkReadiness() {
         for (uint256 no = 0; no < workersResponses.length; no++) {
-            if (workersResponses[no] == false) {
+            if (workersResponses[no] == 0) {
                 return;
             }
         }

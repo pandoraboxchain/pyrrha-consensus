@@ -75,6 +75,8 @@ contract Pandora is PAN /* final */ {
         assert(_workerNodeOwners.length == workerNodes.length);
 
         for (uint8 no = 0; no < WORKERNODE_WHITELIST_SIZE; no++) {
+            require(_workerNodeOwners[no] != address(0));
+
             /// @todo Stakes thing
 
             // Creating new worker node contract for each of the seven pre-defined owners whitelisted at the moment
