@@ -44,6 +44,9 @@ contract Pandora is PAN /* final */ {
     /// @dev Whitelist of nodes allowed to perform cognitive work as a trusted environment for the first version of
     /// the protocol implementation codenamed Pyrrha
     WorkerNode[7 /* WORKERNODE_WHITELIST_SIZE */] public workerNodes;
+    function workerNodesCount() external constant /* view */ returns (uint) {
+        return workerNodes.length;
+    }
 
     /// @dev List of active (=running) cognitive jobs mapped to their creators (owners of the corresponding
     /// cognitive job contracts)
@@ -51,7 +54,7 @@ contract Pandora is PAN /* final */ {
 
     /// @dev Contract implementing lottery interface for workers selection. Only internal usage
     /// by `createCognitiveJob` function
-    LotteryEngine internal workerLotteryEngine;
+    LotteryEngine /* internal */ public workerLotteryEngine;
 
     /**
      * ## Events
