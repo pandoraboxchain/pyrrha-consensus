@@ -8,6 +8,7 @@ module.exports = function(deployer) {
   for (let i = 0; i < 7; i++) {
     workers.push(WorkerNode.address);
   }
+  deployer.link(StateMachineLib, Pandora);
   deployer.deploy(Pandora, workers, { gas: 6710000 }).then(function () {
     return WorkerNode.deployed()
   }).then (function (workerNode) {

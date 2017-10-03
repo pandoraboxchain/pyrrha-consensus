@@ -134,8 +134,8 @@ contract CognitiveJob is Destructible /* final */ {
         WorkerNode[] _workersPool
     ) {
         var batches = _dataset.batchesCount();
-        require(batches != 0);
-        require(workersPool.length >= batches);
+        require(batches > 0);
+        require(_workersPool.length >= batches);
         require(_pandora != address(0));
         require(_kernel != address(0));
         require(_dataset != address(0));
@@ -153,7 +153,7 @@ contract CognitiveJob is Destructible /* final */ {
             activeWorkers[batch].assignJob();
         }
         for (uint16 pool = batch; pool < _workersPool.length; pool++) {
-            workersPool[pool - batch] = _workersPool[pool];
+            workersPool.push(_workersPool[pool]);
         }
 
         _initStateMachine();
@@ -244,7 +244,7 @@ contract CognitiveJob is Destructible /* final */ {
     }
 
     /// @dev Main entry point for
-    /// (Witnessing worker nodes going offline)[https://github.com/pandoraboxchain/techspecs/wiki/Witnessing-worker-nodes-going-offline]
+    /// (Witnessing worker nodes went offline)[https://github.com/pandoraboxchain/techspecs/wiki/Witnessing-worker-nodes-going-offline]
     /// workflow
     function reportOfflineWorker(WorkerNode _reportedWorker) payable external requireActiveStates {
         /// @todo accept deposit
