@@ -81,7 +81,7 @@ contract CognitiveJob is Destructible /* final */ {
         var transitions = stateMachine.transitionTable;
         transitions[GatheringWorkers] = [InsufficientWorkers, DataValidation];
         transitions[DataValidation] = [InvalidData, Cognition, InsufficientWorkers];
-        transitions[Cognition] = [Completed, PartialResult, InsufficientWorkers];
+        transitions[Cognition] = [Completed, PartialResult];
         stateMachine.initStateMachine();
         stateMachine.currentState = GatheringWorkers;
     }
@@ -97,8 +97,10 @@ contract CognitiveJob is Destructible /* final */ {
             CognitionStarted();
         } else if (currentState() == PartialResult) {
             CognitionCompleted(true);
+            pandora.finishCognitiveJob();
         } else if (currentState() == Completed) {
             CognitionCompleted(false);
+            pandora.finishCognitiveJob();
         }
     }
 
@@ -116,7 +118,7 @@ contract CognitiveJob is Destructible /* final */ {
     uint[] internal workersResponses;
 
     uint8 public progress = 0;
-    bytes public ipfsResults;
+    bytes[] public ipfsResults;
 
     event WorkersUpdated();
 
@@ -147,6 +149,7 @@ contract CognitiveJob is Destructible /* final */ {
         // Select initial worker
         activeWorkers = new WorkerNode[](batches);
         workersResponses = new uint[](batches);
+        ipfsResults = new bytes[](batches);
         for (uint8 batch = 0; batch < batches; batch++) {
             workersResponses[batch] = 0; // no response given yet
             activeWorkers[batch] = _workersPool[batch];
@@ -213,7 +216,12 @@ contract CognitiveJob is Destructible /* final */ {
         WorkersUpdated();
     }
 
-    function _insufficientWorkers() private requireState(GatheringWorkers) transitionToState(InsufficientWorkers) {
+    function _insufficientWorkers() private requireActiveStates {
+        if (stateMachine.currentState == Cognition) {
+            _transitionToState(PartialResult);
+        } else {
+            _transitionToState(InsufficientWorkers);
+        }
         activeWorkers.length = 0;
     }
 
@@ -237,9 +245,25 @@ contract CognitiveJob is Destructible /* final */ {
         }
     }
 
+    function _transitionToState(uint8 _newState) private transitionToState(_newState) {
+        // All actual work is performed by function modifier transitionToState
+    }
+
     function _transitionIfReady(uint8 _newState) private checkReadiness transitionToState(_newState) {
         for (uint256 no = 0; no < workersResponses.length; no++) {
             workersResponses[no] = 0; // no response or update is given
+        }
+    }
+
+    function _processWorkerResponse(bool _acceptanceFlag, Pandora.WorkersPenalties _penaltyForDecline, uint8 _nextState) private {
+        var (reportingWorker, workerIndex) = _getWorkerFromSender();
+        if (_acceptanceFlag == false) {
+            _replaceWorker(workerIndex);
+            pandora.penaltizeWorker(reportingWorker, _penaltyForDecline);
+        } else {
+            workersResponses[workerIndex] = block.timestamp;
+            _trackOfflineWorkers();
+            _transitionIfReady(_nextState);
         }
     }
 
@@ -256,41 +280,32 @@ contract CognitiveJob is Destructible /* final */ {
     }
 
     function gatheringWorkersResponse(bool _acceptanceFlag) external onlyActiveWorkers requireState(GatheringWorkers) {
-        var (reportingWorker, workerIndex) = _getWorkerFromSender();
-        if (_acceptanceFlag == false) {
-            _replaceWorker(workerIndex);
-            pandora.penaltizeWorker(reportingWorker, Pandora.WorkersPenalties.OfflineWhileGathering);
-        } else {
-            workersResponses[workerIndex] = block.timestamp;
-            _trackOfflineWorkers();
-            _transitionIfReady(DataValidation);
-        }
+        _processWorkerResponse(_acceptanceFlag, Pandora.WorkersPenalties.OfflineWhileGathering, DataValidation);
     }
 
     enum DataValidationResponse {
         Accept, Decline, Invalid
     }
     function dataValidationResponse(DataValidationResponse _response) onlyActiveWorkers external {
-        /*
-        var (reportingWorker, workerIndex) = _getWorkerFromSender();
-        if (_response == DataValidationResponse.Decline) {
-            _replaceWorker(workerIndex);
-        } else {
-            workersResponses[workerIndex] = true;
-            _transitionIfReady(DataValidation);
+        /// @todo implement full (data arbitration alorithm)[https://github.com/pandoraboxchain/techspecs/wiki/Data-inconsistency-arbitration]
+        if (_response == DataValidationResponse.Invalid) {
+            _transitionToState(InvalidData);
+            return;
         }
-        */
+        _processWorkerResponse(_response == DataValidationResponse.Accept, Pandora.WorkersPenalties.DeclinesJob, Cognition);
     }
 
     function commitProgress(uint8 percent) onlyActiveWorkers external {
+        /// @todo Implement tracking progress of cognitive work
         //CognitionProgressed(percent);
     }
 
     function completeWork(bytes _ipfsResults) onlyActiveWorkers external {
-        //completed = true;
-        //pandora.finishCognitiveJob(this);
-
-        //JobCompleted();
+        var (reportingWorker, workerIndex) = _getWorkerFromSender();
+        ipfsResults[workerIndex] = _ipfsResults;
+        workersResponses[workerIndex] = block.timestamp;
+        _trackOfflineWorkers();
+        _transitionIfReady(Completed);
     }
 
     function activeWorkersCount() constant external returns(uint256) {

@@ -242,7 +242,9 @@ contract Pandora is PAN /* final */ {
         require(address(job) == msg.sender);
 
         for (uint no = 0; no < job.activeWorkersCount(); no++) {
-            job.activeWorkers(no).increaseReputation();
+            if (job.ipfsResults[no] != bytes(0)) {
+                job.activeWorkers(no).increaseReputation();
+            }
         }
 
         // Remove cognitive job contract from the storage
