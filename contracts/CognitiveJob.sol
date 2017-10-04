@@ -213,6 +213,10 @@ contract CognitiveJob is Destructible /* final */ {
     }
 
     function _insufficientWorkers() private requireActiveStates {
+        for (uint no = 0; no < activeWorkers.length; no++) {
+            activeWorkers[no].cancelJob();
+        }
+
         if (stateMachine.currentState == Cognition) {
             _transitionToState(PartialResult);
         } else {

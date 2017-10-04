@@ -37,26 +37,30 @@ contract WorkerNode is Destructible /* final */ {
     // initialized to zero and contract state will be zero until it will be initialized with some definite state
     uint8 public constant Uninitialized = 0;
 
-    // Initial and base state
-    uint8 public constant Idle = 1;
-
-    uint8 public constant Assigned = 2;
-
     // When node goes offline it can mark itself as offline to prevent penalties.
     // If node is not responding to Pandora events and does not submit updates on the cognitive work in time
     // then it will be penaltied and put into `Offline` state
-    uint8 public constant Offline = 3;
+    uint8 public constant Offline = 1;
 
-    uint8 public constant InsufficientStake = 4;
+    // Initial and base state
+    uint8 public constant Idle = 2;
 
-    // Intermediary state preventing from performing any type of work during penalty process
-    uint8 public constant UnderPenalty = 5;
+    uint8 public constant Assigned = 3;
+
+    uint8 public constant ReadyForDataValidation = 4;
 
     // Worker node downloads and validates source data for correctness and consistency
-    uint8 public constant ValidatingData = 6;
+    uint8 public constant ValidatingData = 5;
+
+    uint8 public constant ReadyForComputing = 6;
 
     // State when actual worker node performs cognitive job
     uint8 public constant Computing = 7;
+
+    uint8 public constant InsufficientStake = 8;
+
+    // Intermediary state preventing from performing any type of work during penalty process
+    uint8 public constant UnderPenalty = 9;
 
     SM.StateMachine internal stateMachine;
 
@@ -101,9 +105,11 @@ contract WorkerNode is Destructible /* final */ {
         transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
         transitions[Offline] = [InsufficientStake, Idle];
         transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, Assigned];
-        transitions[Assigned] = [Offline, InsufficientStake, UnderPenalty, ValidatingData];
+        transitions[Assigned] = [Offline, InsufficientStake, UnderPenalty, ReadyForDataValidation];
+        transitions[ReadyForDataValidation] = [ValidatingData, Offline, UnderPenalty, InsufficientStake, Idle];
         transitions[UnderPenalty] = [InsufficientStake, Idle];
-        transitions[ValidatingData] = [Idle, UnderPenalty, Computing];
+        transitions[ValidatingData] = [Idle, UnderPenalty, ReadyForComputing];
+        transitions[ReadyForComputing] = [Computing, Offline, UnderPenalty, InsufficientStake, Idle];
         transitions[Computing] = [UnderPenalty, Idle];
         stateMachine.initStateMachine();
         stateMachine.currentState = Uninitialized;
@@ -138,28 +144,65 @@ contract WorkerNode is Destructible /* final */ {
         _;
     }
 
+    modifier onlyActiveCognitiveJob() {
+        require(msg.sender = address(activeJob));
+        _;
+    }
+
     function linkPandora(Pandora _pandora) external onlyOwner requireState(Uninitialized) transitionToState(Offline) {
         require(pandora == address(0));
         require(_pandora != address(0));
         pandora = _pandora;
     }
 
+    function assignJob(CognitiveJob job) external onlyCognitiveJob transitionToState(Assigned) {
+        activeJob = job;
+    }
+
+    function cancelJob() external onlyActiveCognitiveJob requireActiveStates transitionToState(Idle) {
+        activeJob = CognitiveJob(0);
+    }
+
+    function processToDataValidation() external /* @fixme onlyOwner */ requireState(ReadyForDataValidation) transitionToState(ValidatingData) {
+        // Nothing to do here
+    }
+
+    function processToCognition() external /* @fixme onlyOwner */ requireState(ReadyForComputing) transitionToState(Computing) {
+        // Nothing to do here
+    }
+
     function alive() external /* @fixme onlyOwner */ requireState(Offline) transitionToState(Idle) {
         // Nothing to do here
     }
 
-    function acceptAssignment() external /* @fixme onlyOwner */ requireState(Assigned) transitionToState(ValidatingData) {
+    function acceptAssignment() external /* @fixme onlyOwner */ requireState(Assigned) transitionToState(ReadyForDataValidation) {
         require(activeJob != CognitiveJob(0));
         activeJob.gatheringWorkersResponse(true);
     }
 
-    function declineAssignment() external onlyOwner requireState(Assigned) transitionToState(Idle) {
+    function declineAssignment() external /* @fixme onlyOwner */ requireState(Assigned) transitionToState(Idle) {
         require(activeJob != CognitiveJob(0));
         activeJob.gatheringWorkersResponse(false);
     }
 
-    function assignJob(CognitiveJob job) external onlyCognitiveJob transitionToState(Assigned) {
-        activeJob = job;
+    function acceptValidData() external /* @fixme onlyOwner */ requireState(ValidatingData) transitionToState(ReadyForComputing) {
+        require(activeJob != CognitiveJob(0));
+        activeJob.dataValidationResponse(WorkerNode.DataValidationResponse.Accept);
+    }
+
+    function declineValidData() external /* @fixme onlyOwner */ requireState(ValidatingData) transitionToState(Idle) {
+        require(activeJob != CognitiveJob(0));
+        activeJob.dataValidationResponse(WorkerNode.DataValidationResponse.Decline);
+    }
+
+    function reportInvalidData() external /* @fixme onlyOwner */ requireState(ValidatingData) transitionToState(Idle) {
+        require(activeJob != CognitiveJob(0));
+        activeJob.dataValidationResponse(WorkerNode.DataValidationResponse.Invalid);
+    }
+
+    function provideResults(bytes _ipfsAddress) external /* @fixme onlyOwner */ requireState(Computing) transitionToState(Idle) {
+        require(activeJob != CognitiveJob(0));
+        activeJob.completeWork(_ipfsAddress);
     }
 
     function increaseReputation() external onlyPandora {

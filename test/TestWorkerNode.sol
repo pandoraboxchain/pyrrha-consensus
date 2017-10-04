@@ -30,7 +30,7 @@ contract TestWorkerNode {
     }
 
     function testIdleState() {
-        Assert.equal(workerNode.Idle(), uint(1), "Worker Idle state must have value of 1");
+        Assert.equal(workerNode.Idle(), uint(2), "Worker Idle state must have value of 2");
     }
 
     function testReputation() {
