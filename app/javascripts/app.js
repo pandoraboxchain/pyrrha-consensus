@@ -9,11 +9,13 @@ import { default as contract } from 'truffle-contract'
 import pandoraArtifacts from '../../build/contracts/Pandora.json'
 import kernelArtifacts from '../../build/contracts/Kernel.json'
 import datasetArtifacts from '../../build/contracts/Dataset.json'
+import workerArtifacts from '../../build/contracts/WorkerNode.json'
 
 // Neurochain is our usable abstraction, which we'll use through the code below.
 let Pandora = contract(pandoraArtifacts)
 let Kernel = contract(kernelArtifacts)
 let Dataset = contract(datasetArtifacts)
+let WorkerNode = contract(workerArtifacts)
 
 let accounts
 let account
@@ -23,6 +25,7 @@ window.App = {
     Pandora.setProvider(web3.currentProvider)
     Kernel.setProvider(web3.currentProvider)
     Dataset.setProvider(web3.currentProvider)
+    WorkerNode.setProvider(web3.currentProvider)
 
     web3.eth.getAccounts(function (err, accs) {
       if (err !== null) {
@@ -62,6 +65,11 @@ window.App = {
     Dataset.deployed().then(function (dataset) {
       window.App.datasetContract = dataset
       console.log('Deployed dataset ' + dataset.address)
+    })
+
+    WorkerNode.deployed().then(function (worker) {
+      console.log('Deployed worker ' + worker.address)
+      worker.alive({ from: account })
     })
   },
 

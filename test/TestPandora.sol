@@ -47,16 +47,18 @@ contract TestPandora {
     }
 
     function testIdleWorkers() {
-        uint idle = workerNodes[0].Idle();
+        uint offline = workerNodes[0].Offline();
         for (uint no = 0; no < workerNodes.length; no++) {
-            Assert.equal(workerNodes[no].currentState(), idle, "Worker must be Idle");
+            Assert.equal(workerNodes[no].currentState(), offline, "Worker must be Offline");
         }
     }
 
     function testCreateCognitiveJob() {
         Kernel kernel = Kernel(DeployedAddresses.Kernel());
         Dataset dataset = Dataset(DeployedAddresses.Dataset());
+        WorkerNode worker = WorkerNode(DeployedAddresses.WorkerNode());
 
+        worker.alive();
         CognitiveJob cognitiveJob = pandora.createCognitiveJob(kernel, dataset);
 
         Assert.notEqual(cognitiveJob, address(0), "Cognitive job should be initialized from within Pandora");
