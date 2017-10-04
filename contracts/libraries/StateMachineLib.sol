@@ -13,7 +13,7 @@ library StateMachineLib {
         uint8 _newState
     ) internal {
         // Should not happen
-        assert(_machine.currentState == 0);
+        assert(_machine.currentState != 0xFF);
 
         // Checking if the state transition is allowed
         bool transitionAllowed = false;
@@ -32,7 +32,7 @@ library StateMachineLib {
         uint8 _transitionState
     ) internal {
         // Should not happen
-        assert(_machine.currentState == 0);
+        assert(_machine.currentState != 0xFF);
 
         // Checking if the state transitions are allowed
 

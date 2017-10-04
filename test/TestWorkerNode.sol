@@ -16,23 +16,28 @@ contract TestWorkerNode {
         workerNode = WorkerNode(DeployedAddresses.WorkerNode());
     }
 
-    function testWorkerCreated() {
+    function testWorkerWasCreated() {
         Assert.notEqual(workerNode, address(0), "Worker node must be deployed");
     }
 
-    function testWorkerState() {
-        Assert.equal(workerNode.currentState(), uint(workerNode.Idle()), "WorkerNode state must be Idle upon initialization");
+    function testInitialState() {
+        Assert.equal(workerNode.currentState(), uint(workerNode.Offline()), "WorkerNode state must be Offline upon initialization");
+    }
+
+    function testAliveReaction () {
+        workerNode.alive();
+        Assert.equal(workerNode.currentState(), uint(workerNode.Idle()), "WorkerNode state now must be Idle");
     }
 
     function testIdleState() {
         Assert.equal(workerNode.Idle(), uint(1), "Worker Idle state must have value of 1");
     }
 
-    function testWorkerReputation() {
+    function testReputation() {
         Assert.equal(workerNode.reputation(), 0, "WorkerNode state must has zero reputation upon initialization");
     }
 
-    function testWorkerPandoraReference() {
+    function testPandoraReference() {
         Assert.equal(workerNode.pandora(), DeployedAddresses.Pandora(), "Worker must reference proper root Pandora contract");
     }
 }

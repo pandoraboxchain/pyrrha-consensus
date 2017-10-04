@@ -98,6 +98,7 @@ contract WorkerNode is Destructible /* final */ {
 
     function _initStateMachine() private {
         var transitions = stateMachine.transitionTable;
+        transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
         transitions[Offline] = [InsufficientStake, Idle];
         transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, Assigned];
         transitions[Assigned] = [Offline, InsufficientStake, UnderPenalty, ValidatingData];
@@ -105,8 +106,7 @@ contract WorkerNode is Destructible /* final */ {
         transitions[ValidatingData] = [Idle, UnderPenalty, Computing];
         transitions[Computing] = [UnderPenalty, Idle];
         stateMachine.initStateMachine();
-        /// @todo Replace to Offline until notification from the worker
-        stateMachine.currentState = Idle;
+        stateMachine.currentState = Uninitialized;
     }
 
     /**
@@ -114,7 +114,7 @@ contract WorkerNode is Destructible /* final */ {
      */
 
     Pandora public pandora;
-
+    CognitiveJob public activeJob;
     uint256 public reputation;
 
     function WorkerNode (Pandora _pandora) {
@@ -122,6 +122,7 @@ contract WorkerNode is Destructible /* final */ {
 
         pandora = _pandora;
         reputation = 0;
+        activeJob = CognitiveJob(0);
         _initStateMachine();
     }
 
@@ -130,21 +131,35 @@ contract WorkerNode is Destructible /* final */ {
         _;
     }
 
-    modifier onlyActiveCognitiveJob() {
+    modifier onlyCognitiveJob() {
         CognitiveJob sender = CognitiveJob(msg.sender);
         require(pandora == sender.pandora());
-        require(pandora.activeJobs(msg.sender) == msg.sender);
+        require(pandora.activeJobs(sender) == sender);
         _;
     }
 
-    function linkPandora(Pandora _pandora) onlyOwner {
-        /// @todo Temporary!!! Unsafe!!!
+    function linkPandora(Pandora _pandora) external onlyOwner requireState(Uninitialized) transitionToState(Offline) {
+        require(pandora == address(0));
         require(_pandora != address(0));
         pandora = _pandora;
     }
 
-    function assignJob() onlyActiveCognitiveJob transitionToState(Assigned) {
-        // actual work is done by modifiers
+    function alive() external /* @fixme onlyOwner */ requireState(Offline) transitionToState(Idle) {
+        // Nothing to do here
+    }
+
+    function acceptAssignment() external /* @fixme onlyOwner */ requireState(Assigned) transitionToState(ValidatingData) {
+        require(activeJob != CognitiveJob(0));
+        activeJob.gatheringWorkersResponse(true);
+    }
+
+    function declineAssignment() external onlyOwner requireState(Assigned) transitionToState(Idle) {
+        require(activeJob != CognitiveJob(0));
+        activeJob.gatheringWorkersResponse(false);
+    }
+
+    function assignJob(CognitiveJob job) external onlyCognitiveJob transitionToState(Assigned) {
+        activeJob = job;
     }
 
     function increaseReputation() external onlyPandora {

@@ -228,6 +228,7 @@ contract Pandora is PAN /* final */ {
 
         // Fire global event to notify the selected worker node
         CognitiveJobCreated(o_cognitiveJob);
+        o_cognitiveJob.initialize();
     }
 
     /**
@@ -242,7 +243,7 @@ contract Pandora is PAN /* final */ {
         require(address(job) == msg.sender);
 
         for (uint no = 0; no < job.activeWorkersCount(); no++) {
-            if (job.ipfsResults[no] != bytes(0)) {
+            if (job.workerDidCompute(no) == true) {
                 job.activeWorkers(no).increaseReputation();
             }
         }
