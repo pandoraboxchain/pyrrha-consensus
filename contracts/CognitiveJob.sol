@@ -111,7 +111,7 @@ contract CognitiveJob is Destructible /* final */ {
      * ## Main functionality
      */
 
-    uint internal constant WORKER_TIMEOUT = 10 minutes;
+    uint internal constant WORKER_TIMEOUT = 30 minutes;
 
     Pandora public pandora;
     Kernel public kernel;
@@ -170,7 +170,7 @@ contract CognitiveJob is Destructible /* final */ {
 
     modifier checkReadiness() {
         for (uint256 no = 0; no < responseFlags.length; no++) {
-            if (responseFlags[no] == true) {
+            if (responseFlags[no] != true) {
                 return;
             }
         }
@@ -332,7 +332,7 @@ contract CognitiveJob is Destructible /* final */ {
 
     function completeWork(bytes _ipfsResults) onlyActiveWorkers external {
         var (reportingWorker, workerIndex) = _getWorkerFromSender();
-        ipfsResults[workerIndex] = _ipfsResults;
+        /// @fixme ipfsResults[workerIndex] = _ipfsResults;
         responseFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
         _trackOfflineWorkers();

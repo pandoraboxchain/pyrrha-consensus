@@ -96,7 +96,7 @@ window.App = {
       return pandora.createCognitiveJob(
         window.App.kernelContract.address,
         window.App.datasetContract.address,
-        { from: account, gas: 2000000 }
+        { from: account, gas: 6000000 }
       )
     }).then(function (cognitiveJob) {
       self.setStatus('Cognitive job created with address ' + cognitiveJob)

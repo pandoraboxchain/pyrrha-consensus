@@ -43,7 +43,7 @@ contract TestPandora {
 
     function testIdleWorkerValue() {
         uint idle = workerNodes[0].Idle();
-        Assert.equal(idle, 1, "Worker Idle state must have value of 1");
+        Assert.equal(idle, 2, "Worker Idle state must have value of 2");
     }
 
     function testIdleWorkers() {

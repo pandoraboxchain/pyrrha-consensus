@@ -45,13 +45,25 @@ contract TestCognitiveJob {
 
     function testNormalWorkflow() {
         workerNode.acceptAssignment();
-        Assert.equal(uint(job.currentState()), job.GatheringWorkers(), "Next state must be DataValidation");
+        Assert.equal(uint(workerNode.currentState()), workerNode.ReadyForDataValidation(),
+                     "Worker state now must be `ReadyForDataValidation`");
+        Assert.equal(uint(job.currentState()), job.DataValidation(), "Job state now must be `DataValidation`");
 
-        //job.dataValidationResponse(CognitiveJob.DataValidationResponse.Accept);
-        //Assert.equal(uint(job.currentState()), job.Cognition(), "NExt state must be Cognition");
+        workerNode.processToDataValidation();
+        Assert.equal(uint(workerNode.currentState()), workerNode.ValidatingData(),
+                     "Worker state now must be `ValidatingData`");
 
-        //job.completeWork("some-ipfs-address");
-        //Assert.equal(uint(job.currentState()), job.Completed(), "NExt state must be Completed");
-        //Assert.equal(address(pandora.activeJobs(msg.sender)), address(0), "Cognitive job must be delisted after completion");
+        workerNode.acceptValidData();
+        Assert.equal(uint(workerNode.currentState()), workerNode.ReadyForComputing(),
+                     "Worker state now must be `ReadyForComputing`");
+        Assert.equal(uint(job.currentState()), job.Cognition(), "Next state must be Cognition");
+
+        workerNode.processToCognition();
+        Assert.equal(uint(workerNode.currentState()), workerNode.Computing(),
+                     "Worker state now must be `Computing`");
+
+        workerNode.provideResults("some-ipfs-address");
+        Assert.equal(uint(job.currentState()), job.Completed(), "Next state must be Completed");
+        Assert.equal(address(pandora.activeJobs(msg.sender)), address(0), "Cognitive job must be delisted after completion");
     }
 }
