@@ -56,7 +56,7 @@ contract TestPandora {
     function testCreateCognitiveJob() {
         Kernel kernel = Kernel(DeployedAddresses.Kernel());
         Dataset dataset = Dataset(DeployedAddresses.Dataset());
-        WorkerNode worker = WorkerNode(DeployedAddresses.WorkerNode());
+        WorkerNode worker = workerNodes[0];
 
         worker.alive();
         CognitiveJob cognitiveJob = pandora.createCognitiveJob(kernel, dataset);

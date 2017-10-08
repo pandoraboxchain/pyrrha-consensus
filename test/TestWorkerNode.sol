@@ -12,8 +12,9 @@ import "../contracts/CognitiveJob.sol";
 contract TestWorkerNode {
     WorkerNode workerNode;
 
-    function TestWorkerNode(){
-        workerNode = WorkerNode(DeployedAddresses.WorkerNode());
+    function TestWorkerNode() {
+        pandora = Pandora(DeployedAddresses.Pandora());
+        workerNode = pandora.workerNodes(0);
     }
 
     function testWorkerWasCreated() {

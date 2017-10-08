@@ -152,10 +152,8 @@ contract WorkerNode is Destructible /* final */ {
         // Initializing state machine via library code
         stateMachine.initStateMachine();
 
-        // Going into initial state (Uninitialized)
-        /// @fixme change initial state from Uninitialized to Offline once uncommenting Pandora reference initialization
-        /// in the constructor code
-        stateMachine.currentState = Uninitialized;
+        // Going into initial state (Offline)
+        stateMachine.currentState = Offline;
     }
 
     /**
@@ -185,9 +183,9 @@ contract WorkerNode is Destructible /* final */ {
     function WorkerNode (
         Pandora _pandora /// Reference to the main Pandora contract that creates Worker Node
     ) {
-        /// @fixme Uncomment the following lines for the production version. Check `linkPandora` comments for details.
-        // pandora = _pandora;
-        // require(msg.sender == _pandora);
+        require(msg.sender == address(_pandora));
+
+        pandora = _pandora;
 
         // Initial reputation is always zero
         reputation = 0;
@@ -227,21 +225,6 @@ contract WorkerNode is Destructible /* final */ {
     }
 
     /// ### External and public functions
-
-    // @fixme Remove the function since it presents security leak: worker contracts can be created by the main Pandora
-    // contract only
-    /// @dev Temporary function for testing purposes
-    function linkPandora(
-        Pandora _pandora /// Reference to the main Pandora contract
-    ) external // Can't be called internally
-        onlyOwner
-        requireState(Uninitialized)
-        transitionToState(Offline)
-    {
-        require(pandora == address(0));
-        require(_pandora != address(0));
-        pandora = _pandora;
-    }
 
     /// @notice Do not call
     /// @dev Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under

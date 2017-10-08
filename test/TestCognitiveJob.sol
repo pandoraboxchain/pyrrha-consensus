@@ -17,10 +17,11 @@ contract TestCognitiveJob {
     CognitiveJob job;
 
     function TestCognitiveJob(){
-        workerNode = WorkerNode(DeployedAddresses.WorkerNode());
         pandora = Pandora(DeployedAddresses.Pandora());
         kernel = Kernel(DeployedAddresses.Kernel());
         dataset = Dataset(DeployedAddresses.Dataset());
+
+        workerNode = pandora.workerNodes(0);
 
         workerNode.alive();
     }

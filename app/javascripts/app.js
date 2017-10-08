@@ -11,7 +11,6 @@ import kernelArtifacts from '../../build/contracts/Kernel.json'
 import datasetArtifacts from '../../build/contracts/Dataset.json'
 import workerArtifacts from '../../build/contracts/WorkerNode.json'
 
-// Neurochain is our usable abstraction, which we'll use through the code below.
 let Pandora = contract(pandoraArtifacts)
 let Kernel = contract(kernelArtifacts)
 let Dataset = contract(datasetArtifacts)

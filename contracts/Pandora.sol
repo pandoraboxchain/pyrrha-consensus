@@ -40,10 +40,11 @@ contract Pandora is PAN /* final */ {
 
     uint8 constant private WORKERNODE_WHITELIST_SIZE = 7;
 
-    // Constant literal for array size is not working yet
-    /// @dev Whitelist of nodes allowed to perform cognitive work as a trusted environment for the first version of
-    /// the protocol implementation codenamed Pyrrha
-    WorkerNode[7 /* WORKERNODE_WHITELIST_SIZE */] public workerNodes;
+    /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
+    /// for the first version of the protocol implementation codenamed Pyrrha
+    address[] private workerNodeOwners;
+    WorkerNode[] public workerNodes;
+
     function workerNodesCount() external constant /* view */ returns (uint) {
         return workerNodes.length;
     }
@@ -63,6 +64,9 @@ contract Pandora is PAN /* final */ {
     /// @dev Event firing when a new cognitive job created
     event CognitiveJobCreated(CognitiveJob cognitiveJob);
 
+    /// @dev Event firing when there is another worker node created
+    event WorkerNodeCreated(WorkerNode workerNode);
+
     /**
      * ## Constructor
      */
@@ -71,26 +75,15 @@ contract Pandora is PAN /* final */ {
     /// of worker nodes contracts
     function Pandora (
         // Constant literal for array size in function arguments not working yet
-        WorkerNode[7 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
+        address[7 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
     ) {
         // Something is wrong with the compiler or Ethereum node if this check fails
         // (that's why its `assert`, not `require`)
-        assert(_workerNodeOwners.length == workerNodes.length);
+        assert(_workerNodeOwners.length == WORKERNODE_WHITELIST_SIZE);
 
         for (uint8 no = 0; no < WORKERNODE_WHITELIST_SIZE; no++) {
             require(_workerNodeOwners[no] != address(0));
-
-            /// @todo Stakes thing
-
-            // Creating new worker node contract for each of the seven pre-defined owners whitelisted at the moment
-            // of creation of the main Pandora contract
-            //WorkerNode worker = new WorkerNode(this);
-
-            // Change ownership of the worker node contract to a pre-defined owner passed to the constructor
-            //worker.transferOwnership(_workerNodeOwners[no]);
-
-            // Store newly created worker node contract
-            workerNodes[no] = _workerNodeOwners[0]; //worker;
+            workerNodeOwners.push(_workerNodeOwners[no]);
         }
 
         // Initializing worker lottery engine
@@ -102,8 +95,8 @@ contract Pandora is PAN /* final */ {
      * ## Modifiers
      */
 
-    /// @dev Checks that the function is called by the owner of one of the whitelisted nodes
-    modifier onlyWhitelistedNodes() {
+    /// @dev Checks that the function is called by the one of the nodes
+    modifier onlyWorkerNodes() {
         bool found = false;
         for (uint256 no = 0; no < workerNodes.length; no++) {
             // Worker node must not be destroyed and its owner must be the sender of the current function call
@@ -118,9 +111,46 @@ contract Pandora is PAN /* final */ {
         require(found);
     }
 
+    /// @dev Checks that the function is called by the owner of one of the whitelisted nodes
+    modifier onlyWhitelistedOwners() {
+        bool found = false;
+        for (uint256 no = 0; no < workerNodeOwners.length; no++) {
+            // Worker node must not be destroyed and its owner must be the sender of the current function call
+            if (workerNodeOwners[no] != address(0) &&
+                msg.sender == workerNodeOwners[no]) {
+                found = true;
+                _;
+                break;
+            }
+        }
+        // Failing if ownership conditions are not satisfied
+        require(found);
+    }
+
     /**
      * ## Functions
      */
+
+    function createWorkerNode(
+    ) external
+        onlyWhitelistedOwners
+    returns (
+        WorkerNode
+    ) {
+        address nodeOwner = msg.sender;
+        require(msg.sender == tx.origin);
+
+        /// @todo Check stake and bind it
+
+        WorkerNode workerNode = new WorkerNode(this);
+        assert(workerNode != WorkerNode(0));
+
+        workerNode.transferOwnership(nodeOwner);
+        workerNodes.push(workerNode);
+
+        WorkerNodeCreated(workerNode);
+        return workerNode;
+    }
 
     /// @notice Can only be used by one of existing whitelisted worker node in case the other whitelisted node
     /// got somehow destroyed
@@ -128,39 +158,34 @@ contract Pandora is PAN /* final */ {
     /// by the owner of one of existing worker nodes
     function replaceDestroyedWorker (
         /// Destroyed worker node contract (must be whitelisted before)
-        WorkerNode _destroyedWorker,
-        /// Replacement worker node contract, which will become whitelisted.
-        /// Must be in Ilde state and not whitelisted before
-        WorkerNode _replacedWorker
+        WorkerNode _destroyedWorker
     ) external
-        // Checking that only one of existing worker nodes calls this function
-        onlyWhitelistedNodes
+        // Checking that only one of the whitelisted worker node owners calls this function
+        onlyWhitelistedOwners
     {
+        address nodeOwner = msg.sender;
+        require(msg.sender == tx.origin);
+
         // Checking that the node is really destroyed
         require(_destroyedWorker.Destroyed() == 0);
-        // Checking that replacement node is idle
-        require(_replacedWorker.currentState() == _replacedWorker.Idle());
 
-        /// @todo Check worker stake
+        /// @todo Check owners stake
 
-        // Checking that replacement worker node was not already included in the white list
-        for (uint256 no = 0; no < workerNodes.length; no++) {
-            require(workerNodes[no] != _replacedWorker);
-        }
+        WorkerNode workerNode = new WorkerNode(this);
+        assert(workerNode != WorkerNode(0));
+        workerNode.transferOwnership(nodeOwner);
 
         // Doing actual replacement work
-        for (no = 0; no < workerNodes.length; no++) {
+        for (uint no = 0; no < workerNodes.length; no++) {
             // Finding destroyed node in the whitelist and replacing it
             if (workerNodes[no] == _destroyedWorker) {
-                // We need to zero reputation in the worker node contract
-                _replacedWorker.resetReputation();
-                workerNodes[no] = _replacedWorker;
+                workerNodes[no] = workerNode;
                 // Stopping here
                 return;
             }
         }
 
-        // Failing if `_destroyedWorker` was not whitelisted
+        // Failing if `_destroyedWorker` was not registered
         revert();
     }
 
