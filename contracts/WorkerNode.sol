@@ -74,6 +74,8 @@ contract WorkerNode is Destructible /* final */ {
     /// @dev Structure holding the state of the contract
     SM.StateMachine internal stateMachine;
 
+    event StateChanged(uint8 oldState, uint8 newState);
+
     /// @notice Returns current state of the contract state machine
     /// @dev Shortcut to receive current state from external contracts
     function currentState() public constant returns (
@@ -87,9 +89,11 @@ contract WorkerNode is Destructible /* final */ {
     modifier transitionToState(
         uint8 _newState /// New state to transition into
     ) {
+        uint8 oldState = stateMachine.currentState;
         stateMachine.transitionToState(_newState);
         _;
         stateMachine.currentState = _newState;
+        StateChanged(oldState, stateMachine.currentState);
     }
 
     /// @dev State transition function from StateMachineLib put into modifier form.
@@ -100,8 +104,10 @@ contract WorkerNode is Destructible /* final */ {
     ) {
         var initialState = stateMachine.currentState;
         stateMachine.transitionThroughState(_transitionState);
+        StateChanged(initialState, stateMachine.currentState);
         _;
         stateMachine.currentState = initialState;
+        StateChanged(_transitionState, stateMachine.currentState);
     }
 
     /// @dev Modifier requiring contract to be present in certain state; otherwise the exception is generated and the
