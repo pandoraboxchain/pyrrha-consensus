@@ -10,6 +10,7 @@ import "../contracts/CognitiveJob.sol";
 
 
 contract TestWorkerNode {
+    Pandora pandora;
     WorkerNode workerNode;
 
     function TestWorkerNode() {

@@ -232,6 +232,16 @@ contract WorkerNode is Destructible /* final */ {
 
     /// ### External and public functions
 
+    function alive(
+        // No arguments
+    ) external // Can't be called internally
+        /* @fixme onlyOwner */
+        requireState(Offline)
+        transitionToState(Idle)
+    {
+        // Nothing to do here
+    }
+
     /// @notice Do not call
     /// @dev Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under
     /// the main Pandora contract
@@ -241,6 +251,8 @@ contract WorkerNode is Destructible /* final */ {
     ) external // Can't be called internally
         /// @dev Must be called only by one of active cognitive jobs listed under the main Pandora contract
         onlyCognitiveJob
+        /// @dev Job can be assigned only to Idle workers
+        requireState(Idle)
         /// @dev Successful completion must transition worker to an `Assigned` stage
         transitionToState(Assigned)
     {
@@ -255,16 +267,6 @@ contract WorkerNode is Destructible /* final */ {
         transitionToState(Idle)
     {
         activeJob = CognitiveJob(0);
-    }
-
-    function alive(
-        // No arguments
-    ) external // Can't be called internally
-        /* @fixme onlyOwner */
-        requireState(Offline)
-        transitionToState(Idle)
-    {
-        // Nothing to do here
     }
 
     function acceptAssignment(

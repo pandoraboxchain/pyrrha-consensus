@@ -65,11 +65,6 @@ window.App = {
       window.App.datasetContract = dataset
       console.log('Deployed dataset ' + dataset.address)
     })
-
-    WorkerNode.deployed().then(function (worker) {
-      console.log('Deployed worker ' + worker.address)
-      worker.alive({ from: account })
-    })
   },
 
   setStatus: function (message) {

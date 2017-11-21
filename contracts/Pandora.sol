@@ -156,6 +156,7 @@ contract Pandora is PAN /* final */ {
     /// got somehow destroyed
     /// @dev Replaces one of occasionally destroyed worker nodes and replaces it with the other one. Can be called
     /// by the owner of one of existing worker nodes
+    /// @todo Depricated function, remove
     function replaceDestroyedWorker (
         /// Destroyed worker node contract (must be whitelisted before)
         WorkerNode _destroyedWorker
