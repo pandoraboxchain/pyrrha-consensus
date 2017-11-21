@@ -201,7 +201,7 @@ contract CognitiveJob is Destructible /* final */ {
                 _insufficientWorkers();
                 return;
             }
-            workersPool[workersPool.length - 1];
+            replacementWorker = workersPool[workersPool.length - 1];
             workersPool.length = workersPool.length - 1;
         } while (replacementWorker.currentState() != replacementWorker.Idle());
 
