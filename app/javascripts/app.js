@@ -6,23 +6,25 @@ import { default as Web3 } from 'web3'
 import { default as contract } from 'truffle-contract'
 
 // Import our contract artifacts and turn them into usable abstractions.
-import neurochainArtifacts from '../../build/contracts/Neurochain.json'
-import kernelArtifacts from '../../build/contracts/KernelContract.json'
-import datasetArtifacts from '../../build/contracts/DatasetContract.json'
+import pandoraArtifacts from '../../build/contracts/Pandora.json'
+import kernelArtifacts from '../../build/contracts/Kernel.json'
+import datasetArtifacts from '../../build/contracts/Dataset.json'
+import workerArtifacts from '../../build/contracts/WorkerNode.json'
 
-// Neurochain is our usable abstraction, which we'll use through the code below.
-let Neurochain = contract(neurochainArtifacts)
+let Pandora = contract(pandoraArtifacts)
 let Kernel = contract(kernelArtifacts)
 let Dataset = contract(datasetArtifacts)
+let WorkerNode = contract(workerArtifacts)
 
 let accounts
 let account
 
 window.App = {
   start: function () {
-    Neurochain.setProvider(web3.currentProvider)
+    Pandora.setProvider(web3.currentProvider)
     Kernel.setProvider(web3.currentProvider)
     Dataset.setProvider(web3.currentProvider)
+    WorkerNode.setProvider(web3.currentProvider)
 
     web3.eth.getAccounts(function (err, accs) {
       if (err !== null) {
@@ -41,10 +43,10 @@ window.App = {
       console.log(accounts)
     })
 
-    Neurochain.deployed().then(function (neurochain) {
-      console.log('Deployed neurochain ' + neurochain.address)
+    Pandora.deployed().then(function (pandora) {
+      console.log('Deployed Pandora ' + pandora.address)
       console.log('Waiting for events')
-      neurochain.allEvents().watch(function (error, result) {
+      pandora.allEvents().watch(function (error, result) {
         if (!error) {
           console.log('Event happened')
           console.log(result)
@@ -76,28 +78,27 @@ window.App = {
   },
 
   createDataset: function () {
-
+    this.setStatus('Creating dataset... (please wait)')
   },
 
-  deployNeurocontract: function () {
+  deployCognitiveJob: function () {
     let self = this
 
     this.setStatus('Initiating transaction... (please wait)')
 
-    Neurochain.deployed().then(function (neurochain) {
-      return neurochain.deployNeurocontract(
+    Pandora.deployed().then(function (pandora) {
+      return pandora.createCognitiveJob(
         window.App.kernelContract.address,
         window.App.datasetContract.address,
-        1,
-        { from: account, gas: 2000000 }
+        { from: account, gas: 6000000 }
       )
-    }).then(function (neurocontract) {
-      self.setStatus('Neurocontract created with address ' + neurocontract)
-      console.log('Neurocontract deployed')
-      console.log(neurocontract)
+    }).then(function (cognitiveJob) {
+      self.setStatus('Cognitive job created with address ' + cognitiveJob)
+      console.log('Cognitive job deployed')
+      console.log(cognitiveJob)
     }).catch(function (e) {
       console.log(e)
-      self.setStatus('Error deploying neurocontract; see log.')
+      self.setStatus('Error deploying cognitive job; see log.')
     })
   }
 }
