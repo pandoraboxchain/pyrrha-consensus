@@ -9,20 +9,28 @@ var mnemonic = "dinner govern better mix core bean illegal rain crash afraid dou
 module.exports = {
   networks: {
     testrpc: {
-      gas: 8712388,
+      gas: 4700000,
       host: 'localhost',
       port: 8545,
       network_id: '*' // Match any network id
     },
     infura: {
       provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
-      network_id: 3
+      network_id: 3,
+      gas: 4700000
     },
     ropsten: {
       from: '0x549c05D76DaFBf452a34b97E7005D209Bf07bc7B',
       host: '52.232.79.62',
       port: 8545,
       network_id: '3' // Match any network id
+    },
+    testnet: {
+      gas: 4700000,
+      from: '0x00Ea169ce7e0992960D3BdE6F5D539C955316432',
+      host: '52.232.83.9',
+      port: 8545,
+      network_id: '*' // Match any network id
     }
   }
 }

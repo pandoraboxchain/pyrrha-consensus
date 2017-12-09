@@ -25,7 +25,7 @@ contract TestPandora {
     }
 
     function testWorkerNodesCount() {
-        Assert.equal(workerNodes.length, 7, "There must be exactly 7 initialized workers");
+        Assert.equal(pandora.workerNodesCount(), 3, "There must be exactly 3 initialized workers");
     }
 
     function testWorkerNodes() {

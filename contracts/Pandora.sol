@@ -4,7 +4,8 @@ import './PAN.sol';
 import './WorkerNode.sol';
 import './Kernel.sol';
 import './Dataset.sol';
-import './CognitiveJob.sol';
+import './factories/CognitiveJobFactory.sol';
+import './factories/WorkerNodeFactory.sol';
 import './lottery/LotteryEngine.sol';
 import './lottery/RoundRobinLottery.sol';
 
@@ -38,7 +39,10 @@ contract Pandora is PAN /* final */ {
 
     uint256 constant private MAX_WORKER_LOTTERY_TRIES = 10;
 
-    uint8 constant private WORKERNODE_WHITELIST_SIZE = 7;
+    uint8 constant private WORKERNODE_WHITELIST_SIZE = 3;
+
+    CognitiveJobFactory cognitiveJobFactory;
+    WorkerNodeFactory workerNodeFactory;
 
     /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
     /// for the first version of the protocol implementation codenamed Pyrrha
@@ -74,12 +78,20 @@ contract Pandora is PAN /* final */ {
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
     function Pandora (
+        CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
+        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
         // Constant literal for array size in function arguments not working yet
-        address[7 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
+        address[3 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
     ) {
+        require(_jobFactory != address(0));
+        require(_nodeFactory != address(0));
+
         // Something is wrong with the compiler or Ethereum node if this check fails
         // (that's why its `assert`, not `require`)
         assert(_workerNodeOwners.length == WORKERNODE_WHITELIST_SIZE);
+
+        cognitiveJobFactory = _jobFactory;
+        workerNodeFactory = _nodeFactory;
 
         for (uint8 no = 0; no < WORKERNODE_WHITELIST_SIZE; no++) {
             require(_workerNodeOwners[no] != address(0));
@@ -152,44 +164,6 @@ contract Pandora is PAN /* final */ {
         return workerNode;
     }
 
-    /// @notice Can only be used by one of existing whitelisted worker node in case the other whitelisted node
-    /// got somehow destroyed
-    /// @dev Replaces one of occasionally destroyed worker nodes and replaces it with the other one. Can be called
-    /// by the owner of one of existing worker nodes
-    /// @todo Depricated function, remove
-    function replaceDestroyedWorker (
-        /// Destroyed worker node contract (must be whitelisted before)
-        WorkerNode _destroyedWorker
-    ) external
-        // Checking that only one of the whitelisted worker node owners calls this function
-        onlyWhitelistedOwners
-    {
-        address nodeOwner = msg.sender;
-        require(msg.sender == tx.origin);
-
-        // Checking that the node is really destroyed
-        require(_destroyedWorker.Destroyed() == 0);
-
-        /// @todo Check owners stake
-
-        WorkerNode workerNode = new WorkerNode(this);
-        assert(workerNode != WorkerNode(0));
-        workerNode.transferOwnership(nodeOwner);
-
-        // Doing actual replacement work
-        for (uint no = 0; no < workerNodes.length; no++) {
-            // Finding destroyed node in the whitelist and replacing it
-            if (workerNodes[no] == _destroyedWorker) {
-                workerNodes[no] = workerNode;
-                // Stopping here
-                return;
-            }
-        }
-
-        // Failing if `_destroyedWorker` was not registered
-        revert();
-    }
-
     function penaltizeWorker(
         WorkerNode _guiltyWorker,
         WorkersPenalties _reason
@@ -247,7 +221,7 @@ contract Pandora is PAN /* final */ {
         WorkerNode[] memory assignedWorkers = new WorkerNode[](1);
         assignedWorkers[0] = assignedWorker;
         // Create cognitive job contract
-        o_cognitiveJob = new CognitiveJob(this, kernel, dataset, assignedWorkers);
+        o_cognitiveJob = cognitiveJobFactory.create(this, kernel, dataset, assignedWorkers);
         assert(o_cognitiveJob != address(0));
         // Save new contract to the storage
         activeJobs[address(o_cognitiveJob)] = o_cognitiveJob;
