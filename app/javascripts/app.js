@@ -43,7 +43,8 @@ window.App = {
       console.log(accounts)
     })
 
-    Pandora.deployed().then(function (pandora) {
+    Pandora.at('0x9f97144e46e1dff92aa89d19f154d083136ca1da').then(function (pandora) {
+      window.App.pandora = pandora
       console.log('Deployed Pandora ' + pandora.address)
       console.log('Waiting for events')
       pandora.allEvents().watch(function (error, result) {
@@ -56,12 +57,12 @@ window.App = {
       })
     })
 
-    Kernel.deployed().then(function (kernel) {
+    Kernel.at('0x45cdeb8c19b74b6de2844f2fe45137d96d5985d3').then(function (kernel) {
       window.App.kernelContract = kernel
       console.log('Deployed kernel ' + kernel.address)
     })
 
-    Dataset.deployed().then(function (dataset) {
+    Dataset.at('0x8577a45b83fabde7913f513a4bd7ec9cc4f89c36').then(function (dataset) {
       window.App.datasetContract = dataset
       console.log('Deployed dataset ' + dataset.address)
     })
@@ -74,7 +75,6 @@ window.App = {
 
   createKernel: function () {
     this.setStatus('Creating kernel... (please wait)')
-
   },
 
   createDataset: function () {
@@ -86,13 +86,11 @@ window.App = {
 
     this.setStatus('Initiating transaction... (please wait)')
 
-    Pandora.deployed().then(function (pandora) {
-      return pandora.createCognitiveJob(
+    window.App.pandora.createCognitiveJob(
         window.App.kernelContract.address,
         window.App.datasetContract.address,
         { from: account, gas: 6000000 }
-      )
-    }).then(function (cognitiveJob) {
+    ).then(function (cognitiveJob) {
       self.setStatus('Cognitive job created with address ' + cognitiveJob)
       console.log('Cognitive job deployed')
       console.log(cognitiveJob)
