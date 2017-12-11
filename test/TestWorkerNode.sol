@@ -13,8 +13,9 @@ contract TestWorkerNode {
     Pandora pandora;
     WorkerNode workerNode;
 
-    function TestWorkerNode() {
+    function beforeAll() {
         pandora = Pandora(DeployedAddresses.Pandora());
+        pandora.createWorkerNode();
         workerNode = pandora.workerNodes(0);
     }
 
