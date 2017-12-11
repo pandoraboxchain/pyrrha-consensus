@@ -1,12 +1,13 @@
 pragma solidity ^0.4.15;
 
+import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 import '../CognitiveJob.sol';
 import '../Kernel.sol';
 import '../Dataset.sol';
 import '../Pandora.sol';
 import '../WorkerNode.sol';
 
-contract CognitiveJobFactory {
+contract CognitiveJobFactory is Ownable {
     function CognitiveJobFactory() { }
 
     function create(
@@ -14,7 +15,10 @@ contract CognitiveJobFactory {
         Kernel _kernel,
         Dataset _dataset,
         WorkerNode[] _workersPool
-    ) returns (CognitiveJob) {
+    )
+    onlyOwner
+    external
+    returns (CognitiveJob) {
         return new CognitiveJob(_pandora, _kernel, _dataset, _workersPool);
     }
 }

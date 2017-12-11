@@ -14,18 +14,28 @@ module.exports = function(deployer, network, accounts) {
     workerOwners.push(accounts[0])
   }
 
-  deployer.link(StateMachineLib, Pandora)
-
-  let lib, cognitiveJobFactory, workerNodeFactory;
+  let pandora, cognitiveJobFactory, workerNodeFactory;
   deployer.deploy(StateMachineLib).then(sml => {
     return CognitiveJobFactory.deployed()
-  }).then(cjs => {
+  })
+  .then(cjs => {
     cognitiveJobFactory = cjs
     return WorkerNodeFactory.deployed()
-  }).then(wnf => {
+  })
+  .then(wnf => {
     workerNodeFactory = wnf
-    return deployer.deploy(Pandora, cognitiveJobFactory.address, workerNodeFactory.address, workerOwners,
-      { gas: 4700000 }
-    )
-  }).catch(err => console.log(err))
+    deployer.link(StateMachineLib, Pandora)
+    return deployer.deploy(Pandora, cognitiveJobFactory.address, workerNodeFactory.address, workerOwners)
+  })
+  .then(p => {
+    pandora = p
+    return workerNodeFactory.transferOwnership(pandora)
+  })
+  .then(_ => {
+    return cognitiveJobFactory.transferOwnership(pandora)
+  })
+  .then(_ => {
+    return pandora.initialize()
+  })
+  .catch(err => console.log(err))
 }

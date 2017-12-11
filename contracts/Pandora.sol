@@ -23,7 +23,7 @@ import './lottery/RoundRobinLottery.sol';
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract Pandora is PAN /* final */ {
+contract Pandora is PAN, Ownable /* final */ {
 
     /**
      * ## Storage
@@ -41,8 +41,10 @@ contract Pandora is PAN /* final */ {
 
     uint8 constant private WORKERNODE_WHITELIST_SIZE = 3;
 
-    CognitiveJobFactory cognitiveJobFactory;
-    WorkerNodeFactory workerNodeFactory;
+    CognitiveJobFactory public cognitiveJobFactory;
+    WorkerNodeFactory public workerNodeFactory;
+
+    bool properlyInitialized = false;
 
     /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
     /// for the first version of the protocol implementation codenamed Pyrrha
@@ -83,6 +85,7 @@ contract Pandora is PAN /* final */ {
         // Constant literal for array size in function arguments not working yet
         address[3 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
     ) {
+        // Must ensure that the supplied factories are already created contracts
         require(_jobFactory != address(0));
         require(_nodeFactory != address(0));
 
@@ -101,11 +104,32 @@ contract Pandora is PAN /* final */ {
         // Initializing worker lottery engine
         // In Pyrrha we use round robin algorithm to give our whitelisted nodes equal and consequential chances
         workerLotteryEngine = new RoundRobinLottery();
+
+        properlyInitialized = false;
+    }
+
+    function initialize()
+    external
+    onlyOwner
+    onlyOnce('initialize') {
+        // Checks that the factory contracts creator has assigned Pandora as an owner of the factory contracts:
+        // an important security measure preventing "Parity-style" contract bugs
+        require(workerNodeFactory.owner() == address(this));
+        require(cognitiveJobFactory.owner() == address(this));
+
+        properlyInitialized = true;
     }
 
     /**
      * ## Modifiers
      */
+
+    mapping(string => bool) private onceFlags;
+    modifier onlyOnce(string _id) {
+        require(onceFlags[_id] == false);
+        _;
+        onceFlags[_id] = true;
+    }
 
     /// @dev Checks that the function is called by the one of the nodes
     modifier onlyWorkerNodes() {
@@ -139,25 +163,31 @@ contract Pandora is PAN /* final */ {
         require(found);
     }
 
+    modifier onlyInitialized() {
+        require(properlyInitialized == true);
+        _;
+    }
+
     /**
      * ## Functions
      */
 
-    function createWorkerNode(
-    ) external
-        onlyWhitelistedOwners
+    /// @notice Creates, registers and returns a new worker node owned by the caller of the contract.
+    /// Can be called only by the whitelisted node owner address.
+    function createWorkerNode()
+    external
+    onlyInitialized
+    // @fixme onlyWhitelistedOwners
     returns (
         WorkerNode
     ) {
         address nodeOwner = msg.sender;
-        require(msg.sender == tx.origin);
+        /// @fixme This was a required for the sender to be an end address, not a proxy. Removed since prevents testing
+        /// require(msg.sender == tx.origin);
 
         /// @todo Check stake and bind it
 
-        WorkerNode workerNode = new WorkerNode(this);
-        assert(workerNode != WorkerNode(0));
-
-        workerNode.transferOwnership(nodeOwner);
+        WorkerNode workerNode = workerNodeFactory.create(nodeOwner);
         workerNodes.push(workerNode);
 
         WorkerNodeCreated(workerNode);
@@ -167,7 +197,9 @@ contract Pandora is PAN /* final */ {
     function penaltizeWorker(
         WorkerNode _guiltyWorker,
         WorkersPenalties _reason
-    ) external {
+    )
+    external
+    onlyInitialized {
         /// @todo implement
     }
 
@@ -176,7 +208,11 @@ contract Pandora is PAN /* final */ {
     function createCognitiveJob(
         Kernel kernel, /// Pre-initialized kernel data entity contract
         Dataset dataset /// Pre-initialized dataset entity contract
-    ) external payable returns (
+    )
+    external
+    payable
+    onlyInitialized
+    returns (
         CognitiveJob o_cognitiveJob /// Newly created cognitive jobs (starts automatically)
     ) {
         // Dimensions of the input data and neural network input layer must be equal
@@ -238,7 +274,9 @@ contract Pandora is PAN /* final */ {
      */
     function finishCognitiveJob(
         // No arguments - cognitive job is taken from msg.sender
-    ) external {
+    )
+    external
+    onlyInitialized {
         CognitiveJob job = activeJobs[msg.sender];
         require(address(job) == msg.sender);
 

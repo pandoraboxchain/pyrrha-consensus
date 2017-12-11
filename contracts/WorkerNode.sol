@@ -189,8 +189,7 @@ contract WorkerNode is Destructible /* final */ {
     function WorkerNode (
         Pandora _pandora /// Reference to the main Pandora contract that creates Worker Node
     ) {
-        require(msg.sender == address(_pandora));
-
+        require(_pandora != address(0));
         pandora = _pandora;
 
         // Initial reputation is always zero
