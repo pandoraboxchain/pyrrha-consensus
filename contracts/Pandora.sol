@@ -44,7 +44,7 @@ contract Pandora is PAN, Ownable /* final */ {
     CognitiveJobFactory public cognitiveJobFactory;
     WorkerNodeFactory public workerNodeFactory;
 
-    bool properlyInitialized = false;
+    bool public properlyInitialized = false;
 
     /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
     /// for the first version of the protocol implementation codenamed Pyrrha

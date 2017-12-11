@@ -15,13 +15,13 @@ module.exports = {
       network_id: '*' // Match any network id
     },
     ganache: {
-      gas: 4700000,
+      gas: 6700000,
       host: 'localhost',
       port: 7545,
       network_id: '5777'
     },
     infura: {
-      provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
+      provider: _ => new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
       network_id: 3,
       gas: 4700000
     },

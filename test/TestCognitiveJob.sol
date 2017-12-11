@@ -16,17 +16,16 @@ contract TestCognitiveJob {
     Dataset dataset;
     CognitiveJob job;
 
-    function TestCognitiveJob(){
+    function beforeAll(){
         pandora = Pandora(DeployedAddresses.Pandora());
         kernel = Kernel(DeployedAddresses.Kernel());
         dataset = Dataset(DeployedAddresses.Dataset());
 
+        pandora.createWorkerNode();
         workerNode = pandora.workerNodes(0);
 
         workerNode.alive();
-    }
 
-    function beforeAll()  {
         job = pandora.createCognitiveJob(kernel, dataset);
     }
 

@@ -7,27 +7,29 @@ import "../contracts/Kernel.sol";
 import "../contracts/Dataset.sol";
 import "../contracts/WorkerNode.sol";
 import "../contracts/CognitiveJob.sol";
+import "../contracts/factories/WorkerNodeFactory.sol";
+import "../contracts/factories/CognitiveJobFactory.sol";
 
 contract TestPandora {
     Pandora pandora;
-    WorkerNode[] workerNodes;
 
-    function TestPandora() {
+    function beforeAll() {
         pandora = Pandora(DeployedAddresses.Pandora());
-        uint count = pandora.workerNodesCount();
-        for (uint no = 0; no < count; no++) {
-            workerNodes.push(pandora.workerNodes(no));
-        }
     }
 
-    function testDeployedPandora() {
+    function testPandoraDeployment() {
         Assert.notEqual(pandora, address(0), "Pandora contract should be initialized");
+        Assert.notEqual(pandora.workerNodeFactory(), address(0), "Pandora must have initialized worker node factory");
+        Assert.notEqual(pandora.cognitiveJobFactory(), address(0), "Pandora must have initialized worker node factory");
+        Assert.equal(DeployedAddresses.WorkerNodeFactory(), pandora.workerNodeFactory(),
+            "Pandora must reference proper worker node factory instance");
+        Assert.equal(DeployedAddresses.CognitiveJobFactory(), pandora.cognitiveJobFactory(),
+            "Pandora must reference proper cognitive job factory instance");
+        Assert.equal(pandora.properlyInitialized(), true, "Pandora must be properly initialized");
+        Assert.equal(pandora.workerNodesCount(), 0, "There must be no initialized workers");
     }
 
-    function testWorkerNodesCount() {
-        Assert.equal(pandora.workerNodesCount(), 3, "There must be exactly 3 initialized workers");
-    }
-
+    /*
     function testWorkerNodes() {
         for (uint no = 0; no < workerNodes.length; no++) {
             Assert.notEqual(workerNodes[no], address(0), "Worker must be initialized");
@@ -71,6 +73,6 @@ contract TestPandora {
         WorkerNode[] storage assigned;
         assigned.push(workerNodes[0]);
         Assert.equal(new CognitiveJob(pandora, kernel, dataset, assigned), address(0), "Cognitive job should not be created putside of Pandora main contract");
-
     }
+    */
 }
