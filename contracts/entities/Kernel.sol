@@ -1,4 +1,6 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
+
+import './DataEntity.sol';
 
 /*
   Kernel Contract represents information about specific fixed machine learning kernel
@@ -9,9 +11,7 @@ pragma solidity ^0.4.15;
   Price can be edited
  */
 
-import './DataEntity.sol';
-
-contract Kernel is DataEntity {
+contract Kernel is DataEntity, IKernel {
     uint256 public complexity;
 
     function Kernel (
@@ -19,7 +19,9 @@ contract Kernel is DataEntity {
         uint256 _dataDim,
         uint256 _complexity,
         uint256 _initialPrice
-    ) DataEntity(_ipfsAddress, _dataDim, _initialPrice) {
+    )
+    DataEntity(_ipfsAddress, _dataDim, _initialPrice)
+    public {
         complexity = _complexity;
     }
 }

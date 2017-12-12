@@ -1,16 +1,19 @@
-pragma solidity ^0.4.0;
+pragma solidity ^0.4.18;
 
-import './LotteryEngine.sol';
+import './ILotteryEngine.sol';
 
-contract RoundRobinLottery is LotteryEngine {
+contract RoundRobinLottery is ILotteryEngine {
 
     uint256 internal m_lastValue;
 
-    function RoundRobinLottery() {
+    function RoundRobinLottery()
+    public {
         m_lastValue = 0;
     }
 
-    function getRandom(uint256 _max) public constant returns (uint256 o_result) {
+    function getRandom(uint256 _max)
+    public
+    returns (uint256 o_result) {
         if (m_lastValue >= _max) {
             m_lastValue = 0;
         }

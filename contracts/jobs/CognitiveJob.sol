@@ -1,17 +1,13 @@
 pragma solidity ^0.4.15;
 
-import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
-import './Kernel.sol';
-import './Dataset.sol';
-import './Pandora.sol';
-import './WorkerNode.sol';
-import {StateMachineLib as SM} from './libraries/StateMachineLib.sol';
+import './IJob.sol';
+import {StateMachineLib as SM} from '../libraries/StateMachineLib.sol';
 
 /*
 
  */
 
-contract CognitiveJob is Destructible /* final */ {
+contract CognitiveJob is ICognitiveJob /* final */ {
     /**
      * ## State Machine implementation
      */
@@ -87,7 +83,7 @@ contract CognitiveJob is Destructible /* final */ {
         stateMachine.currentState = Uninitialized;
     }
 
-    function _fireStateEvent() constant private {
+    function _fireStateEvent() private {
         if (currentState() == InsufficientWorkers) {
             WorkersNotFound();
             _cleanStorage();
@@ -113,13 +109,14 @@ contract CognitiveJob is Destructible /* final */ {
 
     uint internal constant WORKER_TIMEOUT = 30 minutes;
 
-    Pandora public pandora;
-    Kernel public kernel;
-    Dataset public dataset;
-    uint public batches;
-    WorkerNode[] public activeWorkers;
-    WorkerNode[] public workersPool;
-    uint[] internal responseTimestamps;
+    IPandora public pandora;
+    IKernel public kernel;
+    IDataset public dataset;
+    uint8 public batches;
+    IWorkerNode[] public activeWorkers;
+    IWorkerNode[] public workersPool;
+
+    uint256[] internal responseTimestamps;
     bool[] internal responseFlags;
 
     uint8 public progress = 0;
@@ -135,11 +132,12 @@ contract CognitiveJob is Destructible /* final */ {
     event CognitionCompleted(bool partialResult);
 
     function CognitiveJob(
-        Pandora _pandora,
-        Kernel _kernel,
-        Dataset _dataset,
-        WorkerNode[] _workersPool
-    ) {
+        IPandora _pandora,
+        IKernel _kernel,
+        IDataset _dataset,
+        IWorkerNode[] _workersPool
+    )
+    public {
         batches = _dataset.batchesCount();
         require(batches > 0);
         require(_workersPool.length >= batches);
@@ -162,7 +160,7 @@ contract CognitiveJob is Destructible /* final */ {
 
     modifier onlyActiveWorkers() {
         var (workerNode,) = _getWorkerFromSender();
-        require(workerNode != WorkerNode(0));
+        require(workerNode != IWorkerNode(0));
         require(msg.sender == address(workerNode));
         require(tx.origin == workerNode.owner());
         _;
@@ -177,7 +175,7 @@ contract CognitiveJob is Destructible /* final */ {
         _;
     }
 
-    function _getWorkerIndex(WorkerNode _worker) private constant returns (uint256) {
+    function _getWorkerIndex(IWorkerNode _worker) private constant returns (uint256) {
         for (uint256 index = 0; index < activeWorkers.length; index++) {
             if (msg.sender == address(activeWorkers[index])) {
                 return index;
@@ -186,16 +184,16 @@ contract CognitiveJob is Destructible /* final */ {
         return uint256(-1);
     }
 
-    function _getWorkerFromSender() private constant returns (WorkerNode o_workerNode, uint256 o_workerIndex) {
-        o_workerIndex = _getWorkerIndex(WorkerNode(msg.sender));
+    function _getWorkerFromSender() private constant returns (IWorkerNode o_workerNode, uint256 o_workerIndex) {
+        o_workerIndex = _getWorkerIndex(IWorkerNode(msg.sender));
         if (o_workerIndex > activeWorkers.length) {
-            return (WorkerNode(0), uint256(-1));
+            return (IWorkerNode(0), uint256(-1));
         }
         o_workerNode = activeWorkers[o_workerIndex];
     }
 
     function _replaceWorker(uint256 workerIndex) private requireStates2(DataValidation, Cognition) {
-        WorkerNode replacementWorker;
+        IWorkerNode replacementWorker;
         do {
             if (workersPool.length == 0) {
                 _insufficientWorkers();
@@ -235,14 +233,14 @@ contract CognitiveJob is Destructible /* final */ {
     function _trackOfflineWorkers() private requireActiveStates {
         for (uint256 no = 0; no < responseTimestamps.length; no++) {
             if (block.timestamp - responseTimestamps[no] > WORKER_TIMEOUT) {
-                WorkerNode guiltyWorker = activeWorkers[no];
-                WorkerNode.Penalties penalty;
+                IWorkerNode guiltyWorker = activeWorkers[no];
+                IWorkerNode.Penalties penalty;
                 if (stateMachine.currentState == GatheringWorkers) {
-                    penalty = WorkerNode.Penalties.OfflineWhileGathering;
+                    penalty = IWorkerNode.Penalties.OfflineWhileGathering;
                 } else if (stateMachine.currentState == DataValidation) {
-                    penalty = WorkerNode.Penalties.OfflineWhileDataValidation;
+                    penalty = IWorkerNode.Penalties.OfflineWhileDataValidation;
                 } else if (stateMachine.currentState == Cognition) {
-                    penalty = WorkerNode.Penalties.OfflineWhileCognition;
+                    penalty = IWorkerNode.Penalties.OfflineWhileCognition;
                 } else {
                    revert(); // This should not happen due to requireActiveStates function modifier
                 }
@@ -263,9 +261,9 @@ contract CognitiveJob is Destructible /* final */ {
         }
     }
 
-    function _processWorkerResponse(bool _acceptanceFlag, WorkerNode.Penalties _penaltyForDecline, uint8 _nextState) private {
+    function _processWorkerResponse(bool _acceptanceFlag, IWorkerNode.Penalties _penaltyForDecline, uint8 _nextState) private {
         var (reportingWorker, workerIndex) = _getWorkerFromSender();
-        require(reportingWorker != WorkerNode(0));
+        require(reportingWorker != IWorkerNode(0));
 
         if (_acceptanceFlag == false) {
             _replaceWorker(workerIndex);
@@ -278,9 +276,13 @@ contract CognitiveJob is Destructible /* final */ {
         }
     }
 
-    function initialize() external onlyPandora requireState(Uninitialized) transitionToState(GatheringWorkers) {
+    function initialize()
+    external
+    onlyPandora
+    requireState(Uninitialized)
+    transitionToState(GatheringWorkers) {
         // Select initial worker
-        activeWorkers = new WorkerNode[](batches);
+        activeWorkers = new IWorkerNode[](batches);
         responseTimestamps = new uint[](batches);
         responseFlags = new bool[](batches);
         /// @fixme ipfsResults = new bytes[](batches);
@@ -300,7 +302,10 @@ contract CognitiveJob is Destructible /* final */ {
     /// @dev Main entry point for
     /// (Witnessing worker nodes went offline)[https://github.com/pandoraboxchain/techspecs/wiki/Witnessing-worker-nodes-going-offline]
     /// workflow
-    function reportOfflineWorker(WorkerNode _reportedWorker) payable external requireActiveStates {
+    function reportOfflineWorker(IWorkerNode _reportedWorker)
+    payable
+    external
+    requireActiveStates {
         /// @todo accept deposit
         uint256 reportedIndex = _getWorkerIndex(_reportedWorker);
         if (block.timestamp - responseTimestamps[reportedIndex] > WORKER_TIMEOUT) {
@@ -309,28 +314,34 @@ contract CognitiveJob is Destructible /* final */ {
         _trackOfflineWorkers();
     }
 
-    function gatheringWorkersResponse(bool _acceptanceFlag) external onlyActiveWorkers requireState(GatheringWorkers) {
-        _processWorkerResponse(_acceptanceFlag, WorkerNode.Penalties.OfflineWhileGathering, DataValidation);
+    function gatheringWorkersResponse(bool _acceptanceFlag)
+    onlyActiveWorkers
+    requireState(GatheringWorkers)
+    external {
+        _processWorkerResponse(_acceptanceFlag, IWorkerNode.Penalties.OfflineWhileGathering, DataValidation);
     }
 
-    enum DataValidationResponse {
-        Accept, Decline, Invalid
-    }
-    function dataValidationResponse(DataValidationResponse _response) onlyActiveWorkers external {
+    function dataValidationResponse(DataValidationResponse _response)
+    onlyActiveWorkers
+    external {
         /// @todo implement full (data arbitration alorithm)[https://github.com/pandoraboxchain/techspecs/wiki/Data-inconsistency-arbitration]
         if (_response == DataValidationResponse.Invalid) {
             _transitionToState(InvalidData);
             return;
         }
-        _processWorkerResponse(_response == DataValidationResponse.Accept, WorkerNode.Penalties.DeclinesJob, Cognition);
+        _processWorkerResponse(_response == DataValidationResponse.Accept, IWorkerNode.Penalties.DeclinesJob, Cognition);
     }
 
-    function commitProgress(uint8 percent) onlyActiveWorkers external {
+    function commitProgress(uint8 percent)
+    onlyActiveWorkers
+    external {
         /// @todo Implement tracking progress of cognitive work
         //CognitionProgressed(percent);
     }
 
-    function completeWork(bytes _ipfsResults) onlyActiveWorkers external {
+    function completeWork(bytes _ipfsResults)
+    onlyActiveWorkers
+    external {
         var (reportingWorker, workerIndex) = _getWorkerFromSender();
         /// @fixme ipfsResults[workerIndex] = _ipfsResults;
         responseFlags[workerIndex] = true;
@@ -339,11 +350,17 @@ contract CognitiveJob is Destructible /* final */ {
         _transitionIfReady(Completed);
     }
 
-    function activeWorkersCount() constant external returns(uint256) {
+    function activeWorkersCount()
+    view
+    external
+    returns(uint256) {
         return activeWorkers.length;
     }
 
-    function workerDidCompute(uint no) constant external returns(bool) {
+    function didWorkerCompute(uint no)
+    view
+    external
+    returns(bool) {
         return responseFlags[no] == true;
     }
 }

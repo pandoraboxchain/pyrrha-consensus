@@ -1,9 +1,9 @@
 pragma solidity ^0.4.15;
 
-import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
-import './Pandora.sol';
-import './CognitiveJob.sol';
-import {StateMachineLib as SM} from './libraries/StateMachineLib.sol';
+import './INode.sol';
+import '../pandora/IPandora.sol';
+import '../jobs/IJob.sol';
+import {StateMachineLib as SM} from '../libraries/StateMachineLib.sol';
 
 /**
  * @title Worker Node Smart Contract
@@ -22,54 +22,12 @@ import {StateMachineLib as SM} from './libraries/StateMachineLib.sol';
  * - Worker node contract itself
  */
 
-contract WorkerNode is Ownable /* final */ {
+contract WorkerNode is IWorkerNode /* final */ {
     /**
      * ## State Machine implementation
      */
 
     using SM for SM.StateMachine;
-
-    /// @dev Since `destroyself()` zeroes values of all variables, we need the first state (corresponding to zero)
-    /// to indicate that contract had being destroyed
-    uint8 public constant Destroyed = 0xFF;
-
-    /// @dev Reserved system state not participating in transition table. Since contract creation all variables are
-    /// initialized to zero and contract state will be zero until it will be initialized with some definite state
-    uint8 public constant Uninitialized = 0;
-
-    /// @dev When node goes offline it can mark itself as offline to prevent penalties.
-    /// If node is not responding to Pandora events and does not submit updates on the cognitive work in time
-    /// then it will be penaltied and put into `Offline` state
-    uint8 public constant Offline = 1;
-
-    /// @dev Initial and base state
-    uint8 public constant Idle = 2;
-
-    /// @dev State when cognitive job is created and worker node is assigned to it, but the node didn't responded with
-    /// readiness status yet
-    uint8 public constant Assigned = 3;
-
-    /// @dev Worker node have responded with readiness status and awaits cognitive job contract to transition into the
-    /// next stage
-    uint8 public constant ReadyForDataValidation = 4;
-
-    /// @dev Worker node downloads and validates source data for correctness and consistency
-    uint8 public constant ValidatingData = 5;
-
-    /// @dev Worker node have finished data validation, confirmed data correctness and completeness, and reported
-    /// readiness to start performing actual cognition – however cognitive job contract didn't transitioned into
-    /// cognitive state yet (not all workers have reported readiness)
-    uint8 public constant ReadyForComputing = 6;
-
-    /// @dev State when worker node performs cognitive job
-    uint8 public constant Computing = 7;
-
-    /// @dev Intermediary state when worker node stake is reduced below threshold required for performing
-    /// cognitive computations
-    uint8 public constant InsufficientStake = 8;
-
-    /// @dev Intermediary state preventing from performing any type of work during penalty process
-    uint8 public constant UnderPenalty = 9;
 
     /// @dev Structure holding the state of the contract
     SM.StateMachine internal stateMachine;
@@ -172,33 +130,25 @@ contract WorkerNode is Ownable /* final */ {
     /// @notice Reference to the main Pandora contract.
     /// @dev Required to check the validity of the method calls coming from the Pandora contract.
     /// Initialy set from the address supplied to the constructor and can't be changed after.
-    Pandora public pandora;
+    IPandora public pandora;
 
     /// @notice Active cognitive job reference. Zero when there is no active cognitive job assigned or performed
     /// @dev Valid (non-zero) only for active states (see `activeStates` modified for the list of such states)
-    CognitiveJob public activeJob;
+    ICognitiveJob public activeJob;
 
     /// @notice Current worker node reputation. Can be changed only by the main Pandora contract via special
     /// external function calls
     /// @dev Reputation can't be transferred or bought.
     uint256 public reputation;
 
-    /// @notice Defines possible cases for penaltize worker nodes. Used in `WorkerNodeManager.penaltizeWorkerNode`
-    enum Penalties {
-        OfflineWhileGathering,
-        DeclinesJob,
-        OfflineWhileDataValidation,
-        FalseReportInvalidData,
-        OfflineWhileCognition
-    }
-
     event WorkerDestroyed();
 
     /// ### Constructor and destructor
 
     function WorkerNode (
-        Pandora _pandora /// Reference to the main Pandora contract that creates Worker Node
-    ) {
+        IPandora _pandora /// Reference to the main Pandora contract that creates Worker Node
+    )
+    public {
         require(_pandora != address(0));
         pandora = _pandora;
 
@@ -206,7 +156,7 @@ contract WorkerNode is Ownable /* final */ {
         reputation = 0;
 
         // There should be no active cognitive job upon contract creation
-        activeJob = CognitiveJob(0);
+        activeJob = ICognitiveJob(0);
 
         // Initialize state machine (state transition table and initial state). Always must be performed at the very
         // end of contract constructor code.
@@ -236,7 +186,7 @@ contract WorkerNode is Ownable /* final */ {
     /// main Pandora contract. It includes jobs _not_ assigned to the worker node
     modifier onlyCognitiveJob() {
         require(pandora != address(0));
-        CognitiveJob sender = CognitiveJob(msg.sender);
+        ICognitiveJob sender = ICognitiveJob(msg.sender);
         require(pandora == sender.pandora());
         require(pandora.activeJobs(sender) == sender);
         _;
@@ -266,7 +216,7 @@ contract WorkerNode is Ownable /* final */ {
     /// the main Pandora contract
     function assignJob(
         /// @dev Cognitive job to be assigned
-        CognitiveJob job
+        ICognitiveJob _job
     ) external // Can't be called internally
         /// @dev Must be called only by one of active cognitive jobs listed under the main Pandora contract
         onlyCognitiveJob
@@ -275,7 +225,7 @@ contract WorkerNode is Ownable /* final */ {
         /// @dev Successful completion must transition worker to an `Assigned` stage
         transitionToState(Assigned)
     {
-        activeJob = job;
+        activeJob = _job;
     }
 
     function cancelJob(
@@ -285,7 +235,7 @@ contract WorkerNode is Ownable /* final */ {
         requireActiveStates
         transitionToState(Idle)
     {
-        activeJob = CognitiveJob(0);
+        activeJob = ICognitiveJob(0);
     }
 
     function acceptAssignment(
@@ -295,7 +245,7 @@ contract WorkerNode is Ownable /* final */ {
         requireState(Assigned)
         transitionToState(ReadyForDataValidation)
     {
-        require(activeJob != CognitiveJob(0));
+        require(activeJob != ICognitiveJob(0));
         activeJob.gatheringWorkersResponse(true);
     }
 
@@ -306,7 +256,7 @@ contract WorkerNode is Ownable /* final */ {
         requireState(Assigned)
         transitionToState(Idle)
     {
-        require(activeJob != CognitiveJob(0));
+        require(activeJob != ICognitiveJob(0));
         activeJob.gatheringWorkersResponse(false);
     }
 
@@ -327,8 +277,8 @@ contract WorkerNode is Ownable /* final */ {
         requireState(ValidatingData)
         transitionToState(ReadyForComputing)
     {
-        require(activeJob != CognitiveJob(0));
-        activeJob.dataValidationResponse(CognitiveJob.DataValidationResponse.Accept);
+        require(activeJob != ICognitiveJob(0));
+        activeJob.dataValidationResponse(IJobs.DataValidationResponse.Accept);
     }
 
     function declineValidData(
@@ -338,8 +288,8 @@ contract WorkerNode is Ownable /* final */ {
         requireState(ValidatingData)
         transitionToState(Idle)
     {
-        require(activeJob != CognitiveJob(0));
-        activeJob.dataValidationResponse(CognitiveJob.DataValidationResponse.Decline);
+        require(activeJob != ICognitiveJob(0));
+        activeJob.dataValidationResponse(IJobs.DataValidationResponse.Decline);
     }
 
     function reportInvalidData(
@@ -349,8 +299,8 @@ contract WorkerNode is Ownable /* final */ {
         requireState(ValidatingData)
         transitionToState(Idle)
     {
-        require(activeJob != CognitiveJob(0));
-        activeJob.dataValidationResponse(CognitiveJob.DataValidationResponse.Invalid);
+        require(activeJob != ICognitiveJob(0));
+        activeJob.dataValidationResponse(IJobs.DataValidationResponse.Invalid);
     }
 
     function processToCognition(
@@ -370,7 +320,7 @@ contract WorkerNode is Ownable /* final */ {
         requireState(Computing)
         transitionToState(Idle)
     {
-        require(activeJob != CognitiveJob(0));
+        require(activeJob != ICognitiveJob(0));
         activeJob.completeWork(_ipfsAddress);
     }
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/token/StandardToken.sol';
 
@@ -27,7 +27,9 @@ contract PAN is StandardToken {
     /// [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
     uint public constant INITIAL_SUPPLY = 5000000 * 100000000;
 
-    function PAN() {
+    function PAN()
+    public
+    {
         totalSupply = INITIAL_SUPPLY;
         balances[msg.sender] = INITIAL_SUPPLY;
 

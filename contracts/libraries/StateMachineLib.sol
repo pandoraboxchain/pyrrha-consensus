@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 
 library StateMachineLib {
@@ -11,7 +11,8 @@ library StateMachineLib {
     function transitionToState(
         StateMachine storage _machine,
         uint8 _newState
-    ) internal {
+    )
+    internal {
         // Should not happen
         assert(_machine.currentState != 0xFF);
 
@@ -30,7 +31,8 @@ library StateMachineLib {
     function transitionThroughState(
         StateMachine storage _machine,
         uint8 _transitionState
-    ) internal {
+    )
+    internal {
         // Should not happen
         assert(_machine.currentState != 0xFF);
 
@@ -63,7 +65,9 @@ library StateMachineLib {
         StateMachine storage _machine,
         uint8 _requiredState1,
         uint8 _requiredState2
-    ) internal {
+    )
+    view
+    internal {
         bool properState = false;
         var _requiredStates = [_requiredState1, _requiredState2];
         for (uint no = 0; no < _requiredStates.length; no++) {

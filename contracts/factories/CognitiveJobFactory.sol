@@ -1,20 +1,19 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-import '../CognitiveJob.sol';
-import '../Kernel.sol';
-import '../Dataset.sol';
-import '../Pandora.sol';
-import '../WorkerNode.sol';
+import '../jobs/CognitiveJob.sol';
+import '../entities/IDataEntity.sol';
+import '../pandora/IPandora.sol';
+import '../nodes/INode.sol';
 
 contract CognitiveJobFactory is Ownable {
-    function CognitiveJobFactory() { }
+    function CognitiveJobFactory() public { }
 
     function create(
-        Pandora _pandora,
-        Kernel _kernel,
-        Dataset _dataset,
-        WorkerNode[] _workersPool
+        IPandora _pandora,
+        IKernel _kernel,
+        IDataset _dataset,
+        IWorkerNode[] _workersPool
     )
     onlyOwner
     external

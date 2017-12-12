@@ -1,6 +1,6 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
+import './IDataEntity.sol';
 
 /**
  * @title DataEntity Contract (parent for Kernel and Dataset contracts)
@@ -10,7 +10,7 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
  * [Technical specification](https://github.com/pandoraboxchain/techspecs/wiki/Creating-data-entities)
  */
 
-contract DataEntity is Ownable {
+contract DataEntity is IDataEntity {
 
     /// @dev Address of IPFS metadata file in JSON format that contains all necessary information about data entity,
     /// together with references on other data files stored in IPFS (models, big data sets and data chunks etc)
@@ -32,7 +32,8 @@ contract DataEntity is Ownable {
         bytes _ipfsAddress,
         uint256 _dataDim,
         uint256 _initialPrice
-    ) {
+    )
+    public {
         dataDim = _dataDim;
         ipfsAddress = _ipfsAddress;
         currentPrice = _initialPrice;

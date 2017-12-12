@@ -1,8 +1,7 @@
 pragma solidity ^0.4.18;
 
-import '../WorkerNode.sol';
-import '../factories/WorkerNodeFactory.sol';
 import '../lifecycle/Initializable.sol';
+import './IManagers.sol';
 
 /**
  * @title Pandora Smart Contract
@@ -18,7 +17,7 @@ import '../lifecycle/Initializable.sol';
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract WorkerNodeManager is Initializable {
+contract WorkerNodeManager is Initializable, IWorkerNodeManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -27,12 +26,18 @@ contract WorkerNodeManager is Initializable {
     /// ### Public variables
 
     /// @notice Reference to a factory used in creating WorkerNode contracts
-    /// @dev Reference to a factory used in creating WorkerNode contracts
+    /// @dev Factories are used to reduce gas consumption by the main Pandora contract. Since Pandora needs to control
+    /// the code used to deploy Cognitive Jobs and Worker Nodes, it must embed all the byte code for the smart contract.
+    /// However this dramatically increases gas consumption for deploying Pandora contract itself. Thus, the
+    /// CognitiveJob smart contract is deployed by a special factory class `CognitiveJobFactory`, and a special workflow
+    /// is used to ensure uniqueness of the factories and the fact that their code source is coming from the same
+    /// address which have deployed the main Pandora contract. In particular, because of this Pandora is defined as an
+    /// `Ownable` contract and a special `initialize` function and `properlyInitialized` member variable is added.
     WorkerNodeFactory public workerNodeFactory;
 
     /// @notice List of registered worker nodes
     /// @dev List of registered worker nodes
-    WorkerNode[] public workerNodes;
+    IWorkerNode[] public workerNodes;
 
     /// @notice Index of registered worker nodes by their contract addresses mapping to their index in `workerNodes`.
     /// @dev Index of registered worker nodes by their contract addresses. Used for quick checks instead of
@@ -57,10 +62,10 @@ contract WorkerNodeManager is Initializable {
      */
 
     /// @dev Event firing when there is another worker node created
-    event WorkerNodeCreated(WorkerNode workerNode);
+    event WorkerNodeCreated(IWorkerNode workerNode);
 
     /// @dev Event firing when some worker node was destroyed
-    event WorkerNodeDestroyed(WorkerNode workerNode);
+    event WorkerNodeDestroyed(IWorkerNode workerNode);
 
 
     /*******************************************************************************************************************
@@ -120,7 +125,7 @@ contract WorkerNodeManager is Initializable {
     }
 
     modifier checkWorkerAndOwner(
-        WorkerNode _workerNode
+        IWorkerNode _workerNode
     ) {
         address nodeOwner = msg.sender;
         require(nodeOwner == address(_workerNode.owner()));
@@ -151,7 +156,7 @@ contract WorkerNodeManager is Initializable {
     onlyInitialized
     onlyWhitelistedOwners
     returns (
-        WorkerNode /// Address of the created worker node
+        IWorkerNode /// Address of the created worker node
     ) {
         address nodeOwner = msg.sender;
         /// @fixme This was a required for the sender to be an end address, not a proxy. Removed since prevents testing
@@ -163,7 +168,7 @@ contract WorkerNodeManager is Initializable {
         /// @todo Check stake and bind it
 
         /// Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
-        WorkerNode workerNode = workerNodeFactory.create(nodeOwner);
+        IWorkerNode workerNode = workerNodeFactory.create(nodeOwner);
         /// We do not check the created `workerNode` since all checks are done by the factory class
         workerNodes.push(workerNode);
         /// Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)
@@ -176,8 +181,8 @@ contract WorkerNodeManager is Initializable {
     }
 
     function penaltizeWorkerNode(
-        WorkerNode _guiltyWorker,
-        WorkerNode.Penalties _reason
+        IWorkerNode _guiltyWorker,
+        IWorkerNode.Penalties _reason
     )
     external
         // @fixme Implement the modifier and uncomment
@@ -189,7 +194,7 @@ contract WorkerNodeManager is Initializable {
     /// @notice Removes worker from the workers list and destroys it. Can be called only by the worker node owner
     /// and only for the idle workers
     function destroyWorkerNode(
-        WorkerNode _workerNode
+        IWorkerNode _workerNode
     )
     external
     checkWorkerAndOwner (_workerNode) /// Worker node can be destroyed only by its owner
