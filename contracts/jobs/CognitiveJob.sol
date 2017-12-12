@@ -1,89 +1,40 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
+import '../libraries/StateMachine.sol';
 import './IJob.sol';
-import {StateMachineLib as SM} from '../libraries/StateMachineLib.sol';
 
 /*
 
  */
 
-contract CognitiveJob is ICognitiveJob /* final */ {
+contract CognitiveJob is ICognitiveJob, StateMachine /* final */ {
     /**
      * ## State Machine implementation
      */
 
-    using SM for SM.StateMachine;
-
-    // Since `destroyself()` zeroes values of all variables, we need the first state (corresponding to zero)
-    // to indicate that contract had being destroyed
-    uint8 public constant Destroyed = 0xFF;
-
-    // Reserved system state not participating in transition table. Since contract creation all variables are
-    // initialized to zero and contract state will be zero until it will be initialized with some definite state
-    uint8 public constant Uninitialized = 0;
-
-    uint8 public constant GatheringWorkers = 1;
-
-    uint8 public constant InsufficientWorkers = 2;
-
-    uint8 public constant DataValidation = 3;
-
-    uint8 public constant InvalidData = 4;
-
-    uint8 public constant Cognition = 5;
-
-    uint8 public constant PartialResult = 6;
-
-    uint8 public constant Completed = 7;
-
-    SM.StateMachine internal stateMachine;
-
-    function currentState() public constant returns (uint8) {
-        return stateMachine.currentState;
-    }
-
-    modifier transitionToState(
-        uint8 _newState
-    ) {
-        stateMachine.transitionToState(_newState);
-        _;
-        stateMachine.currentState = _newState;
-        _fireStateEvent();
-    }
-
-    modifier requireState(
-        uint8 _requiredState
-    ) {
-        require(stateMachine.currentState == _requiredState);
-        _;
-    }
-
-    modifier requireStates2(
-        uint8 _requiredState1,
-        uint8 _requiredState2
-    ) {
-        stateMachine.requireStates2(_requiredState1, _requiredState2);
-        _;
-    }
-
     modifier requireActiveStates() {
         require(stateMachine.currentState == GatheringWorkers ||
-                stateMachine.currentState == DataValidation ||
-                stateMachine.currentState == Cognition);
+        stateMachine.currentState == DataValidation ||
+        stateMachine.currentState == Cognition);
         _;
     }
 
-    function _initStateMachine() private {
+    function _initStateMachine() internal {
+        // Creating table of possible state transitions
         var transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [GatheringWorkers];
         transitions[GatheringWorkers] = [InsufficientWorkers, DataValidation];
         transitions[DataValidation] = [InvalidData, Cognition, InsufficientWorkers];
         transitions[Cognition] = [Completed, PartialResult];
-        stateMachine.initStateMachine();
+
+        // Initializing state machine via base contract code
+        super._initStateMachine();
+
+        // Going into initial state (Offline)
         stateMachine.currentState = Uninitialized;
     }
 
-    function _fireStateEvent() private {
+    function _fireStateEvent() internal {
         if (currentState() == InsufficientWorkers) {
             WorkersNotFound();
             _cleanStorage();
@@ -357,7 +308,9 @@ contract CognitiveJob is ICognitiveJob /* final */ {
         return activeWorkers.length;
     }
 
-    function didWorkerCompute(uint no)
+    function didWorkerCompute(
+        uint no
+    )
     view
     external
     returns(bool) {

@@ -201,7 +201,7 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
     onlyInitialized {
         address nodeOwner = msg.sender;
 
-        /// Can be called only  for the idle workers
+        /// Can be called only for the idle workers
         require(_workerNode.currentState() == _workerNode.Idle());
 
         /// Call worker node destroy function (can be triggered only by this Pandora contract). All balance

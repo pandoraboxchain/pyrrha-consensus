@@ -1,9 +1,9 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
-import './INode.sol';
+import '../libraries/StateMachine.sol';
 import '../pandora/IPandora.sol';
 import '../jobs/IJob.sol';
-import {StateMachineLib as SM} from '../libraries/StateMachineLib.sol';
+import './INode.sol';
 
 /**
  * @title Worker Node Smart Contract
@@ -22,70 +22,10 @@ import {StateMachineLib as SM} from '../libraries/StateMachineLib.sol';
  * - Worker node contract itself
  */
 
-contract WorkerNode is IWorkerNode /* final */ {
+contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /**
-     * ## State Machine implementation
+     * ## State Machine extensions
      */
-
-    using SM for SM.StateMachine;
-
-    /// @dev Structure holding the state of the contract
-    SM.StateMachine internal stateMachine;
-
-    event StateChanged(uint8 oldState, uint8 newState);
-
-    /// @notice Returns current state of the contract state machine
-    /// @dev Shortcut to receive current state from external contracts
-    function currentState() public constant returns (
-        uint8 /// Current state
-    ) {
-        return stateMachine.currentState;
-    }
-
-    /// @dev State transition function from StateMachineLib put into modifier form.
-    /// **Important:** state transition happens _after_ the main code of the calling function.
-    modifier transitionToState(
-        uint8 _newState /// New state to transition into
-    ) {
-        uint8 oldState = stateMachine.currentState;
-        stateMachine.transitionToState(_newState);
-        _;
-        stateMachine.currentState = _newState;
-        StateChanged(oldState, stateMachine.currentState);
-    }
-
-    /// @dev State transition function from StateMachineLib put into modifier form.
-    /// **Important:** state transition happens _before_ the main code of the calling function, and _after_ the
-    /// execution contract is returned to the original state.
-    modifier transitionThroughState(
-        uint8 _transitionState /// Intermediary state to transition through
-    ) {
-        var initialState = stateMachine.currentState;
-        stateMachine.transitionThroughState(_transitionState);
-        StateChanged(initialState, stateMachine.currentState);
-        _;
-        stateMachine.currentState = initialState;
-        StateChanged(_transitionState, stateMachine.currentState);
-    }
-
-    /// @dev Modifier requiring contract to be present in certain state; otherwise the exception is generated and the
-    /// function does not execute
-    modifier requireState(
-        uint8 _requiredState /// Required state
-    ) {
-        require(stateMachine.currentState == _requiredState);
-        _;
-    }
-
-    /// @dev Modifier requiring contract to be present in one of two certain states; otherwise an exception is
-    /// generated and the function does not execute
-    modifier requireStates2(
-        uint8 _requiredState1, /// Required state, option 1
-        uint8 _requiredState2 /// Required state, option 2
-    ) {
-        stateMachine.requireStates2(_requiredState1, _requiredState2);
-        _;
-    }
 
     /// @dev Modifier requiring contract to be preset in one of the active states (`Assigned`, `ReadyForDataValidation`,
     /// `ValidatingData`, `ReadyForComputing`, `Computing`); otherwise an exception is generated and the function
@@ -100,7 +40,7 @@ contract WorkerNode is IWorkerNode /* final */ {
     }
 
     /// @dev Private method initializing state machine. Must be called only once from the contract constructor
-    function _initStateMachine() private /* onlyOnce */ {
+    function _initStateMachine() internal {
         // Creating table of possible state transitions
         var transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
@@ -113,8 +53,8 @@ contract WorkerNode is IWorkerNode /* final */ {
         transitions[ReadyForComputing] = [Computing, Offline, UnderPenalty, InsufficientStake, Idle];
         transitions[Computing] = [UnderPenalty, Idle];
 
-        // Initializing state machine via library code
-        stateMachine.initStateMachine();
+        // Initializing state machine via base contract code
+        super._initStateMachine();
 
         // Going into initial state (Offline)
         stateMachine.currentState = Offline;

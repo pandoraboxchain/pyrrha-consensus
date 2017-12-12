@@ -1,17 +1,19 @@
 pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
+import '../libraries/IStateMachine.sol';
 import '../entities/IDataEntity.sol';
 import '../pandora/IPandora.sol';
 import '../nodes/INode.sol';
+import './JobStates.sol';
 
-contract IJobs is Destructible {
+contract IJobs is Destructible, IStateMachine {
     enum DataValidationResponse {
         Accept, Decline, Invalid
     }
 }
 
-contract ICognitiveJob is IJobs {
+contract ICognitiveJob is IJobs, JobStates {
     function initialize() external;
 
     IPandora public pandora;

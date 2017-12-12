@@ -2,11 +2,12 @@ pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
+import '../libraries/IStateMachine.sol';
 import '../pandora/IPandora.sol';
 import '../jobs/IJob.sol';
 import './NodeStates.sol';
 
-contract INode is Ownable {
+contract INode is Ownable, IStateMachine {
 }
 
 contract IWorkerNode is INode, WorkerNodeStates {
@@ -44,9 +45,6 @@ contract IWorkerNode is INode, WorkerNodeStates {
     function withdrawBalance() external;
 
     event WorkerDestroyed();
-
-    // @fixme Remove when implement IStateMachine
-    function currentState() public constant returns (uint8);
 }
 
 contract IVerifierNode is IWorkerNode {
