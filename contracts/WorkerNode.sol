@@ -183,6 +183,15 @@ contract WorkerNode is Ownable /* final */ {
     /// @dev Reputation can't be transferred or bought.
     uint256 public reputation;
 
+    /// @notice Defines possible cases for penaltize worker nodes. Used in `WorkerNodeManager.penaltizeWorkerNode`
+    enum Penalties {
+        OfflineWhileGathering,
+        DeclinesJob,
+        OfflineWhileDataValidation,
+        FalseReportInvalidData,
+        OfflineWhileCognition
+    }
+
     event WorkerDestroyed();
 
     /// ### Constructor and destructor

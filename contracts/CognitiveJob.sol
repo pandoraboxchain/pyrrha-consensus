@@ -236,13 +236,13 @@ contract CognitiveJob is Destructible /* final */ {
         for (uint256 no = 0; no < responseTimestamps.length; no++) {
             if (block.timestamp - responseTimestamps[no] > WORKER_TIMEOUT) {
                 WorkerNode guiltyWorker = activeWorkers[no];
-                Pandora.WorkersPenalties penalty;
+                WorkerNode.Penalties penalty;
                 if (stateMachine.currentState == GatheringWorkers) {
-                    penalty = Pandora.WorkersPenalties.OfflineWhileGathering;
+                    penalty = WorkerNode.Penalties.OfflineWhileGathering;
                 } else if (stateMachine.currentState == DataValidation) {
-                    penalty = Pandora.WorkersPenalties.OfflineWhileDataValidation;
+                    penalty = WorkerNode.Penalties.OfflineWhileDataValidation;
                 } else if (stateMachine.currentState == Cognition) {
-                    penalty = Pandora.WorkersPenalties.OfflineWhileCognition;
+                    penalty = WorkerNode.Penalties.OfflineWhileCognition;
                 } else {
                    revert(); // This should not happen due to requireActiveStates function modifier
                 }
@@ -263,7 +263,7 @@ contract CognitiveJob is Destructible /* final */ {
         }
     }
 
-    function _processWorkerResponse(bool _acceptanceFlag, Pandora.WorkersPenalties _penaltyForDecline, uint8 _nextState) private {
+    function _processWorkerResponse(bool _acceptanceFlag, WorkerNode.Penalties _penaltyForDecline, uint8 _nextState) private {
         var (reportingWorker, workerIndex) = _getWorkerFromSender();
         require(reportingWorker != WorkerNode(0));
 
@@ -310,7 +310,7 @@ contract CognitiveJob is Destructible /* final */ {
     }
 
     function gatheringWorkersResponse(bool _acceptanceFlag) external onlyActiveWorkers requireState(GatheringWorkers) {
-        _processWorkerResponse(_acceptanceFlag, Pandora.WorkersPenalties.OfflineWhileGathering, DataValidation);
+        _processWorkerResponse(_acceptanceFlag, WorkerNode.Penalties.OfflineWhileGathering, DataValidation);
     }
 
     enum DataValidationResponse {
@@ -322,7 +322,7 @@ contract CognitiveJob is Destructible /* final */ {
             _transitionToState(InvalidData);
             return;
         }
-        _processWorkerResponse(_response == DataValidationResponse.Accept, Pandora.WorkersPenalties.DeclinesJob, Cognition);
+        _processWorkerResponse(_response == DataValidationResponse.Accept, WorkerNode.Penalties.DeclinesJob, Cognition);
     }
 
     function commitProgress(uint8 percent) onlyActiveWorkers external {
