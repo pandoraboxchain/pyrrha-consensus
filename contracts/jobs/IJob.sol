@@ -8,12 +8,13 @@ import '../nodes/INode.sol';
 import './JobStates.sol';
 
 contract IJobs is Destructible, IStateMachine {
-    enum DataValidationResponse {
-        Accept, Decline, Invalid
-    }
 }
 
 contract ICognitiveJob is IJobs, JobStates {
+    enum DataValidationResponse {
+        Accept, Decline, Invalid
+    }
+
     function initialize() external;
 
     IPandora public pandora;

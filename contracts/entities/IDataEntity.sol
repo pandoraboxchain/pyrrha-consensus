@@ -20,6 +20,4 @@ contract IDataset is IDataEntity {
 
 contract IKernel is IDataEntity {
     uint256 public complexity;
-
-    function complexity() public returns(uint256);
 }

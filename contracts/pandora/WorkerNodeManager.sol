@@ -1,7 +1,7 @@
 pragma solidity ^0.4.18;
 
 import '../lifecycle/Initializable.sol';
-import './IManagers.sol';
+import './IWorkerNodeManager.sol';
 
 /**
  * @title Pandora Smart Contract

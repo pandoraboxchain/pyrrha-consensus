@@ -2,11 +2,11 @@ pragma solidity ^0.4.15;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
-import "../contracts/Pandora.sol";
-import "../contracts/Kernel.sol";
-import "../contracts/Dataset.sol";
-import "../contracts/WorkerNode.sol";
-import "../contracts/CognitiveJob.sol";
+import "../contracts/pandora/Pandora.sol";
+import "../contracts/entities/Kernel.sol";
+import "../contracts/entities/Dataset.sol";
+import "../contracts/nodes/WorkerNode.sol";
+import "../contracts/jobs/CognitiveJob.sol";
 import "../contracts/factories/WorkerNodeFactory.sol";
 import "../contracts/factories/CognitiveJobFactory.sol";
 

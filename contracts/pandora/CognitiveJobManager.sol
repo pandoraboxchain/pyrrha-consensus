@@ -2,7 +2,7 @@ pragma solidity ^0.4.18;
 
 import '../lifecycle/Initializable.sol';
 import '../lottery/RoundRobinLottery.sol';
-import './IManagers.sol';
+import './ICognitiveJobManager.sol';
 import './WorkerNodeManager.sol';
 
 /**
