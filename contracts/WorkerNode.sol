@@ -22,7 +22,7 @@ import {StateMachineLib as SM} from './libraries/StateMachineLib.sol';
  * - Worker node contract itself
  */
 
-contract WorkerNode is Destructible /* final */ {
+contract WorkerNode is Ownable /* final */ {
     /**
      * ## State Machine implementation
      */
@@ -147,7 +147,7 @@ contract WorkerNode is Destructible /* final */ {
         var transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
         transitions[Offline] = [InsufficientStake, Idle];
-        transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, Assigned];
+        transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, Assigned, Destroyed];
         transitions[Assigned] = [Offline, InsufficientStake, UnderPenalty, ReadyForDataValidation];
         transitions[ReadyForDataValidation] = [ValidatingData, Offline, UnderPenalty, InsufficientStake, Idle];
         transitions[UnderPenalty] = [InsufficientStake, Idle];
@@ -183,8 +183,9 @@ contract WorkerNode is Destructible /* final */ {
     /// @dev Reputation can't be transferred or bought.
     uint256 public reputation;
 
+    event WorkerDestroyed();
 
-    /// ### Constructor
+    /// ### Constructor and destructor
 
     function WorkerNode (
         Pandora _pandora /// Reference to the main Pandora contract that creates Worker Node
@@ -201,6 +202,16 @@ contract WorkerNode is Destructible /* final */ {
         // Initialize state machine (state transition table and initial state). Always must be performed at the very
         // end of contract constructor code.
         _initStateMachine();
+    }
+
+    function destroy()
+    external
+    onlyPandora {
+        /// Call event before doing the actual contract suicide
+        WorkerDestroyed();
+
+        /// Suiciding
+        selfdestruct(owner);
     }
 
     /// ### Function modifiers
@@ -363,13 +374,12 @@ contract WorkerNode is Destructible /* final */ {
     }
 
     function decreaseReputation(
-      // No arguments
     ) external // Can't be called internally
         onlyPandora
         transitionThroughState(UnderPenalty)
     {
         if (reputation == 0) {
-            destroyAndSend(pandora);
+            pandora.destroyWorkerNode(this);
         } else {
             reputation--;
         }
@@ -400,7 +410,6 @@ contract WorkerNode is Destructible /* final */ {
     /// @notice For internal use by main Pandora contract
     /// @dev Zeroes reputation and destroys node
     function deathPenalty(
-        // No arguments
     ) external // Can't be called internally
         // Only Pandora contract can put such penalty
         onlyPandora
@@ -411,7 +420,7 @@ contract WorkerNode is Destructible /* final */ {
         reputation = 0;
 
         // Use function from OpenZepplin Destructible contract
-        destroyAndSend(pandora);
+        pandora.destroyWorkerNode(this);
     }
 
     /// @notice Withdraws full balance to the owner account. Can be called only by the owner of the contract.

@@ -246,7 +246,7 @@ contract CognitiveJob is Destructible /* final */ {
                 } else {
                    revert(); // This should not happen due to requireActiveStates function modifier
                 }
-                pandora.penaltizeWorker(guiltyWorker, penalty);
+                pandora.penaltizeWorkerNode(guiltyWorker, penalty);
                 _replaceWorker(no);
             }
         }
@@ -269,7 +269,7 @@ contract CognitiveJob is Destructible /* final */ {
 
         if (_acceptanceFlag == false) {
             _replaceWorker(workerIndex);
-            pandora.penaltizeWorker(reportingWorker, _penaltyForDecline);
+            pandora.penaltizeWorkerNode(reportingWorker, _penaltyForDecline);
         } else {
             responseFlags[workerIndex] = true;
             responseTimestamps[workerIndex] = block.timestamp;

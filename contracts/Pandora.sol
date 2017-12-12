@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import './PAN.sol';
 import './WorkerNode.sol';
@@ -25,45 +25,66 @@ import './lottery/RoundRobinLottery.sol';
 
 contract Pandora is PAN, Ownable /* final */ {
 
-    /**
+    /*******************************************************************************************************************
      * ## Storage
      */
 
-    enum WorkersPenalties {
-        OfflineWhileGathering,
-        DeclinesJob,
-        OfflineWhileDataValidation,
-        FalseReportInvalidData,
-        OfflineWhileCognition
-    }
+    /// ### Public variables
 
-    uint256 constant private MAX_WORKER_LOTTERY_TRIES = 10;
-
-    uint8 constant private WORKERNODE_WHITELIST_SIZE = 3;
-
-    CognitiveJobFactory public cognitiveJobFactory;
-    WorkerNodeFactory public workerNodeFactory;
-
+    /// @notice Indicates that Pandora contract was completely deployed and initialized with all necessary contract
+    /// factories coming from the verified origin.
+    /// @dev Factories are used to reduce gas consumption by the main Pandora contract. Since Pandora needs to control
+    /// the code used to deploy Cognitive Jobs and Worker Nodes, it must embed all the byte code for the smart contract.
+    /// However this dramatically increases gas consumption for deploying Pandora contract itself. Thus, the
+    /// CognitiveJob smart contract is deployed by a special factory class `CognitiveJobFactory`, and a special workflow
+    /// is used to ensure uniqueness of the factories and the fact that their code source is coming from the same
+    /// address which have deployed the main Pandora contract. In particular, because of this Pandora is defined as an
+    /// `Ownable` contract and a special `initialize` function and `properlyInitialized` member variable is added.
     bool public properlyInitialized = false;
 
-    /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
-    /// for the first version of the protocol implementation codenamed Pyrrha
-    address[] private workerNodeOwners;
+    /// @notice Reference to a factory used in creating CognitiveJob contracts
+    /// @dev Reference to a factory used in creating CognitiveJob contracts
+    CognitiveJobFactory public cognitiveJobFactory;
+
+    /// @notice Reference to a factory used in creating WorkerNode contracts
+    /// @dev Reference to a factory used in creating WorkerNode contracts
+    WorkerNodeFactory public workerNodeFactory;
+
+    /// @notice List of registered worker nodes
+    /// @dev List of registered worker nodes
     WorkerNode[] public workerNodes;
 
-    function workerNodesCount() external constant /* view */ returns (uint) {
-        return workerNodes.length;
-    }
+    /// @notice Index of registered worker nodes by their contract addresses mapping to their index in `workerNodes`.
+    /// @dev Index of registered worker nodes by their contract addresses. Used for quick checks instead of
+    /// gas-expensive search. Must have the same elements as `workerNodes`. Mapped +1 to the indexes of the contract in
+    /// `workerNodes`; zero value is reserved for the removed or non-existing workers.
+    /// At any point of time there must be less then 2^16 worker nodes.
+    mapping(address => uint16) public workerAddresses;
 
     /// @dev List of active (=running) cognitive jobs mapped to their creators (owners of the corresponding
     /// cognitive job contracts)
     mapping(address => CognitiveJob) public activeJobs;
 
+    /// ### Private and internal variables
+
+    /// @dev Limit for the amount of lottery cycles before reporting failure to start cognitive job.
+    /// Used in `createCognitiveJob`
+    uint8 constant private MAX_WORKER_LOTTERY_TRIES = 10;
+
+    /// @dev Since in the initial Pyrrha release of Pandora network reputation, verification and arbitration mechanics
+    /// are under development it uses a set of pre-defined trusted addresses allowed to register worker nodes.
+    /// These are specified during initial Pandora contract deployment by the founders.
+    uint8 constant private WORKERNODE_WHITELIST_SIZE = 3;
+
+    /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
+    /// for the first version of the protocol implementation codenamed Pyrrha
+    address[] private workerNodeOwners;
+
     /// @dev Contract implementing lottery interface for workers selection. Only internal usage
     /// by `createCognitiveJob` function
-    LotteryEngine /* internal */ public workerLotteryEngine;
+    LotteryEngine internal workerLotteryEngine;
 
-    /**
+    /*******************************************************************************************************************
      * ## Events
      */
 
@@ -73,30 +94,38 @@ contract Pandora is PAN, Ownable /* final */ {
     /// @dev Event firing when there is another worker node created
     event WorkerNodeCreated(WorkerNode workerNode);
 
-    /**
-     * ## Constructor
+    /// @dev Event firing when some worker node was destroyed
+    event WorkerNodeDestroyed(WorkerNode workerNode);
+
+
+    /*******************************************************************************************************************
+     * ## Constructor and initialization
      */
 
+    /// ### Constructor
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
     function Pandora (
         CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
         WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
         // Constant literal for array size in function arguments not working yet
-        address[3 /* WORKERNODE_WHITELIST_SIZE */] _workerNodeOwners /// Worker node owners to be whitelisted by the contract
-    ) {
-        // Must ensure that the supplied factories are already created contracts
-        require(_jobFactory != address(0));
-        require(_nodeFactory != address(0));
-
+        address[3/*=WORKERNODE_WHITELIST_SIZE*/]
+            _workerNodeOwners /// Worker node owners to be whitelisted by the contract
+    ) public {
         // Something is wrong with the compiler or Ethereum node if this check fails
         // (that's why its `assert`, not `require`)
         assert(_workerNodeOwners.length == WORKERNODE_WHITELIST_SIZE);
 
+        // Must ensure that the supplied factories are already created contracts
+        require(_jobFactory != address(0));
+        require(_nodeFactory != address(0));
+
+        // Assign factories to storage variables
         cognitiveJobFactory = _jobFactory;
         workerNodeFactory = _nodeFactory;
 
-        for (uint8 no = 0; no < WORKERNODE_WHITELIST_SIZE; no++) {
+        // Iterate owners white list and add them to the contract storage
+        for (uint8 no = 0; no < _workerNodeOwners.length && no < WORKERNODE_WHITELIST_SIZE; no++) {
             require(_workerNodeOwners[no] != address(0));
             workerNodeOwners.push(_workerNodeOwners[no]);
         }
@@ -105,9 +134,16 @@ contract Pandora is PAN, Ownable /* final */ {
         // In Pyrrha we use round robin algorithm to give our whitelisted nodes equal and consequential chances
         workerLotteryEngine = new RoundRobinLottery();
 
+        // Ensure that the contract is still uninitialized and `initialize` function be called to check the proper
+        // setup of class factories
         properlyInitialized = false;
     }
 
+    /// ### Initialization
+    /// @notice Function that checks the proper setup of class factories. May be called only once and only by Pandora
+    /// contract owner.
+    /// @dev Function that checks the proper setup of class factories. May be called only once and only by Pandora
+    /// contract owner.
     function initialize()
     external
     onlyOwner
@@ -120,12 +156,23 @@ contract Pandora is PAN, Ownable /* final */ {
         properlyInitialized = true;
     }
 
-    /**
+    /*******************************************************************************************************************
      * ## Modifiers
      */
 
+    /// @dev Modifier ensures that the function can be called only after Pandora contract was properly initialized
+    /// (see `initialize` and `properlyInitialized`
+    modifier onlyInitialized() {
+        require(properlyInitialized == true);
+        _;
+    }
+
+    /// @dev Internal private mapping storing flags indicating which of `onlyOnce` functions was already called.
     mapping(string => bool) private onceFlags;
-    modifier onlyOnce(string _id) {
+    /// @dev Ensures that function with the modifier can be called only once during the whole contract lifecycle
+    modifier onlyOnce(
+        string _id /// Some id used to uniquely identify the caller function (usually the function name as a string)
+    ) {
         require(onceFlags[_id] == false);
         _;
         onceFlags[_id] = true;
@@ -133,24 +180,14 @@ contract Pandora is PAN, Ownable /* final */ {
 
     /// @dev Checks that the function is called by the one of the nodes
     modifier onlyWorkerNodes() {
-        bool found = false;
-        for (uint256 no = 0; no < workerNodes.length; no++) {
-            // Worker node must not be destroyed and its owner must be the sender of the current function call
-            if (workerNodes[no].Destroyed() != 0 &&
-                msg.sender == workerNodes[no].owner()) {
-                found = true;
-                _;
-                break;
-            }
-        }
-        // Failing if ownership conditions are not satisfied
-        require(found);
+        require(workerAddresses[msg.sender] > 0);
+        _;
     }
 
     /// @dev Checks that the function is called by the owner of one of the whitelisted nodes
     modifier onlyWhitelistedOwners() {
         bool found = false;
-        for (uint256 no = 0; no < workerNodeOwners.length; no++) {
+        for (uint8 no = 0; no < workerNodeOwners.length && no < WORKERNODE_WHITELIST_SIZE; no++) {
             // Worker node must not be destroyed and its owner must be the sender of the current function call
             if (workerNodeOwners[no] != address(0) &&
                 msg.sender == workerNodeOwners[no]) {
@@ -163,44 +200,112 @@ contract Pandora is PAN, Ownable /* final */ {
         require(found);
     }
 
-    modifier onlyInitialized() {
-        require(properlyInitialized == true);
+    modifier checkWorkerAndOwner(
+        WorkerNode _workerNode
+    ) {
+        address nodeOwner = msg.sender;
+        require(nodeOwner == address(_workerNode.owner()));
+        require(workerAddresses[nodeOwner] > 0);
         _;
     }
 
-    /**
+    /*******************************************************************************************************************
      * ## Functions
      */
+
+    /// ### Public and external
+
+    /// @notice Returns count of registered worker nodes
+    function workerNodesCount()
+    public
+    view
+    returns (
+    uint /// Count of registered worker nodes
+    ) {
+        return workerNodes.length;
+    }
 
     /// @notice Creates, registers and returns a new worker node owned by the caller of the contract.
     /// Can be called only by the whitelisted node owner address.
     function createWorkerNode()
     external
     onlyInitialized
-    // @fixme onlyWhitelistedOwners
+    onlyWhitelistedOwners
     returns (
-        WorkerNode
+        WorkerNode /// Address of the created worker node
     ) {
         address nodeOwner = msg.sender;
         /// @fixme This was a required for the sender to be an end address, not a proxy. Removed since prevents testing
         /// require(msg.sender == tx.origin);
 
+        /// Check that we do not reach limits in the node count
+        require(workerNodes.length < 2 ^ 16 - 1);
+
         /// @todo Check stake and bind it
 
+        /// Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
         WorkerNode workerNode = workerNodeFactory.create(nodeOwner);
+        /// We do not check the created `workerNode` since all checks are done by the factory class
         workerNodes.push(workerNode);
+        /// Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)
+        workerAddresses[address(workerNode)] = uint16(workerNodes.length);
 
+        /// Firing event
         WorkerNodeCreated(workerNode);
+
         return workerNode;
     }
 
-    function penaltizeWorker(
+    /// @notice Defines possible cases for penaltize worker nodes. Used in `penaltizeWorker` function
+    enum WorkersPenalties {
+        OfflineWhileGathering,
+        DeclinesJob,
+        OfflineWhileDataValidation,
+        FalseReportInvalidData,
+        OfflineWhileCognition
+    }
+
+    function penaltizeWorkerNode(
         WorkerNode _guiltyWorker,
         WorkersPenalties _reason
     )
     external
+    // @fixme Implement the modifier and uncomment
     onlyInitialized {
-        /// @todo implement
+        /// Can be called only by the assigned cognitive job
+        /// @todo Implement penalties from the bound worker node stakes
+    }
+
+    /// @notice Removes worker from the workers list and destroys it. Can be called only by the worker node owner
+    /// and only for the idle workers
+    function destroyWorkerNode(
+        WorkerNode _workerNode
+    )
+    external
+    checkWorkerAndOwner (_workerNode) /// Worker node can be destroyed only by its owner
+    onlyInitialized {
+        address nodeOwner = msg.sender;
+
+        /// Can be called only  for the idle workers
+        require(_workerNode.currentState() == _workerNode.Idle());
+
+        /// Call worker node destroy function (can be triggered only by this Pandora contract). All balance
+        /// is transferred to the node owner.
+        /// We do this before removing worker node from the lists since we need to ensure that the node didn't
+        /// got into non-idle state (self-destruct puts node into Destroyed state and it can't be assigned any
+        /// tasks after that)
+        _workerNode.destroy();
+
+        /// Immediatelly removing node from the lists
+        uint16 index = workerAddresses[nodeOwner] - 1;
+        delete workerAddresses[nodeOwner];
+        workerNodes[index] = workerNodes[workerNodes.length - 1];
+        workerNodes.length--;
+
+        /// @todo Return the unspent stake
+
+        /// Firing the event
+        WorkerNodeDestroyed(_workerNode);
     }
 
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
