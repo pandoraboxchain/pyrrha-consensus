@@ -1,0 +1,44 @@
+@startuml
+
+abstract pandoraOwner
+
+class Pandora< Ownable >
+class CognitiveJobFactory< Ownable >
+class WorkerNodeFactory< Ownable >
+
+Pandora -down-+ pandoraOwner
+Pandora +-up-* "1" CognitiveJobFactory
+Pandora +-up-* "1" WorkerNodeFactory
+
+class WorkerNode< Ownable >
+class CognitiveJob< Destructible >
+
+Pandora +-left-* "∞" WorkerNode: IWorkerNode >
+Pandora +-right-* "∞" CognitiveJob: IComputingJob >
+
+CognitiveJobFactory -up-|> CognitiveJob
+WorkerNodeFactory -up-|> WorkerNode
+
+WorkerNode "∞" *-right-* "0..1" CognitiveJob
+
+abstract workerOwner
+WorkerNode -down-+ workerOwner
+
+class StateMachineLib << (L,orange >>
+
+WorkerNode -up-o StateMachineLib
+CognitiveJob -up-o StateMachineLib
+
+class Kernel< Ownable >
+class Dataset< Ownable >
+
+CognitiveJob -down-* Kernel
+CognitiveJob -down-* Dataset
+
+abstract kernelOwner
+abstract datasetOwner
+
+Kernel -down-+ kernelOwner
+Dataset -down-+ datasetOwner
+
+@enduml
