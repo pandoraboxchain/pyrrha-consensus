@@ -193,7 +193,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IWorkerNode[] memory assignedWorkers = new IWorkerNode[](1);
         assignedWorkers[0] = assignedWorker;
         // Create cognitive job contract
-        o_cognitiveJob = cognitiveJobFactory.create(IPandora(this), kernel, dataset, assignedWorkers);
+        o_cognitiveJob = cognitiveJobFactory.create(kernel, dataset, assignedWorkers);
         assert(o_cognitiveJob != address(0));
         // Save new contract to the storage
         activeJobs.push(o_cognitiveJob);

@@ -12,7 +12,6 @@ contract CognitiveJobFactory is Ownable {
     function CognitiveJobFactory() public { }
 
     function create(
-        IPandora _pandora,
         IKernel _kernel,
         IDataset _dataset,
         IWorkerNode[] _workersPool
@@ -20,6 +19,6 @@ contract CognitiveJobFactory is Ownable {
     onlyOwner
     external
     returns (CognitiveJob) {
-        return new CognitiveJob(_pandora, _kernel, _dataset, _workersPool);
+        return new CognitiveJob(IPandora(owner), _kernel, _dataset, _workersPool);
     }
 }
