@@ -2,6 +2,7 @@ pragma solidity ^0.4.18;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
+import "./util/ThrowProxy.sol";
 import "../contracts/pandora/Pandora.sol";
 import "../contracts/entities/Kernel.sol";
 import "../contracts/entities/Dataset.sol";
@@ -10,34 +11,19 @@ import "../contracts/jobs/CognitiveJob.sol";
 import "../contracts/pandora/factories/WorkerNodeFactory.sol";
 import "../contracts/pandora/factories/CognitiveJobFactory.sol";
 
-// Proxy contract for testing throws
-contract ThrowProxy {
-    address public target;
-    bytes data;
-
-    function ThrowProxy(address _target) {
-        target = _target;
-    }
-
-    //prime the data using the fallback function.
-    function() {
-        data = msg.data;
-    }
-
-    function execute() returns (bool) {
-        return target.call(data);
-    }
-}
-
 contract TestPandora {
     Pandora pandora;
     WorkerNodeFactory nodeFactory;
     CognitiveJobFactory jobFactory;
+    Dataset dataset;
+    Kernel kernel;
 
     function beforeAll() {
         pandora = Pandora(DeployedAddresses.Pandora());
         nodeFactory = WorkerNodeFactory(DeployedAddresses.WorkerNodeFactory());
         jobFactory = CognitiveJobFactory(DeployedAddresses.CognitiveJobFactory());
+        dataset = Dataset(DeployedAddresses.Dataset());
+        kernel = Kernel(DeployedAddresses.Kernel());
     }
 
     function testDeployed() {
@@ -78,14 +64,31 @@ contract TestPandora {
         ThrowProxy throwProxy = new ThrowProxy(address(nodeFactory));
         Pandora(address(throwProxy)).transferOwnership(0x627306090abaB3A6e1400e9345bC60c78a8BEf57);
         bool result = throwProxy.execute();
-        Assert.isFalse(result, "Worker node factory should not allow to change its ownership");
+        Assert.isFalse(result, "Worker node factory should not allow changing its ownership");
     }
 
     function testJobFactoryOwnershipTransferFailure() {
         ThrowProxy throwProxy = new ThrowProxy(address(jobFactory));
         Pandora(address(throwProxy)).transferOwnership(0x627306090abaB3A6e1400e9345bC60c78a8BEf57);
         bool result = throwProxy.execute();
-        Assert.isFalse(result, "Cognitive job factory should not allow to change its ownership");
+        Assert.isFalse(result, "Cognitive job factory should not allow changing its ownership");
+    }
+
+    function testNodeFactoryDirectAccessFailure() {
+        ThrowProxy throwProxy = new ThrowProxy(address(nodeFactory));
+        WorkerNodeFactory(address(throwProxy)).create(0x627306090abaB3A6e1400e9345bC60c78a8BEf57);
+        bool result = throwProxy.execute();
+        Assert.isFalse(result, "Worker node factory should not allow creating worker nodes outside of Pandora");
+    }
+
+    function testJobFactoryDirectAccessFailure() {
+        IWorkerNode[] memory pool = new IWorkerNode[](1);
+        pool[0] = IWorkerNode(0x627306090abaB3A6e1400e9345bC60c78a8BEf57);
+
+        ThrowProxy throwProxy = new ThrowProxy(address(nodeFactory));
+        CognitiveJobFactory(address(throwProxy)).create(kernel, dataset, pool);
+        bool result = throwProxy.execute();
+        Assert.isFalse(result, "Worker node factory should not allow creating cognitive jobs outside of Pandora");
     }
 
     function testPandoraInitialization() {
