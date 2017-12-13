@@ -1,14 +1,14 @@
 pragma solidity ^0.4.18;
 
-import '../nodes/INode.sol';
-import '../entities/IDataEntity.sol';
-import '../factories/CognitiveJobFactory.sol';
-import '../factories/WorkerNodeFactory.sol';
-import '../lottery/RoundRobinLottery.sol';
 import '../lifecycle/OnlyOnce.sol';
+import '../nodes/IWorkerNode.sol';
+import '../entities/IDataEntity.sol';
+import './factories/CognitiveJobFactory.sol';
+import './factories/WorkerNodeFactory.sol';
+import './managers/CognitiveJobManager.sol';
+import './lottery/RoundRobinLottery.sol';
 
 import './IPandora.sol';
-import './CognitiveJobManager.sol';
 
 /**
  * @title Pandora Smart Contract

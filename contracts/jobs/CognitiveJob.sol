@@ -1,13 +1,13 @@
 pragma solidity ^0.4.18;
 
 import '../libraries/StateMachine.sol';
-import './IJob.sol';
+import './IComputingJob.sol';
 
 /*
 
  */
 
-contract CognitiveJob is ICognitiveJob, StateMachine /* final */ {
+contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     /**
      * ## State Machine implementation
      */

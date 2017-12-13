@@ -1,9 +1,10 @@
 pragma solidity ^0.4.18;
 
+import './DataEntity.sol';
+import './IDataset.sol';
+
 /*
  */
-
-import './DataEntity.sol';
 
 contract Dataset is DataEntity, IDataset {
     uint256 public samplesCount;

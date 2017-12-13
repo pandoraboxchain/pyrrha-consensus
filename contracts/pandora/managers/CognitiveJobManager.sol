@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import '../lifecycle/Initializable.sol';
+import '../../lifecycle/Initializable.sol';
 import '../lottery/RoundRobinLottery.sol';
 import './ICognitiveJobManager.sol';
 import './WorkerNodeManager.sol';
@@ -39,7 +39,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     /// @dev List of active (=running) cognitive jobs mapped to their creators (owners of the corresponding
     /// cognitive job contracts)
-    mapping(address => ICognitiveJob) public activeJobs;
+    mapping(address => IComputingJob) public activeJobs;
 
     /// ### Private and internal variables
 
@@ -56,7 +56,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
      */
 
     /// @dev Event firing when a new cognitive job created
-    event CognitiveJobCreated(ICognitiveJob cognitiveJob);
+    event CognitiveJobCreated(IComputingJob cognitiveJob);
 
 
     /*******************************************************************************************************************
@@ -108,7 +108,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     payable
     onlyInitialized
     returns (
-        ICognitiveJob o_cognitiveJob /// Newly created cognitive jobs (starts automatically)
+        IComputingJob o_cognitiveJob /// Newly created cognitive jobs (starts automatically)
     ) {
         // Dimensions of the input data and neural network input layer must be equal
         require(kernel.dataDim() == dataset.dataDim());
@@ -172,7 +172,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     )
     external
     onlyInitialized {
-        ICognitiveJob job = activeJobs[msg.sender];
+        IComputingJob job = activeJobs[msg.sender];
         require(address(job) == msg.sender);
 
         for (uint no = 0; no < job.activeWorkersCount(); no++) {

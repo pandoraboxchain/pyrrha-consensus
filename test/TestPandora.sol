@@ -7,8 +7,8 @@ import "../contracts/entities/Kernel.sol";
 import "../contracts/entities/Dataset.sol";
 import "../contracts/nodes/WorkerNode.sol";
 import "../contracts/jobs/CognitiveJob.sol";
-import "../contracts/factories/WorkerNodeFactory.sol";
-import "../contracts/factories/CognitiveJobFactory.sol";
+import "../contracts/pandora/factories/WorkerNodeFactory.sol";
+import "../contracts/pandora/factories/CognitiveJobFactory.sol";
 
 contract TestPandora {
     Pandora pandora;

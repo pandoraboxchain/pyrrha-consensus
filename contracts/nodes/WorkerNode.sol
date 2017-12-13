@@ -2,8 +2,8 @@ pragma solidity ^0.4.18;
 
 import '../libraries/StateMachine.sol';
 import '../pandora/IPandora.sol';
-import '../jobs/IJob.sol';
-import './INode.sol';
+import '../jobs/IComputingJob.sol';
+import './IWorkerNode.sol';
 
 /**
  * @title Worker Node Smart Contract
@@ -74,7 +74,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
 
     /// @notice Active cognitive job reference. Zero when there is no active cognitive job assigned or performed
     /// @dev Valid (non-zero) only for active states (see `activeStates` modified for the list of such states)
-    ICognitiveJob public activeJob;
+    IComputingJob public activeJob;
 
     /// @notice Current worker node reputation. Can be changed only by the main Pandora contract via special
     /// external function calls
@@ -96,7 +96,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         reputation = 0;
 
         // There should be no active cognitive job upon contract creation
-        activeJob = ICognitiveJob(0);
+        activeJob = IComputingJob(0);
 
         // Initialize state machine (state transition table and initial state). Always must be performed at the very
         // end of contract constructor code.
@@ -126,7 +126,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// main Pandora contract. It includes jobs _not_ assigned to the worker node
     modifier onlyCognitiveJob() {
         require(pandora != address(0));
-        ICognitiveJob sender = ICognitiveJob(msg.sender);
+        IComputingJob sender = IComputingJob(msg.sender);
         require(pandora == sender.pandora());
         require(pandora.activeJobs(sender) == sender);
         _;
@@ -156,7 +156,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// the main Pandora contract
     function assignJob(
         /// @dev Cognitive job to be assigned
-        ICognitiveJob _job
+        IComputingJob _job
     ) external // Can't be called internally
         /// @dev Must be called only by one of active cognitive jobs listed under the main Pandora contract
         onlyCognitiveJob
@@ -175,7 +175,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireActiveStates
         transitionToState(Idle)
     {
-        activeJob = ICognitiveJob(0);
+        activeJob = IComputingJob(0);
     }
 
     function acceptAssignment(
@@ -185,7 +185,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(Assigned)
         transitionToState(ReadyForDataValidation)
     {
-        require(activeJob != ICognitiveJob(0));
+        require(activeJob != IComputingJob(0));
         activeJob.gatheringWorkersResponse(true);
     }
 
@@ -196,7 +196,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(Assigned)
         transitionToState(Idle)
     {
-        require(activeJob != ICognitiveJob(0));
+        require(activeJob != IComputingJob(0));
         activeJob.gatheringWorkersResponse(false);
     }
 
@@ -217,8 +217,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(ValidatingData)
         transitionToState(ReadyForComputing)
     {
-        require(activeJob != ICognitiveJob(0));
-        activeJob.dataValidationResponse(IJobs.DataValidationResponse.Accept);
+        require(activeJob != IComputingJob(0));
+        activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Accept);
     }
 
     function declineValidData(
@@ -228,8 +228,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(ValidatingData)
         transitionToState(Idle)
     {
-        require(activeJob != ICognitiveJob(0));
-        activeJob.dataValidationResponse(IJobs.DataValidationResponse.Decline);
+        require(activeJob != IComputingJob(0));
+        activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Decline);
     }
 
     function reportInvalidData(
@@ -239,8 +239,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(ValidatingData)
         transitionToState(Idle)
     {
-        require(activeJob != ICognitiveJob(0));
-        activeJob.dataValidationResponse(IJobs.DataValidationResponse.Invalid);
+        require(activeJob != IComputingJob(0));
+        activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Invalid);
     }
 
     function processToCognition(
@@ -260,7 +260,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(Computing)
         transitionToState(Idle)
     {
-        require(activeJob != ICognitiveJob(0));
+        require(activeJob != IComputingJob(0));
         activeJob.completeWork(_ipfsAddress);
     }
 

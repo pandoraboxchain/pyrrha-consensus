@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import '../lifecycle/Initializable.sol';
+import '../../lifecycle/Initializable.sol';
 import './IWorkerNodeManager.sol';
 
 /**

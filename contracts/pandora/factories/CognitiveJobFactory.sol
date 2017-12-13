@@ -1,10 +1,12 @@
 pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-import '../jobs/CognitiveJob.sol';
-import '../entities/IDataEntity.sol';
-import '../pandora/IPandora.sol';
-import '../nodes/INode.sol';
+import '../../jobs/CognitiveJob.sol';
+import '../../entities/IDataEntity.sol';
+import '../../entities/IDataset.sol';
+import '../../entities/IKernel.sol';
+import '../../nodes/IWorkerNode.sol';
+import '../IPandora.sol';
 
 contract CognitiveJobFactory is Ownable {
     function CognitiveJobFactory() public { }

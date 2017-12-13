@@ -1,6 +1,7 @@
 pragma solidity ^0.4.18;
 
 import './DataEntity.sol';
+import './IKernel.sol';
 
 /*
   Kernel Contract represents information about specific fixed machine learning kernel

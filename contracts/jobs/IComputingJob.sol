@@ -4,13 +4,10 @@ import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
 import '../libraries/IStateMachine.sol';
 import '../entities/IDataEntity.sol';
 import '../pandora/IPandora.sol';
-import '../nodes/INode.sol';
+import '../nodes/IWorkerNode.sol';
 import './JobStates.sol';
 
-contract IJobs is Destructible, IStateMachine {
-}
-
-contract ICognitiveJob is IJobs, JobStates {
+contract IComputingJob is IStateMachine, Destructible, JobStates {
     enum DataValidationResponse {
         Accept, Decline, Invalid
     }

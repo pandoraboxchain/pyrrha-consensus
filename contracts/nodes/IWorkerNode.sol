@@ -4,13 +4,10 @@ import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
 
 import '../libraries/IStateMachine.sol';
 import '../pandora/IPandora.sol';
-import '../jobs/IJob.sol';
-import './NodeStates.sol';
+import '../jobs/IComputingJob.sol';
+import './WorkerNodeStates.sol';
 
-contract INode is Ownable, IStateMachine {
-}
-
-contract IWorkerNode is INode, WorkerNodeStates {
+contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
     /// @notice Defines possible cases for penaltize worker nodes. Used in `WorkerNodeManager.penaltizeWorkerNode`
     enum Penalties {
         OfflineWhileGathering,
@@ -23,11 +20,11 @@ contract IWorkerNode is INode, WorkerNodeStates {
     function destroy() external;
 
     IPandora public pandora;
-    ICognitiveJob public activeJob;
+    IComputingJob public activeJob;
     uint256 public reputation;
 
     function alive() external;
-    function assignJob(ICognitiveJob job) external;
+    function assignJob(IComputingJob job) external;
     function cancelJob() external;
     function acceptAssignment() external;
     function declineAssignment() external;
@@ -47,8 +44,3 @@ contract IWorkerNode is INode, WorkerNodeStates {
     event WorkerDestroyed();
 }
 
-contract IVerifierNode is IWorkerNode {
-}
-
-contract IArbiterNode is IVerifierNode {
-}

@@ -12,12 +12,3 @@ contract IDataEntity is Ownable {
 
     event PriceUpdated(uint256 oldPrice, uint256 newPrice);
 }
-
-contract IDataset is IDataEntity {
-    uint256 public samplesCount;
-    uint8 public batchesCount;
-}
-
-contract IKernel is IDataEntity {
-    uint256 public complexity;
-}

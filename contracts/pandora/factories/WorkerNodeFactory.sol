@@ -1,8 +1,8 @@
 pragma solidity ^0.4.18;
 
 import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-import '../pandora/IPandora.sol';
-import '../nodes/WorkerNode.sol';
+import '../../nodes/WorkerNode.sol';
+import '../IPandora.sol';
 
 contract WorkerNodeFactory is Ownable {
     function WorkerNodeFactory() public {}
