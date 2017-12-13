@@ -7,7 +7,12 @@ import '../factories/CognitiveJobFactory.sol';
 
 contract ICognitiveJobManager {
     CognitiveJobFactory public cognitiveJobFactory;
-    mapping(address => IComputingJob) public activeJobs;
+
+    IComputingJob[] public activeJobs;
+    mapping(address => uint16) public jobAddresses;
+
+    function activeJobsCount() view public returns (uint256);
+    function isActiveJob(IComputingJob job) view public returns (bool);
 
     function createCognitiveJob(IKernel kernel, IDataset dataset) external payable returns (IComputingJob);
     function finishCognitiveJob() external;

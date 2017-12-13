@@ -141,6 +141,7 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
 
     /// @notice Returns count of registered worker nodes
     function workerNodesCount()
+    onlyInitialized
     public
     view
     returns (
@@ -159,8 +160,7 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
         IWorkerNode /// Address of the created worker node
     ) {
         address nodeOwner = msg.sender;
-        /// @fixme This was a required for the sender to be an end address, not a proxy. Removed since prevents testing
-        /// require(msg.sender == tx.origin);
+        require(msg.sender == tx.origin);
 
         /// Check that we do not reach limits in the node count
         require(workerNodes.length < 2 ^ 16 - 1);
@@ -211,10 +211,11 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
         /// tasks after that)
         _workerNode.destroy();
 
-        /// Immediatelly removing node from the lists
+        /// Immediately removing node from the lists
         uint16 index = workerAddresses[nodeOwner] - 1;
         delete workerAddresses[nodeOwner];
-        workerNodes[index] = workerNodes[workerNodes.length - 1];
+        IWorkerNode movedWorker = workerNodes[index] = workerNodes[workerNodes.length - 1];
+        workerAddresses[movedWorker] = index + 1;
         workerNodes.length--;
 
         /// @todo Return the unspent stake

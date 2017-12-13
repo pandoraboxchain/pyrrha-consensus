@@ -37,9 +37,18 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// `Ownable` contract and a special `initialize` function and `properlyInitialized` member variable is added.
     CognitiveJobFactory public cognitiveJobFactory;
 
-    /// @dev List of active (=running) cognitive jobs mapped to their creators (owners of the corresponding
-    /// cognitive job contracts)
-    mapping(address => IComputingJob) public activeJobs;
+    /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
+    /// (owners of the corresponding cognitive job contracts). Zero values corresponds to no active job,
+    /// one – to the one with index 0 and so forth.
+    mapping(address => uint16) public jobAddresses;
+
+    /// @dev List of all active cognitive jobs
+    IComputingJob[] public activeJobs;
+
+    /// @dev Returns total count of active jobs
+    function activeJobsCount() onlyInitialized view public returns (uint256) {
+        return activeJobs.length;
+    }
 
     /// ### Private and internal variables
 
@@ -98,6 +107,35 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     /// ### Public and external
 
+    /// @notice Test whether the given `job` is registered as an active job by the main Pandora contract
+    /// @dev Used to test if some given job contract is a contract created by the Pandora and is listed by it as an
+    /// active contract
+    function isActiveJob(
+        IComputingJob _job /// Job contract to test
+    )
+    onlyInitialized
+    view
+    public
+    returns (
+        bool /// Testing result
+    ) {
+        // Getting the index of the job from the internal list
+        uint16 index = jobAddresses[_job];
+        // Testing if the job was present in the list
+        if (index == 0) {
+            return false;
+        }
+        // We must decrease the index since they are 1-based, not 0-based (0 corresponds to "no contract" due to
+        // Solidity specificity
+        index--;
+
+        // Retrieving the job contract from the index
+        IComputingJob job = activeJobs[index];
+        // Double-checking that the job at the index is the actual job being tested
+        return(job == _job);
+    }
+
+
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
     function createCognitiveJob(
@@ -112,6 +150,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     ) {
         // Dimensions of the input data and neural network input layer must be equal
         require(kernel.dataDim() == dataset.dataDim());
+
+        // The created job must fit into uint16 size
+        require(activeJobs.length < 2 ^ 16 - 1);
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
@@ -155,7 +196,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         o_cognitiveJob = cognitiveJobFactory.create(IPandora(this), kernel, dataset, assignedWorkers);
         assert(o_cognitiveJob != address(0));
         // Save new contract to the storage
-        activeJobs[address(o_cognitiveJob)] = o_cognitiveJob;
+        activeJobs.push(o_cognitiveJob);
+        jobAddresses[o_cognitiveJob] = uint16(activeJobs.length);
 
         // Fire global event to notify the selected worker node
         CognitiveJobCreated(o_cognitiveJob);
@@ -172,8 +214,14 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     )
     external
     onlyInitialized {
-        IComputingJob job = activeJobs[msg.sender];
+        uint16 index = jobAddresses[msg.sender];
+        require(index != 0);
+        index--;
+
+        IComputingJob job = activeJobs[index];
         require(address(job) == msg.sender);
+
+        // @todo Kill the job contract
 
         for (uint no = 0; no < job.activeWorkersCount(); no++) {
             if (job.didWorkerCompute(no) == true) {
@@ -182,6 +230,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
 
         // Remove cognitive job contract from the storage
-        delete activeJobs[msg.sender];
+        delete jobAddresses[msg.sender];
+        IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length];
+        jobAddresses[movedJob] = index + 1;
+        activeJobs.length--;
     }
 }

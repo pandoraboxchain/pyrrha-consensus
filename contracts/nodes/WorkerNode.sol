@@ -128,7 +128,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         require(pandora != address(0));
         IComputingJob sender = IComputingJob(msg.sender);
         require(pandora == sender.pandora());
-        require(pandora.activeJobs(sender) == sender);
+        require(pandora.isActiveJob(sender));
         _;
     }
 
