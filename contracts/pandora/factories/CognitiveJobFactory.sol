@@ -18,7 +18,14 @@ contract CognitiveJobFactory is Ownable {
     )
     onlyOwner
     external
-    returns (CognitiveJob) {
-        return new CognitiveJob(IPandora(owner), _kernel, _dataset, _workersPool);
+    returns (CognitiveJob o_cognitiveJob) {
+        // Creating job
+        o_cognitiveJob = new CognitiveJob(IPandora(owner), _kernel, _dataset, _workersPool);
+
+        // Checking that it was created correctly
+        assert(o_cognitiveJob != CognitiveJob(0));
+
+        // Transferring ownership to the main Pandora contract (which owns this factory)
+        o_cognitiveJob.transferOwnership(owner);
     }
 }
