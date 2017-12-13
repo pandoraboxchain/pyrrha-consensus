@@ -51,11 +51,11 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
     /// @dev Since in the initial Pyrrha release of Pandora network reputation, verification and arbitration mechanics
     /// are under development it uses a set of pre-defined trusted addresses allowed to register worker nodes.
     /// These are specified during initial Pandora contract deployment by the founders.
-    uint8 constant private WORKERNODE_WHITELIST_SIZE = 3;
+    uint8 constant internal WORKERNODE_WHITELIST_SIZE = 3;
 
     /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
     /// for the first version of the protocol implementation codenamed Pyrrha
-    address[] private workerNodeOwners;
+    address[] internal workerNodeOwners;
 
     /*******************************************************************************************************************
      * ## Events
@@ -114,7 +114,7 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
         for (uint8 no = 0; no < workerNodeOwners.length && no < WORKERNODE_WHITELIST_SIZE; no++) {
             // Worker node must not be destroyed and its owner must be the sender of the current function call
             if (workerNodeOwners[no] != address(0) &&
-            msg.sender == workerNodeOwners[no]) {
+                msg.sender == workerNodeOwners[no]) {
                 found = true;
                 _;
                 break;
@@ -160,21 +160,23 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
         IWorkerNode /// Address of the created worker node
     ) {
         address nodeOwner = msg.sender;
+
+        // Worker node can be created only be external transactions, not by internal inter-contract messages
         require(msg.sender == tx.origin);
 
         /// Check that we do not reach limits in the node count
         require(workerNodes.length < 2 ^ 16 - 1);
 
-        /// @todo Check stake and bind it
+        // @todo Check the stake and bind it
 
-        /// Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
+        // Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
         IWorkerNode workerNode = workerNodeFactory.create(nodeOwner);
-        /// We do not check the created `workerNode` since all checks are done by the factory class
+        // We do not check the created `workerNode` since all checks are done by the factory class
         workerNodes.push(workerNode);
-        /// Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)
+        // Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)
         workerAddresses[address(workerNode)] = uint16(workerNodes.length);
 
-        /// Firing event
+        // Firing event
         WorkerNodeCreated(workerNode);
 
         return workerNode;
@@ -197,7 +199,7 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
         IWorkerNode _workerNode
     )
     external
-    checkWorkerAndOwner (_workerNode) /// Worker node can be destroyed only by its owner
+    checkWorkerAndOwner(_workerNode) /// Worker node can be destroyed only by its owner
     onlyInitialized {
         address nodeOwner = msg.sender;
 

@@ -3,7 +3,7 @@ pragma solidity ^0.4.18;
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
 import "./util/ThrowProxy.sol";
-import "../contracts/pandora/Pandora.sol";
+import "../contracts/pandora/hooks/PandoraHooks.sol";
 import "../contracts/entities/Kernel.sol";
 import "../contracts/entities/Dataset.sol";
 import "../contracts/nodes/WorkerNode.sol";
@@ -12,14 +12,15 @@ import "../contracts/pandora/factories/WorkerNodeFactory.sol";
 import "../contracts/pandora/factories/CognitiveJobFactory.sol";
 
 contract TestPandora {
-    Pandora pandora;
+    PandoraHooks pandora;
     WorkerNodeFactory nodeFactory;
     CognitiveJobFactory jobFactory;
     Dataset dataset;
     Kernel kernel;
+    IWorkerNode workerNode;
 
     function beforeAll() {
-        pandora = Pandora(DeployedAddresses.Pandora());
+        pandora = PandoraHooks(DeployedAddresses.PandoraHooks());
         nodeFactory = WorkerNodeFactory(DeployedAddresses.WorkerNodeFactory());
         jobFactory = CognitiveJobFactory(DeployedAddresses.CognitiveJobFactory());
         dataset = Dataset(DeployedAddresses.Dataset());
@@ -27,7 +28,7 @@ contract TestPandora {
     }
 
     function testDeployed() {
-        Assert.notEqual(pandora, address(0), "Pandora contract should be initialized");
+        Assert.notEqual(pandora, address(0), "Pandora contract should be deployed");
     }
 
     function testOwnershipTransferFailure() {
@@ -103,10 +104,53 @@ contract TestPandora {
     }
 
     function testWorkers() {
-        Assert.equal(pandora.workerNodesCount(), 0, "There must be no initialized workers");
+        Assert.equal(pandora.workerNodesCount(), 1, "There must be a single initialized workers");
     }
 
     function testJobs() {
         Assert.equal(pandora.activeJobsCount(), 0, "There must be no initialized workers");
+    }
+
+    function testWhitelistedOwners() {
+        Assert.equal(pandora.hook_whitelistedOwner(0), msg.sender, "There must be first whitelisted non-zero owner");
+
+        uint count = pandora.hook_whitelistedOwnerCount();
+        Assert.equal(count, 3, "There must be exactly three whitelisted worker node owners");
+        for (uint no = 0; no < count; no++) {
+            Assert.notEqual(pandora.hook_whitelistedOwner(no), address(0), "There must be second whitelisted non-zero owner");
+        }
+    }
+
+    function testWorkerNodeCreateFailure() {
+        ThrowProxy throwProxy = new ThrowProxy(address(pandora));
+        PandoraHooks(address(throwProxy)).createWorkerNode();
+        bool result = throwProxy.execute();
+        Assert.isFalse(result, "Worker node must not be created by a non-whitelisted address");
+    }
+
+    function testWorkerDeployed() {
+        workerNode = pandora.workerNodes(0);
+        Assert.notEqual(workerNode, address(0), "Worker node must be deployed");
+    }
+
+    function testWorkerInitialState() {
+        Assert.equal(workerNode.currentState(), uint(workerNode.Offline()), "WorkerNode state must be Offline upon initialization");
+    }
+
+    function testWorkerAliveReaction () {
+        workerNode.alive();
+        Assert.equal(workerNode.currentState(), uint(workerNode.Idle()), "WorkerNode state now must be Idle");
+    }
+
+    function testWorkerIdleState() {
+        Assert.equal(workerNode.Idle(), uint(2), "Worker Idle state must have value of 2");
+    }
+
+    function testWorkerReputation() {
+        Assert.equal(workerNode.reputation(), 0, "WorkerNode state must has zero reputation upon initialization");
+    }
+
+    function testWorkerPandoraReference() {
+        Assert.equal(workerNode.pandora(), DeployedAddresses.PandoraHooks(), "Worker must reference proper root Pandora contract");
     }
 }
