@@ -1,4 +1,4 @@
-pragma solidity ^0.4.15;
+pragma solidity ^0.4.18;
 
 import "truffle/Assert.sol";
 import "truffle/DeployedAddresses.sol";
@@ -10,69 +10,100 @@ import "../contracts/jobs/CognitiveJob.sol";
 import "../contracts/pandora/factories/WorkerNodeFactory.sol";
 import "../contracts/pandora/factories/CognitiveJobFactory.sol";
 
+// Proxy contract for testing throws
+contract ThrowProxy {
+    address public target;
+    bytes data;
+
+    function ThrowProxy(address _target) {
+        target = _target;
+    }
+
+    //prime the data using the fallback function.
+    function() {
+        data = msg.data;
+    }
+
+    function execute() returns (bool) {
+        return target.call(data);
+    }
+}
+
 contract TestPandora {
     Pandora pandora;
+    WorkerNodeFactory nodeFactory;
+    CognitiveJobFactory jobFactory;
 
     function beforeAll() {
         pandora = Pandora(DeployedAddresses.Pandora());
+        nodeFactory = WorkerNodeFactory(DeployedAddresses.WorkerNodeFactory());
+        jobFactory = CognitiveJobFactory(DeployedAddresses.CognitiveJobFactory());
     }
 
-    function testPandoraDeployment() {
+    function testDeployed() {
         Assert.notEqual(pandora, address(0), "Pandora contract should be initialized");
+    }
+
+    function testOwnershipTransferFailure() {
+        ThrowProxy throwProxy = new ThrowProxy(address(pandora));
+        Pandora(address(throwProxy)).transferOwnership(0x627306090abaB3A6e1400e9345bC60c78a8BEf57);
+        bool result = throwProxy.execute();
+        Assert.isFalse(result, "Pandora should not allow to re-initialize itself");
+    }
+
+    function testFactories() {
         Assert.notEqual(pandora.workerNodeFactory(), address(0), "Pandora must have initialized worker node factory");
         Assert.notEqual(pandora.cognitiveJobFactory(), address(0), "Pandora must have initialized worker node factory");
-        Assert.equal(DeployedAddresses.WorkerNodeFactory(), pandora.workerNodeFactory(),
+    }
+
+    function testNodeFactorySetup() {
+        Assert.equal(nodeFactory, pandora.workerNodeFactory(),
             "Pandora must reference proper worker node factory instance");
-        Assert.equal(DeployedAddresses.CognitiveJobFactory(), pandora.cognitiveJobFactory(),
+    }
+
+    function testJobFactorySetup() {
+        Assert.equal(jobFactory, pandora.cognitiveJobFactory(),
             "Pandora must reference proper cognitive job factory instance");
-        Assert.equal(pandora.properlyInitialized(), true, "Pandora must be properly initialized");
+    }
+
+    function testNodeFactoryOwnership() {
+        Assert.equal(nodeFactory.owner(), pandora, "Worker node factory must be owned by Pandora contract");
+    }
+
+    function testJobFactoryOwnership() {
+        Assert.equal(jobFactory.owner(), pandora, "Cognitive job factory must be owned by Pandora contract");
+    }
+
+    function testNodeFactoryOwnershipTransferFailure() {
+        ThrowProxy throwProxy = new ThrowProxy(address(nodeFactory));
+        Pandora(address(throwProxy)).transferOwnership(0x627306090abaB3A6e1400e9345bC60c78a8BEf57);
+        bool result = throwProxy.execute();
+        Assert.isFalse(result, "Worker node factory should not allow to change its ownership");
+    }
+
+    function testJobFactoryOwnershipTransferFailure() {
+        ThrowProxy throwProxy = new ThrowProxy(address(jobFactory));
+        Pandora(address(throwProxy)).transferOwnership(0x627306090abaB3A6e1400e9345bC60c78a8BEf57);
+        bool result = throwProxy.execute();
+        Assert.isFalse(result, "Cognitive job factory should not allow to change its ownership");
+    }
+
+    function testPandoraInitialization() {
+        Assert.equal(pandora.initialized(), true, "Pandora must be properly initialized");
+    }
+
+    function testReinitializationFailure() {
+        ThrowProxy throwProxy = new ThrowProxy(address(pandora));
+        Pandora(address(throwProxy)).initialize();
+        bool result = throwProxy.execute();
+        Assert.isFalse(result, "Pandora should not allow to re-initialize itself");
+    }
+
+    function testWorkers() {
         Assert.equal(pandora.workerNodesCount(), 0, "There must be no initialized workers");
     }
 
-    /*
-    function testWorkerNodes() {
-        for (uint no = 0; no < workerNodes.length; no++) {
-            Assert.notEqual(workerNodes[no], address(0), "Worker must be initialized");
-        }
+    function testJobs() {
+        Assert.equal(pandora.activeJobsCount(), 0, "There must be no initialized workers");
     }
-
-    function testDataDimEquivalence() {
-        Kernel kernel = Kernel(DeployedAddresses.Kernel());
-        Dataset dataset = Dataset(DeployedAddresses.Dataset());
-
-        Assert.equal(kernel.dataDim(), dataset.dataDim(), "Kernel and dataset must have the same data dimension");
-    }
-
-    function testIdleWorkerValue() {
-        uint idle = workerNodes[0].Idle();
-        Assert.equal(idle, 2, "Worker Idle state must have value of 2");
-    }
-
-    function testIdleWorkers() {
-        uint offline = workerNodes[0].Offline();
-        for (uint no = 0; no < workerNodes.length; no++) {
-            Assert.equal(workerNodes[no].currentState(), offline, "Worker must be Offline");
-        }
-    }
-
-    function testCreateCognitiveJob() {
-        Kernel kernel = Kernel(DeployedAddresses.Kernel());
-        Dataset dataset = Dataset(DeployedAddresses.Dataset());
-        WorkerNode worker = workerNodes[0];
-
-        worker.alive();
-        CognitiveJob cognitiveJob = pandora.createCognitiveJob(kernel, dataset);
-
-        Assert.notEqual(cognitiveJob, address(0), "Cognitive job should be initialized from within Pandora");
-    }
-
-    function testCreateCognitiveJobArtificially() {
-        Kernel kernel = Kernel(DeployedAddresses.Kernel());
-        Dataset dataset = Dataset(DeployedAddresses.Dataset());
-
-        WorkerNode[] storage assigned;
-        assigned.push(workerNodes[0]);
-        Assert.equal(new CognitiveJob(pandora, kernel, dataset, assigned), address(0), "Cognitive job should not be created putside of Pandora main contract");
-    }
-    */
 }
