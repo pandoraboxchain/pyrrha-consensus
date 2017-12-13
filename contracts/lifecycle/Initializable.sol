@@ -2,20 +2,20 @@ pragma solidity ^0.4.18;
 
 
 contract Initializable {
-    bool public properlyInitialized = false;
+    bool public initialized = false;
 
-    function Initializable () public {
-        properlyInitialized = false;
+    function Initializable() public {
+        initialized = false;
     }
 
-    function initialize () public {
-        properlyInitialized = true;
+    function initialize() public {
+        initialized = true;
     }
 
     /// @dev Modifier ensures that the function can be called only after Pandora contract was properly initialized
     /// (see `initialize` and `properlyInitialized`
     modifier onlyInitialized() {
-        require(properlyInitialized == true);
+        require(initialized == true);
         _;
     }
 }
