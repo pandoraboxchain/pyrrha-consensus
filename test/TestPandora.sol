@@ -17,7 +17,6 @@ contract TestPandora {
     CognitiveJobFactory jobFactory;
     Dataset dataset;
     Kernel kernel;
-    IWorkerNode workerNode;
 
     function beforeAll() {
         pandora = PandoraHooks(DeployedAddresses.PandoraHooks());
@@ -126,31 +125,5 @@ contract TestPandora {
         PandoraHooks(address(throwProxy)).createWorkerNode();
         bool result = throwProxy.execute();
         Assert.isFalse(result, "Worker node must not be created by a non-whitelisted address");
-    }
-
-    function testWorkerDeployed() {
-        workerNode = pandora.workerNodes(0);
-        Assert.notEqual(workerNode, address(0), "Worker node must be deployed");
-    }
-
-    function testWorkerInitialState() {
-        Assert.equal(workerNode.currentState(), uint(workerNode.Offline()), "WorkerNode state must be Offline upon initialization");
-    }
-
-    function testWorkerAliveReaction () {
-        workerNode.alive();
-        Assert.equal(workerNode.currentState(), uint(workerNode.Idle()), "WorkerNode state now must be Idle");
-    }
-
-    function testWorkerIdleState() {
-        Assert.equal(workerNode.Idle(), uint(2), "Worker Idle state must have value of 2");
-    }
-
-    function testWorkerReputation() {
-        Assert.equal(workerNode.reputation(), 0, "WorkerNode state must has zero reputation upon initialization");
-    }
-
-    function testWorkerPandoraReference() {
-        Assert.equal(workerNode.pandora(), DeployedAddresses.PandoraHooks(), "Worker must reference proper root Pandora contract");
     }
 }

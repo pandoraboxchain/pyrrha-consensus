@@ -230,8 +230,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
 
         // Remove cognitive job contract from the storage
-        delete jobAddresses[msg.sender];
-        IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length];
+        delete jobAddresses[address(job)];
+        IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length - 1];
         jobAddresses[movedJob] = index + 1;
         activeJobs.length--;
     }

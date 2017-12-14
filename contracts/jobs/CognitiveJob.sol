@@ -293,7 +293,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     function completeWork(bytes _ipfsResults)
     onlyActiveWorkers
     external {
-        var (reportingWorker, workerIndex) = _getWorkerFromSender();
+        var (,workerIndex) = _getWorkerFromSender();
         /// @fixme ipfsResults[workerIndex] = _ipfsResults;
         responseFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
