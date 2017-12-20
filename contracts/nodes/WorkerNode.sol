@@ -44,14 +44,15 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         // Creating table of possible state transitions
         var transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
-        transitions[Offline] = [InsufficientStake, Idle];
-        transitions[Idle] = [Offline, InsufficientStake, UnderPenalty, Assigned, Destroyed];
-        transitions[Assigned] = [Offline, InsufficientStake, UnderPenalty, ReadyForDataValidation];
-        transitions[ReadyForDataValidation] = [ValidatingData, Offline, UnderPenalty, InsufficientStake, Idle];
-        transitions[UnderPenalty] = [InsufficientStake, Idle];
-        transitions[ValidatingData] = [Idle, UnderPenalty, ReadyForComputing];
-        transitions[ReadyForComputing] = [Computing, Offline, UnderPenalty, InsufficientStake, Idle];
-        transitions[Computing] = [UnderPenalty, Idle];
+        transitions[Offline] = [Idle];
+        transitions[Idle] = [Offline, UnderPenalty, Assigned, Destroyed];
+        transitions[Assigned] = [Offline, UnderPenalty, ReadyForDataValidation];
+        transitions[ReadyForDataValidation] = [ValidatingData, Offline, UnderPenalty, Idle];
+        transitions[UnderPenalty] = [Offline, InsufficientStake, Idle];
+        transitions[ValidatingData] = [Offline, Idle, UnderPenalty, ReadyForComputing];
+        transitions[ReadyForComputing] = [Computing, Offline, UnderPenalty, Idle];
+        transitions[Computing] = [Offline, UnderPenalty, Idle];
+        transitions[InsufficientStake] = [Offline, Idle, Destroyed];
 
         // Initializing state machine via base contract code
         super._initStateMachine();
