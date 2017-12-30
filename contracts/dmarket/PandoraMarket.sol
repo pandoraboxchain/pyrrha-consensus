@@ -2,8 +2,9 @@ pragma solidity ^0.4.18;
 
 import "../entities/IKernel.sol";
 import "../entities/IDataset.sol";
+import "./IMarket.sol";
 
-contract PandoraMarket {
+contract PandoraMarket is IMarket {
     IKernel[] public kernels;
     IDataset[] public datasets;
     mapping(address => bool) public kernelMap;
