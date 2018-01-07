@@ -19,7 +19,7 @@ module.exports = function(deployer, network, accounts) {
   })
   .then(_ => pandora.createWorkerNode({ from: accounts[0] }))
   .then(tx => {
-    const address = tx.logs[1].args['workerNode']
+    const address = tx.logs[0].args['workerNode']
     console.log("  WorkerNode: " + address)
     return WorkerNode.at(address)
   })
