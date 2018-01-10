@@ -5,6 +5,18 @@ let WorkerNode = artifacts.require("WorkerNode")
 let Kernel = artifacts.require("Kernel")
 let Dataset = artifacts.require("Dataset")
 
+async function createWorkerForAccount(pandora, account)
+{
+  return await pandora.createWorkerNode({ from: account})
+  .then(tx => {
+    const address = tx.logs[1].args['workerNode']
+    console.log("  WorkerNode: " + address)
+    return WorkerNode.at(address)
+  })
+  .then(workerNode => workerNode.alive())
+  .catch(e => console.log(e));
+}
+
 module.exports = function(deployer, network, accounts) {
   let pandora;
 
@@ -17,13 +29,9 @@ module.exports = function(deployer, network, accounts) {
     pandora = p
     return pandora.initialize()
   })
-  .then(_ => pandora.createWorkerNode({ from: accounts[0] }))
-  .then(tx => {
-    const address = tx.logs[0].args['workerNode']
-    console.log("  WorkerNode: " + address)
-    return WorkerNode.at(address)
-  })
-  .then(workerNode => workerNode.alive())
+  .then(_ => createWorkerForAccount(pandora, accounts[0]))
   .then(_ => pandora.createCognitiveJob(Kernel.address, Dataset.address))
+  .then(_ => createWorkerForAccount(pandora, accounts[1]))
+  .then(_ => createWorkerForAccount(pandora, accounts[2]))
   .catch(e => console.log(e))
 }
