@@ -144,7 +144,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
 
     function alive(
         // No arguments
-    ) external // Can't be called internally
+    ) external// Can't be called internally
         /* @fixme onlyOwner */
         requireState(Offline)
         transitionToState(Idle)

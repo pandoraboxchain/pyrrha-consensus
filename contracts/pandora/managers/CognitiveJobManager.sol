@@ -4,6 +4,7 @@ import '../../lifecycle/Initializable.sol';
 import '../lottery/RoundRobinLottery.sol';
 import './ICognitiveJobManager.sol';
 import './WorkerNodeManager.sol';
+import '../../jobs/IComputingJob.sol';
 
 /**
  * @title Pandora Smart Contract
@@ -146,7 +147,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     payable
     onlyInitialized
     returns (
-        IComputingJob o_cognitiveJob /// Newly created cognitive jobs (starts automatically)
+        IComputingJob o_cognitiveJob, /// Newly created cognitive jobs (starts automatically)
+        uint8 o_resultCode /// result code of creating cognitiveJob, 0 - no available workers, 1 - job created
     ) {
         // Dimensions of the input data and neural network input layer must be equal
         require(kernel.dataDim() == dataset.dataDim());
@@ -164,7 +166,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
         }
         // There must be at least one free worker node
-        assert(estimatedSize > 0);
+        if (estimatedSize <= 0) {
+            o_resultCode = 0;
+            o_cognitiveJob = IComputingJob(0);
+            return (o_cognitiveJob, o_resultCode);
+        }
+        //require(estimatedSize > 0);
 
         // Initializing in-memory array for idle node list and populating it with data
         IWorkerNode[] memory idleWorkers = new IWorkerNode[](estimatedSize);
@@ -175,7 +182,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
         }
         // Something really wrong happened with EVM if this assert fails
-        assert(actualSize == estimatedSize);
+        if (actualSize != estimatedSize) {
+            o_resultCode = 0;
+            o_cognitiveJob = IComputingJob(0);
+            return (o_cognitiveJob, o_resultCode);
+        }
+        //require(actualSize == estimatedSize);
 
         /// @todo Add payments
 
@@ -202,6 +214,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Fire global event to notify the selected worker node
         CognitiveJobCreated(o_cognitiveJob);
         o_cognitiveJob.initialize();
+        o_resultCode = 1;
     }
 
     /**

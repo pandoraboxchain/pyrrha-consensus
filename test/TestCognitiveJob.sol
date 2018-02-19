@@ -39,8 +39,11 @@ contract TestCognitiveJob {
     }
 
     function testCreate() {
-        job = pandora.createCognitiveJob(kernel, dataset);
+        uint8 resultCode;
+        uint resultCodeExpected = 1;
+        (job, resultCode) = pandora.createCognitiveJob(kernel, dataset);
         Assert.notEqual(address(job), address(0), "Cognitive job should successfully initialize");
+        Assert.equal(resultCode, resultCodeExpected, "Received result code should match with success code (1)");
     }
 
     function testListedInPandora() {
