@@ -36,4 +36,8 @@ contract PAN is StandardToken {
 
         /// @todo Allocate distributed balances to the whitelisted nodes according to the specification
     }
+
+    function totalSupply() public view returns (uint256) {
+        return totalSupply;
+    }
 }
