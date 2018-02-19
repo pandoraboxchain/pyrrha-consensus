@@ -18,7 +18,7 @@ async function createWorkerForAccount(pandora, account)
 }
 
 module.exports = function(deployer, network, accounts) {
-  let pandora;
+  let pandora
 
   WorkerNodeFactory.deployed()
   .then(wnf => wnf.transferOwnership(Pandora.address))

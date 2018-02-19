@@ -8,7 +8,7 @@ var mnemonic = "dinner govern better mix core bean illegal rain crash afraid dou
 
 module.exports = {
   networks: {
-    testrpc: {
+    cli: {
       gas: 4700000,
       host: 'localhost',
       port: 8545,
@@ -26,7 +26,7 @@ module.exports = {
       gas: 4700000
     },
     ropsten: {
-      from: '0x549c05D76DaFBf452a34b97E7005D209Bf07bc7B',
+      from: '0x17e83c2899a917ad4b8a1ac8f1574ca8a8e71d02',
       host: '52.232.79.62',
       port: 8545,
       network_id: '3' // Match any network id
