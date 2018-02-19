@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import 'zeppelin-solidity/contracts/token/StandardToken.sol';
+import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
 
 /**
  * @title PAN Token Contract (Pandora Artificial Neuronetwork Token) for Pyrrha cognitive network
@@ -20,6 +20,7 @@ contract PAN is StandardToken {
     string public constant name = "Pandora";
     string public constant symbol = "PAN";
     uint public constant decimals = 18;
+    uint public totalSupply;
 
     /// @dev Total token supply is equivalent to the initial supply and does not change with a time (Pyrrha network
     /// does not have cognitive mining). Thus, both initial ant total supply are the pre-mined tokens as described in
