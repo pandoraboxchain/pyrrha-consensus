@@ -47,13 +47,10 @@ contract Pandora is IPandora, OnlyOnce, CognitiveJobManager /* final */ {
     /// of worker nodes contracts
     function Pandora (
         CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
-        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        // Constant literal for array size in function arguments not working yet
-        address[3/*=WORKERNODE_WHITELIST_SIZE*/]
-            _workerNodeOwners /// Worker node owners to be whitelisted by the contract
+        WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
     )
     public
-    CognitiveJobManager(_jobFactory, _nodeFactory, _workerNodeOwners)
+    CognitiveJobManager(_jobFactory, _nodeFactory)
     // Ensure that the contract is still uninitialized and `initialize` function be called to check the proper
     // setup of class factories
     Initializable()

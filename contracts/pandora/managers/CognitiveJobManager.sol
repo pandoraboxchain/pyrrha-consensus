@@ -78,13 +78,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// of worker nodes contracts
     function CognitiveJobManager (
         CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
-        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        // Constant literal for array size in function arguments not working yet
-        address[3/*=WORKERNODE_WHITELIST_SIZE*/]
-        _workerNodeOwners /// Worker node owners to be whitelisted by the contract
+        WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
     )
     public
-    WorkerNodeManager(_nodeFactory, _workerNodeOwners) {
+    WorkerNodeManager(_nodeFactory) {
 
         // Must ensure that the supplied factories are already created contracts
         require(_jobFactory != address(0));

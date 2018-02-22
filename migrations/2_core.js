@@ -6,15 +6,6 @@ const WorkerNodeFactory = artifacts.require("WorkerNodeFactory")
 const StateMachineLib = artifacts.require("StateMachineLib")
 
 module.exports = function(deployer, network, accounts) {
-  let lastAccount = accounts[0]
-  let workerOwners = [ ]
-  for (let i = 1; i <= 3; i++) {
-    workerOwners.push(lastAccount)
-    if (accounts[i]) {
-      lastAccount = accounts[i]
-    }
-  }
-
   let pandora, wnf, cjf
 
   deployer
@@ -31,7 +22,7 @@ module.exports = function(deployer, network, accounts) {
   .then(_ => WorkerNodeFactory.deployed())
   .then(instance => {
     wnf = instance
-    return deployer.deploy(Pandora, cjf.address, wnf.address, workerOwners)
+    return deployer.deploy(Pandora, cjf.address, wnf.address)
   })
   .then(_ => Pandora.deployed())
   .then(instance => {
