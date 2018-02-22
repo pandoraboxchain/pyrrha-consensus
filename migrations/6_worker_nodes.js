@@ -7,7 +7,7 @@ function createWorkerForAccount(pandora, account)
 {
   return pandora.createWorkerNode({ from: account })
   .then(tx => {
-    const address = (tx.logs[1]|| tx.logs[0])mv .args['workerNode']
+    const address = (tx.logs[1] || tx.logs[0]).args['workerNode']
     console.log("  WorkerNode: " + address)
     return WorkerNode.at(address)
   })

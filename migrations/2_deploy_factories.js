@@ -6,7 +6,7 @@ let WorkerNodeFactory = artifacts.require("WorkerNodeFactory")
 let StateMachineLib = artifacts.require("StateMachineLib")
 
 module.exports = function(deployer, network, accounts) {
-  let workerOwners = [ accounts[0], accounts[1], accounts[2] ]
+  let workerOwners = [ accounts[0], accounts[0], accounts[0] ]
 
   deployer.deploy(StateMachineLib)
   .then(_ => deployer.link(StateMachineLib, [ WorkerNode, CognitiveJob ]))

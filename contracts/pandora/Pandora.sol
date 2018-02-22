@@ -56,7 +56,8 @@ contract Pandora is IPandora, OnlyOnce, CognitiveJobManager /* final */ {
     CognitiveJobManager(_jobFactory, _nodeFactory, _workerNodeOwners)
     // Ensure that the contract is still uninitialized and `initialize` function be called to check the proper
     // setup of class factories
-    Initializable() {
+    Initializable()
+    Ownable() {
     }
 
     /// ### Initialization
