@@ -11,31 +11,15 @@ Contracts implement [Pandora Protocol Specification](https://github.com/pandorab
 Current version is a limited implementation and is subjected for further development. We are working on the first
 cognitive network implementation codenamed "Pyrrha", after the first Pandora daughter.
 
-Core contract is [`Pandora.sol`](contracts/Pandora.sol), you can look through its [code](contracts/Pandora.sol).
+Core contract is [`Pandora.sol`](contracts/pandora/Pandora.sol), you can look through its [code](contracts/pandora/Pandora.sol).
 
-## Usage
+## Deployment
 
-To initialize a project with this exapmple, run `truffle init webpack` inside an empty directory.
+Contract deployment is tested with local Ganache, Ethereum Testnets (Ropsten, Rinkeby) and RSK testnet.
 
-## Building and the frontend
+## Known problems
 
-1. First run `truffle compile`, then run `truffle migrate` to deploy the contracts onto your network of choice (default "development").
-1. Then run `npm run dev` to build the app and serve it on http://localhost:8080
+### Deployment to Ropsten network
 
-## Possible upgrades
+Rinkeby and Ropsten testnet currently have different block gas limit: limit for Ropsten are lower then for Rinkeby (which is nearly equivalent to the main net gas limit). Thus, while the core contracts can be published to the Ropsten network, there may by problems with calling Pandora.createWorker() methods, since its gas consumption is near the top of Ropsten block gas limit and fails most of the time.
 
-* Use the webpack hotloader to sense when contracts or javascript have been recompiled and rebuild the application. Contributions welcome!
-
-## Common Errors
-
-* `Error: Can't resolve '../build/contracts/MetaCoin.json'`
-
-This means you haven't compiled or migrated your contracts yet. Run `truffle compile` and `truffle migrate` first.
-
-Full error:
-
-```
-ERROR in ./app/main.js
-Module not found: Error: Can't resolve '../build/contracts/MetaCoin.json' in '/Users/tim/Documents/workspace/Consensys/test3/app'
- @ ./app/main.js 11:16-59
-```
