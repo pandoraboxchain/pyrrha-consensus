@@ -19,7 +19,7 @@ Contract deployment is tested with local Ganache, Ethereum Testnets (Ropsten, Ri
 
 ## Known problems
 
-### Deployment to Ropsten network
+### Deployment to the Ropsten network
 
-Rinkeby and Ropsten testnet currently have different block gas limit: limit for Ropsten are lower then for Rinkeby (which is nearly equivalent to the main net gas limit). Thus, while the core contracts can be published to the Ropsten network, there may by problems with calling Pandora.createWorker() methods, since its gas consumption is near the top of Ropsten block gas limit and fails most of the time.
+Rinkeby and Ropsten testnets currently have different block gas limit: limit for Ropsten is lower then for Rinkeby (with the latter being nearly equivalent to the main net gas limit). Thus, while the core contracts can be published to the Ropsten network, there may by problems with calling Pandora.createWorker() method, since its gas consumption is near the upper bound of Ropsten block gas limit and the method will fail most of the time.
 
