@@ -32,7 +32,13 @@ module.exports = {
     infura_rinkeby: {
       provider: _ => new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/"+infura_apikey),
       network_id: '*',
-      gas: lowGas
+      gas: highGas
+    },
+
+    pandora_rinkeby: {
+      host: 'dockstation.pandora.network',
+      port: 8545,
+      network_id: '*'
     },
 
     ropsten: {
