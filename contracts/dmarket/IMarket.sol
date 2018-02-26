@@ -12,6 +12,9 @@ contract IMarket {
     event KernelAdded(IKernel kernel);
     event DatasetAdded(IDataset dataset);
 
+    function kernelsCount() external view returns (uint);
+    function datasetsCount() external view returns (uint);
+
     function addKernel(IKernel _kernel) external returns (bool);
     function addDataset(IDataset _dataset) external returns (bool);
 }
