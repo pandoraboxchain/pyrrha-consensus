@@ -22,7 +22,7 @@ contract PandoraMarket is IMarket {
     returns (
         uint o_count
     ) {
-        o_count = kernels.length();
+        o_count = kernels.length;
     }
 
     function datasetsCount()
@@ -31,7 +31,7 @@ contract PandoraMarket is IMarket {
     returns (
         uint o_count
     ) {
-        o_count = datasets.length();
+        o_count = datasets.length;
     }
 
     function addKernel(IKernel _kernel)

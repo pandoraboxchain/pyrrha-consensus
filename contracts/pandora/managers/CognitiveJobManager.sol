@@ -5,6 +5,7 @@ import '../lottery/RoundRobinLottery.sol';
 import './ICognitiveJobManager.sol';
 import './WorkerNodeManager.sol';
 import '../../jobs/IComputingJob.sol';
+import '../../libraries/CognitiveJobQueue.sol';
 
 /**
  * @title Pandora Smart Contract
@@ -60,6 +61,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Contract implementing lottery interface for workers selection. Only internal usage
     /// by `createCognitiveJob` function
     ILotteryEngine internal workerLotteryEngine;
+
+    ///@dev Cognitive job queue used for case when no idle workers available
+    using CognitiveJobQueue for CognitiveJobQueue.Queue;
+    CognitiveJobQueue.Queue internal cognitiveJobQueue;
 
     /*******************************************************************************************************************
      * ## Events
@@ -180,7 +185,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
         // Something really wrong happened with EVM if this assert fails
         if (actualSize != estimatedSize) {
-            o_resultCode = 0;
+            o_resultCode = 0; //TODO result code for adding to queue
+            cognitiveJobQueue.put(kernel, dataset);
             o_cognitiveJob = IComputingJob(0);
             return (o_cognitiveJob, o_resultCode);
         }
