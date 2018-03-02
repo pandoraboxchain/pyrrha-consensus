@@ -52,6 +52,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         return activeJobs.length;
     }
 
+    uint8 constant public RESULT_CODE_ADD_TO_QUEUE = 0;
+    uint8 constant public RESULT_CODE_JOB_CREATED = 1;
+
     /// ### Private and internal variables
 
     /// @dev Limit for the amount of lottery cycles before reporting failure to start cognitive job.
@@ -169,11 +172,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
         // There must be at least one free worker node
         if (estimatedSize <= 0) {
-            o_resultCode = 0;
-            o_cognitiveJob = IComputingJob(0);
+            cognitiveJobQueue.put(kernel, dataset); // add element to queue if no worker nodes available
+            o_cognitiveJob = IComputingJob(0); // create job for return value with result code
+            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             return (o_cognitiveJob, o_resultCode);
         }
-        //require(estimatedSize > 0);
 
         // Initializing in-memory array for idle node list and populating it with data
         IWorkerNode[] memory idleWorkers = new IWorkerNode[](estimatedSize);
@@ -183,14 +186,14 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
                 idleWorkers[actualSize++] = workerNodes[no];
             }
         }
+
         // Something really wrong happened with EVM if this assert fails
         if (actualSize != estimatedSize) {
-            o_resultCode = 0; //TODO result code for adding to queue
             cognitiveJobQueue.put(kernel, dataset);
-            o_cognitiveJob = IComputingJob(0);
+            o_cognitiveJob = IComputingJob(0); // create job for return value with result code
+            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             return (o_cognitiveJob, o_resultCode);
         }
-        //require(actualSize == estimatedSize);
 
         /// @todo Add payments
 
@@ -217,7 +220,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Fire global event to notify the selected worker node
         CognitiveJobCreated(o_cognitiveJob);
         o_cognitiveJob.initialize();
-        o_resultCode = 1;
+        o_resultCode = RESULT_CODE_JOB_CREATED;
     }
 
     /**
@@ -250,5 +253,45 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length - 1];
         jobAddresses[movedJob] = index + 1;
         activeJobs.length--;
+
+        // Check number of Idle workers
+
+        // Counting number of available worker nodes (in Idle state)
+        // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
+        // first by counting array size and then by allocating and populating array itself
+        uint256 estimatedSize = 0;
+        for (uint256 no = 0; no < workerNodes.length; no++) {
+            if (workerNodes[no].currentState() == workerNodes[no].Idle()) {
+                estimatedSize++;
+            }
+        }
+        // There must be at least one free worker node
+        if (estimatedSize <= 0) {
+            return;
+        }
+
+        // Initializing in-memory array for idle node list and populating it with data
+        IWorkerNode[] memory idleWorkers = new IWorkerNode[](estimatedSize);
+        uint256 actualSize = 0;
+        for (no = 0; no < workerNodes.length; no++) {
+            if (workerNodes[no].currentState() == workerNodes[no].Idle()) {
+                idleWorkers[actualSize++] = workerNodes[no];
+            }
+        }
+
+        if (actualSize != estimatedSize) {
+            return;
+        }
+
+        // Try to start new CognitiveJob from a queue of activeJobs
+        for (uint i = 0; i < cognitiveJobQueue.queueDepth; i++) {
+            queuedJob = cognitiveJobQueue.requestJob();
+            if (queuedJob != QueueJob(0)) {
+                //TODO somewhere there should be checking deposit amount
+                createCogniveJob(queuedJob.kernel, queuedJob.dataset);
+            } else {
+                break;
+            }
+        }
     }
 }
