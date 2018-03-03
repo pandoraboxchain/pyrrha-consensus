@@ -172,7 +172,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
         // There must be at least one free worker node
         if (estimatedSize <= 0) {
-            cognitiveJobQueue.put(kernel, dataset); // add element to queue if no worker nodes available
+            cognitiveJobQueue.put(kernel, dataset, msg.value); // add element to queue if no worker nodes available
             o_cognitiveJob = IComputingJob(0); // create job for return value with result code
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             return (o_cognitiveJob, o_resultCode);
@@ -189,7 +189,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Something really wrong happened with EVM if this assert fails
         if (actualSize != estimatedSize) {
-            cognitiveJobQueue.put(kernel, dataset);
+            cognitiveJobQueue.put(kernel, dataset, msg.value);
             o_cognitiveJob = IComputingJob(0); // create job for return value with result code
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             return (o_cognitiveJob, o_resultCode);
@@ -254,43 +254,67 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         jobAddresses[movedJob] = index + 1;
         activeJobs.length--;
 
+        // After finish, try to start new CognitiveJob from a queue of activeJobs
+        startCognitiveJobFromQueue();
+    }
+
+    function startCognitiveJobFromQueue() private {
+        CognitiveJobQueue.QueuedJob memory queuedJob;
+        // iterate queue and check depth
+        for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
+            // check existence of idle workers first
+            uint idleWorkers = checkNumberOfIdleWorkers();
+            if (idleWorkers <= 0) {
+                break;
+            }
+            if (!cognitiveJobQueue.compareFirstElementToIdleWorkers(idleWorkers)) {
+                break;
+            }
+            uint256 value;
+            (queuedJob, value) = cognitiveJobQueue.requestJob();
+            this.createCognitiveJob.value(value)(queuedJob.kernel, queuedJob.dataset);
+        }
+    }
+
+    function checkNumberOfIdleWorkers() private returns(uint number) {
+
         // Check number of Idle workers
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
-        uint256 estimatedSize = 0;
-        for (uint256 no = 0; no < workerNodes.length; no++) {
-            if (workerNodes[no].currentState() == workerNodes[no].Idle()) {
-                estimatedSize++;
-            }
-        }
+        uint256 estimatedSize = countIdleWorkers();
         // There must be at least one free worker node
         if (estimatedSize <= 0) {
-            return;
+            return 0;
         }
 
         // Initializing in-memory array for idle node list and populating it with data
-        IWorkerNode[] memory idleWorkers = new IWorkerNode[](estimatedSize);
-        uint256 actualSize = 0;
-        for (no = 0; no < workerNodes.length; no++) {
-            if (workerNodes[no].currentState() == workerNodes[no].Idle()) {
-                idleWorkers[actualSize++] = workerNodes[no];
+        IWorkerNode[] memory idleWorkers = createArrayIdleWorkers(estimatedSize);
+        uint actualSize = idleWorkers.length;
+        if (actualSize != estimatedSize) {
+            return 0;
+        }
+        return actualSize;
+    }
+
+    function countIdleWorkers() private returns(uint) {
+
+        uint256 estimatedSize = 0;
+        for (uint256 i = 0; i < workerNodes.length; i++) {
+            if (workerNodes[i].currentState() == workerNodes[i].Idle()) {
+                estimatedSize++;
             }
         }
+        return estimatedSize;
+    }
 
-        if (actualSize != estimatedSize) {
-            return;
-        }
-
-        // Try to start new CognitiveJob from a queue of activeJobs
-        for (uint i = 0; i < cognitiveJobQueue.queueDepth; i++) {
-            queuedJob = cognitiveJobQueue.requestJob();
-            if (queuedJob != QueueJob(0)) {
-                //TODO somewhere there should be checking deposit amount
-                createCogniveJob(queuedJob.kernel, queuedJob.dataset);
-            } else {
-                break;
+    function createArrayIdleWorkers(uint estimatedSize) private returns(IWorkerNode[]) {
+        IWorkerNode[] memory idleWorkers = new IWorkerNode[](estimatedSize);
+        uint256 actualSize = 0;
+        for (uint j = 0; j < workerNodes.length; j++) {
+            if (workerNodes[j].currentState() == workerNodes[j].Idle()) {
+                idleWorkers[actualSize++] = workerNodes[j];
             }
         }
     }

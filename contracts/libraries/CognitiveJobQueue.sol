@@ -6,14 +6,17 @@ import '../entities/IDataset.sol';
 
 library CognitiveJobQueue {
 
-    struct QueuedJob {
-        IKernel kernel;
-        IDataset dataset;
-    }
+    // implementation with 'unlimited' array
 
     struct Queue {
         QueuedJob[] jobArray;
+        uint256[] deposits;
         uint256 cursorPosition;
+    }
+
+    struct QueuedJob {
+        IKernel kernel;
+        IDataset dataset;
     }
 
     /// @dev Returns depth of queue
@@ -23,35 +26,35 @@ library CognitiveJobQueue {
     }
 
     /// @dev Inserts the specified element at the tail of the queue
-    function put(Queue storage _queue, IKernel _kernel, IDataset _dataset) internal returns(uint) {
+    function put(Queue storage _queue, IKernel _kernel, IDataset _dataset, uint256 value) internal returns(uint) {
 
         require(_queue.jobArray.length + 1 < _queue.jobArray.length); // exceeded 2^256 push requests
         _queue.jobArray.push(QueuedJob(_kernel, _dataset));
+        _queue.deposits.push(value);
         return queueDepth(_queue);
     }
 
-    /// @dev Returns first QueuedJob in queue, if no elements - returns None value;
-    function requestJob(Queue storage _queue, uint128 numberIdleWorkers) internal returns(QueuedJob) {
+    /// @notice Should be called BEFORE call requestJob()
+    /// @dev Compare number of batches in first element with number of idle workers
+    function compareFirstElementToIdleWorkers(Queue storage _queue, uint256 numberIdleWorkers) internal view
+        returns(bool) {
 
-        require(queueDepth(_queue) > 0); //queue should have at least 1 element
-
-        // Number of batches should be less then number of Idle workers
-        if (peek(_queue).dataset.batchesCount <= numberIdleWorkers) {
-            return poll(_queue);
-        } else {
-            return QueuedJob(0);
-        }
+        //queue should have at least 1 element
+        return peek(_queue).dataset.batchesCount() <= numberIdleWorkers;
     }
 
+    /// @notice Should check queue depth before call this method
     /// @dev Retrieves and removes the head of the queue
-    function poll(Queue storage _queue) private returns(QueuedJob) {
+    function requestJob(Queue storage _queue) internal returns(QueuedJob, uint256 value) {
 
         require(queueDepth(_queue) > 0); //queue should have at least 1 element
         require(_queue.jobArray.length - 1 < _queue.cursorPosition);
         _queue.cursorPosition++; // move cursor to next element
         QueuedJob memory memoryJob = _queue.jobArray[_queue.cursorPosition - 1]; // write return value to memory variable
+        uint256 memoryValue = _queue.deposits[_queue.cursorPosition - 1];
         delete _queue.jobArray[_queue.cursorPosition - 1]; // delete element from array
-        return memoryJob;
+        delete _queue.deposits[_queue.cursorPosition - 1];
+        return (memoryJob, memoryValue);
     }
 
     /// @dev Retrieves the head of the queue
