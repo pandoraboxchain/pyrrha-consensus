@@ -164,62 +164,30 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
-        uint256 estimatedSize = 0;
-        for (uint256 no = 0; no < workerNodes.length; no++) {
-            if (workerNodes[no].currentState() == workerNodes[no].Idle()) {
-                estimatedSize++;
-            }
-        }
+        uint256 estimatedSize = countIdleWorkers();
         // There must be at least one free worker node
         if (estimatedSize <= 0) {
-            cognitiveJobQueue.put(kernel, dataset, msg.value); // add element to queue if no worker nodes available
-            o_cognitiveJob = IComputingJob(0); // create job for return value with result code
-            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
+            o_resultCode = 0;
+            o_cognitiveJob = IComputingJob(0);
             return (o_cognitiveJob, o_resultCode);
         }
 
         // Initializing in-memory array for idle node list and populating it with data
-        IWorkerNode[] memory idleWorkers = new IWorkerNode[](estimatedSize);
-        uint256 actualSize = 0;
-        for (no = 0; no < workerNodes.length; no++) {
-            if (workerNodes[no].currentState() == workerNodes[no].Idle()) {
-                idleWorkers[actualSize++] = workerNodes[no];
-            }
-        }
+        IWorkerNode[] memory idleWorkers = createArrayIdleWorkers(estimatedSize);
+        uint actualSize = idleWorkers.length;
 
         // Something really wrong happened with EVM if this assert fails
         if (actualSize != estimatedSize) {
-            cognitiveJobQueue.put(kernel, dataset, msg.value);
-            o_cognitiveJob = IComputingJob(0); // create job for return value with result code
-            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
+            o_resultCode = 0;
+            o_cognitiveJob = IComputingJob(0);
             return (o_cognitiveJob, o_resultCode);
         }
 
         /// @todo Add payments
 
-        // Running lottery to select worker node to be assigned cognitive job contract
-        uint256 tryNo = 0;
-        uint256 randomNo;
-        IWorkerNode assignedWorker;
-        do {
-            assert(tryNo < MAX_WORKER_LOTTERY_TRIES);
-            randomNo = workerLotteryEngine.getRandom(idleWorkers.length);
-            assignedWorker = idleWorkers[randomNo];
-            tryNo++;
-        } while (assignedWorker.currentState() != assignedWorker.Idle());
-
-        IWorkerNode[] memory assignedWorkers = new IWorkerNode[](1);
-        assignedWorkers[0] = assignedWorker;
-        // Create cognitive job contract
-        o_cognitiveJob = cognitiveJobFactory.create(kernel, dataset, assignedWorkers);
-        assert(o_cognitiveJob != address(0));
-        // Save new contract to the storage
-        activeJobs.push(o_cognitiveJob);
-        jobAddresses[o_cognitiveJob] = uint16(activeJobs.length);
-
-        // Fire global event to notify the selected worker node
-        CognitiveJobCreated(o_cognitiveJob);
-        o_cognitiveJob.initialize();
+        //Running lottery to select worker node to be assigned cognitive job contract
+        IWorkerNode[] memory assignedWorkers = selectWorkerWithLottery(idleWorkers);
+        initCognitiveJob(kernel, dataset, assignedWorkers);
         o_resultCode = RESULT_CODE_JOB_CREATED;
     }
 
@@ -255,47 +223,75 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         activeJobs.length--;
 
         // After finish, try to start new CognitiveJob from a queue of activeJobs
-        startCognitiveJobFromQueue();
+        createCognitiveJobFromQueue();
     }
 
-    function startCognitiveJobFromQueue() private {
+    function createCognitiveJobFromQueue() private {
         CognitiveJobQueue.QueuedJob memory queuedJob;
         // iterate queue and check depth
         for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
-            // check existence of idle workers first
-            uint idleWorkers = checkNumberOfIdleWorkers();
-            if (idleWorkers <= 0) {
+
+            // Counting number of available worker nodes (in Idle state)
+            uint256 estimatedSize = countIdleWorkers();
+
+            // There must be at least one free worker node
+            if (estimatedSize <= 0) {
                 break;
             }
-            if (!cognitiveJobQueue.compareFirstElementToIdleWorkers(idleWorkers)) {
+
+            // Initializing in-memory array for idle node list and populating it with data
+            IWorkerNode[] memory idleWorkers = createArrayIdleWorkers(estimatedSize);
+            uint actualSize = idleWorkers.length;
+            if (actualSize != estimatedSize) {
                 break;
             }
-            uint256 value;
+
+            // Check number of batches with number of idle workers
+            if (!cognitiveJobQueue.compareFirstElementToIdleWorkers(actualSize)) {
+                break;
+            }
+
+            uint256 value; // Value from queue deposit
             (queuedJob, value) = cognitiveJobQueue.requestJob();
-            this.createCognitiveJob.value(value)(queuedJob.kernel, queuedJob.dataset);
+
+            /// @todo Add payment from queue deposit
+
+            //Running lottery to select worker node to be assigned cognitive job contract
+            IWorkerNode[] memory assignedWorkers = selectWorkerWithLottery(idleWorkers);
+
+            initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
         }
     }
 
-    function checkNumberOfIdleWorkers() private returns(uint number) {
+    ///@notice Create cognitive job contract, save it to storage and fire global event to notify selected worker node
+    function initCognitiveJob(IKernel kernel, IDataset dataset, IWorkerNode[] assignedWorkers) private {
 
-        // Check number of Idle workers
+        IComputingJob o_cognitiveJob = cognitiveJobFactory.create(kernel, dataset, assignedWorkers);
+            assert(o_cognitiveJob != address(0));
+            // Save new contract to the storage
+            activeJobs.push(o_cognitiveJob);
+            jobAddresses[o_cognitiveJob] = uint16(activeJobs.length);
 
-        // Counting number of available worker nodes (in Idle state)
-        // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
-        // first by counting array size and then by allocating and populating array itself
-        uint256 estimatedSize = countIdleWorkers();
-        // There must be at least one free worker node
-        if (estimatedSize <= 0) {
-            return 0;
-        }
+            // Fire global event to notify the selected worker node
+            CognitiveJobCreated(o_cognitiveJob);
+            o_cognitiveJob.initialize();
+    }
 
-        // Initializing in-memory array for idle node list and populating it with data
-        IWorkerNode[] memory idleWorkers = createArrayIdleWorkers(estimatedSize);
-        uint actualSize = idleWorkers.length;
-        if (actualSize != estimatedSize) {
-            return 0;
-        }
-        return actualSize;
+    ///@notice Running lottery to select worker node
+    function selectWorkerWithLottery(IWorkerNode[] idleWorkers) internal returns (IWorkerNode[]){
+        uint256 tryNo = 0;
+        uint256 randomNo;
+        IWorkerNode assignedWorker;
+        do {
+            assert(tryNo < MAX_WORKER_LOTTERY_TRIES);
+            randomNo = workerLotteryEngine.getRandom(idleWorkers.length);
+            assignedWorker = idleWorkers[randomNo];
+            tryNo++;
+        } while (assignedWorker.currentState() != assignedWorker.Idle());
+
+        IWorkerNode[] memory assignedWorkers = new IWorkerNode[](1);
+        assignedWorkers[0] = assignedWorker;
+        return assignedWorkers;
     }
 
     function countIdleWorkers() private returns(uint) {
