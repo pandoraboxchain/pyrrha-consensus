@@ -34,42 +34,37 @@ library CognitiveJobQueue {
         return queueDepth(_queue);
     }
 
-    /// @notice Should be called BEFORE call requestJob()
+    /// @notice Unsafe function -  should check queue depth before call this method with queueDepth()
+    /// Should be called BEFORE call requestJob(),
     /// @dev Compare number of batches in first element with number of idle workers
     function compareFirstElementToIdleWorkers(Queue storage _queue, uint256 numberIdleWorkers) internal view
         returns(bool) {
-
-        //queue should have at least 1 element
-        return peek(_queue).dataset.batchesCount() <= numberIdleWorkers;
+        QueuedJob memory firstElement;
+        (firstElement,) = peek(_queue);
+        return firstElement.dataset.batchesCount() <= numberIdleWorkers;
     }
 
-    /// @notice Should check queue depth before call this method
+    /// @notice Unsafe function - should check queue depth before call this method with queueDepth()
     /// @dev Retrieves and removes the head of the queue
-    function requestJob(Queue storage _queue) internal returns(QueuedJob, uint256 value) {
+    function requestJob(Queue storage _queue) internal returns(QueuedJob cognitiveJob, uint256 value) {
 
-        require(queueDepth(_queue) > 0); //queue should have at least 1 element
-        require(_queue.jobArray.length - 1 < _queue.cursorPosition);
-        _queue.cursorPosition++; // move cursor to next element
-        QueuedJob memory memoryJob = _queue.jobArray[_queue.cursorPosition - 1]; // write return value to memory variable
-        uint256 memoryValue = _queue.deposits[_queue.cursorPosition - 1];
-        delete _queue.jobArray[_queue.cursorPosition - 1]; // delete element from array
-        delete _queue.deposits[_queue.cursorPosition - 1];
-        return (memoryJob, memoryValue);
+        (cognitiveJob, value) = peek(_queue); // write return values to memory variable
+        remove(_queue);
+        return (cognitiveJob, value);
     }
 
     /// @dev Retrieves the head of the queue
-    function peek(Queue storage _queue) private returns(QueuedJob) {
+    function peek(Queue storage _queue) private returns(QueuedJob, uint value) {
 
-        require(queueDepth(_queue) > 0); //queue should have at least 1 element
-        require(_queue.jobArray.length - 1 < _queue.cursorPosition);
-        return _queue.jobArray[_queue.cursorPosition];
+        return (_queue.jobArray[_queue.cursorPosition], _queue.deposits[_queue.cursorPosition]);
     }
 
     /// @dev Removes the head of the queue
     function remove(Queue storage _queue) private {
 
-        require(queueDepth(_queue) > 0); //queue should have at least 1 element
         _queue.cursorPosition++; // move cursor to next element
         delete _queue.jobArray[_queue.cursorPosition - 1]; // delete element from array
+        delete _queue.deposits[_queue.cursorPosition - 1];
+
     }
 }
