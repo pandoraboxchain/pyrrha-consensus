@@ -39,6 +39,7 @@ library CognitiveJobQueue {
     /// @dev Compare number of batches in first element with number of idle workers
     function compareFirstElementToIdleWorkers(Queue storage _queue, uint256 numberIdleWorkers) internal view
         returns(bool) {
+
         QueuedJob memory firstElement;
         (firstElement,) = peek(_queue);
         return firstElement.dataset.batchesCount() <= numberIdleWorkers;
@@ -65,6 +66,5 @@ library CognitiveJobQueue {
         _queue.cursorPosition++; // move cursor to next element
         delete _queue.jobArray[_queue.cursorPosition - 1]; // delete element from array
         delete _queue.deposits[_queue.cursorPosition - 1];
-
     }
 }

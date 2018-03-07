@@ -228,8 +228,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     function createCognitiveJobFromQueue() private {
         CognitiveJobQueue.QueuedJob memory queuedJob;
-        // iterate queue and check depth
+        // Iterate queue and check queue depth
         for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
+
+            // Count remainig gas
+            uint initialGas = msg.gas; //deprecated in 0.4.21. should be replaced with gasleft()
 
             // Counting number of available worker nodes (in Idle state)
             uint256 estimatedSize = countIdleWorkers();
@@ -251,15 +254,22 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
                 break;
             }
 
-            uint256 value; // Value from queue deposit
+            uint256 value; // Value from queuedJob deposit
             (queuedJob, value) = cognitiveJobQueue.requestJob();
-
-            /// @todo Add payment from queue deposit
 
             //Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = selectWorkerWithLottery(idleWorkers);
 
             initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
+
+            //Count used funds for queue
+            uint remainingGas = msg.gas;
+            uint weiUsedForQueuedJob = (initialGas - remainingGas) / tx.gasprice;
+
+            // Gas refund to node
+            refundToNode(weiUsedForQueuedJob);
+
+            // TODO withdraw from client's global deposit
         }
     }
 
@@ -292,6 +302,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IWorkerNode[] memory assignedWorkers = new IWorkerNode[](1);
         assignedWorkers[0] = assignedWorker;
         return assignedWorkers;
+    }
+
+    function refundToNode(uint amount) private {
+
+        tx.origin.send(amount);
     }
 
     function countIdleWorkers() private returns(uint) {
