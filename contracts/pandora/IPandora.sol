@@ -4,5 +4,5 @@ import './token/PAN.sol';
 import './managers/WorkerNodeManager.sol';
 import './managers/CognitiveJobManager.sol';
 
-contract IPandora is PAN, Ownable, ICognitiveJobManager, IWorkerNodeManager {
+contract IPandora is PAN, ICognitiveJobManager, IWorkerNodeManager {
 }

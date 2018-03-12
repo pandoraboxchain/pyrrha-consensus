@@ -17,7 +17,7 @@ import './IWorkerNodeManager.sol';
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract WorkerNodeManager is Initializable, IWorkerNodeManager {
+contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -51,11 +51,7 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
     /// @dev Since in the initial Pyrrha release of Pandora network reputation, verification and arbitration mechanics
     /// are under development it uses a set of pre-defined trusted addresses allowed to register worker nodes.
     /// These are specified during initial Pandora contract deployment by the founders.
-    uint8 constant internal WORKERNODE_WHITELIST_SIZE = 3;
-
-    /// @dev Whitelist of node owners allowed to create nodes that perform cognitive work as a trusted environment
-    /// for the first version of the protocol implementation codenamed Pyrrha
-    address[] internal workerNodeOwners;
+    mapping(address => bool) public workerNodeOwners;
 
     /*******************************************************************************************************************
      * ## Events
@@ -76,26 +72,13 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
     function WorkerNodeManager (
-        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        // Constant literal for array size in function arguments not working yet
-        address[3/*=WORKERNODE_WHITELIST_SIZE*/]
-            _workerNodeOwners /// Worker node owners to be whitelisted by the contract
+        WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
     ) public {
-        // Something is wrong with the compiler or Ethereum node if this check fails
-        // (that's why its `assert`, not `require`)
-        assert(_workerNodeOwners.length == WORKERNODE_WHITELIST_SIZE);
-
         // Must ensure that the supplied factories are already created contracts
         require(_nodeFactory != address(0));
 
         // Assign factories to storage variables
         workerNodeFactory = _nodeFactory;
-
-        // Iterate owners white list and add them to the contract storage
-        for (uint8 no = 0; no < _workerNodeOwners.length && no < WORKERNODE_WHITELIST_SIZE; no++) {
-            require(_workerNodeOwners[no] != address(0));
-            workerNodeOwners.push(_workerNodeOwners[no]);
-        }
     }
 
     /*******************************************************************************************************************
@@ -110,18 +93,9 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
 
     /// @dev Checks that the function is called by the owner of one of the whitelisted nodes
     modifier onlyWhitelistedOwners() {
-        bool found = false;
-        for (uint8 no = 0; no < workerNodeOwners.length && no < WORKERNODE_WHITELIST_SIZE; no++) {
-            // Worker node must not be destroyed and its owner must be the sender of the current function call
-            if (workerNodeOwners[no] != address(0) &&
-                msg.sender == workerNodeOwners[no]) {
-                found = true;
-                _;
-                break;
-            }
-        }
         // Failing if ownership conditions are not satisfied
-        require(found);
+        require(workerNodeOwners[msg.sender] == true);
+        _;
     }
 
     modifier checkWorkerAndOwner(
@@ -138,6 +112,28 @@ contract WorkerNodeManager is Initializable, IWorkerNodeManager {
      */
 
     /// ### Public and external
+
+    /// @notice Adds address to the whitelist of owners allowed to create WorkerNodes contracts
+    /// @dev Can be called only by the owner of Pandora contract
+    function whitelistWorkerOwner(
+        address _workerOwner /// Address for adding to whitelist
+    )
+    onlyOwner // Only by owner of Pandora contract
+    external {
+        // Whitelist is organised in a form of mapping with whitelisted addresses set to 'true'
+        workerNodeOwners[_workerOwner] = true;
+    }
+
+    /// @notice Removes address from the whitelist of owners allowed to create WorkerNodes contracts
+    /// @dev Can be called only by the owner of Pandora contract
+    function blacklistWorkerOwner(
+        address _workerOwner /// Address to remove from the whitelist
+    )
+    onlyOwner
+    external {
+        // Just simply free the storage
+        delete workerNodeOwners[_workerOwner];
+    }
 
     /// @notice Returns count of registered worker nodes
     function workerNodesCount()

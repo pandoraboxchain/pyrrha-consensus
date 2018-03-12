@@ -16,6 +16,24 @@ contract PandoraMarket is IMarket {
     function PandoraMarket() {
     }
 
+    function kernelsCount()
+    external
+    view
+    returns (
+        uint o_count
+    ) {
+        o_count = kernels.length;
+    }
+
+    function datasetsCount()
+    external
+    view
+    returns (
+        uint o_count
+    ) {
+        o_count = datasets.length;
+    }
+
     function addKernel(IKernel _kernel)
     external
     returns (bool) {

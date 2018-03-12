@@ -1,42 +1,65 @@
 // Allows us to use ES6 in our migrations and tests.
 require('babel-register')
 
-var HDWalletProvider = require("truffle-hdwallet-provider");
+const HDWalletProvider = require("truffle-hdwallet-provider")
 
-var infura_apikey = "5d45HvcGSajS3BtffliU";
-var mnemonic = "dinner govern better mix core bean illegal rain crash afraid double company";
+const infura_apikey = "5d45HvcGSajS3BtffliU"
+const mnemonic = "dinner govern better mix core bean illegal rain crash afraid double company"
+
+const lowGas = 4700000
+const highGas = 6700000
 
 module.exports = {
   networks: {
     cli: {
-      gas: 4700000,
       host: 'localhost',
       port: 8545,
+      gas: lowGas,
       network_id: '*' // Match any network id
     },
     ganache: {
-      gas: 6700000,
       host: 'localhost',
       port: 7545,
+      gas: highGas,
       network_id: '5777'
     },
-    infura: {
+
+    infura_ropsten: {
       provider: _ => new HDWalletProvider(mnemonic, "https://ropsten.infura.io/"+infura_apikey),
       network_id: 3,
-      gas: 4700000
+      gas: lowGas
     },
+    infura_rinkeby: {
+      provider: _ => new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/"+infura_apikey),
+      network_id: '*',
+      gas: highGas
+    },
+
+    pandora_rinkeby: {
+      host: 'dockstation.pandora.network',
+      port: 8545,
+      network_id: '*'
+    },
+
     ropsten: {
-      from: '0x17e83c2899a917ad4b8a1ac8f1574ca8a8e71d02',
       host: '52.232.79.62',
       port: 8545,
+      from: '0x17e83c2899a917ad4b8a1ac8f1574ca8a8e71d02',
       network_id: '3' // Match any network id
     },
-    testnet: {
-      gas: 4700000,
-      from: '0x00Ea169ce7e0992960D3BdE6F5D539C955316432',
+    private_parity: {
       host: '52.232.83.9',
       port: 8545,
+      from: '0x00Ea169ce7e0992960D3BdE6F5D539C955316432',
+      gas: lowGas,
       network_id: '*' // Match any network id
+    },
+
+    rsktest: {
+      host: 'bitcoin.pandora.network',
+      port: '4444',
+      network_id: '*',
+      gasPrice: 0
     }
   }
 }
