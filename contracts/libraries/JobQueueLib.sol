@@ -4,7 +4,7 @@ import '../jobs/IComputingJob.sol';
 import '../entities/IKernel.sol';
 import '../entities/IDataset.sol';
 
-library CognitiveJobQueue {
+library JobQueueLib {
 
     // implementation with 'unlimited' array
 

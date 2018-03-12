@@ -30,7 +30,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         // Initializing state machine via base contract code
         super._initStateMachine();
 
-        // Going into initial state (Offline)
+        // Going into initial state (Uninitialized)
         stateMachine.currentState = Uninitialized;
     }
 
