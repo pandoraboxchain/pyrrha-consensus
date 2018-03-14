@@ -1,5 +1,6 @@
 pragma solidity ^0.4.18;
 
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import '../../lifecycle/Initializable.sol';
 import '../lottery/RoundRobinLottery.sol';
 import './ICognitiveJobManager.sol';
@@ -52,6 +53,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         return activeJobs.length;
     }
 
+    // Deposits from clients used as payment for work
+    mapping(address => uint256) deposits;
+
     /// @notice Status code returned by `createCognitiveJob()` method when no Idle WorkerNodes were available
     /// and job was not created but was put into the job queue to be processed lately
     uint8 constant public RESULT_CODE_ADD_TO_QUEUE = 0;
@@ -72,6 +76,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     using JobQueueLib for JobQueueLib.Queue;
     /// @dev Cognitive job queue used for case when no idle workers available
     JobQueueLib.Queue internal cognitiveJobQueue;
+
+    using SafeMath for uint;
 
     /*******************************************************************************************************************
      * ## Events
@@ -165,14 +171,17 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // The created job must fit into uint16 size
         require(activeJobs.length < 2 ^ 16 - 1);
 
+        // @todo check payment corresponds to required amount
+
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
         uint256 estimatedSize = _countIdleWorkers();
         // There must be at least one free worker node
         if (estimatedSize <= 0) {
-            o_resultCode = 0;
+            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             o_cognitiveJob = IComputingJob(0);
+            cognitiveJobQueue.put(kernel, dataset, msg.value, msg.sender);
             return (o_cognitiveJob, o_resultCode);
         }
 
@@ -182,17 +191,19 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Something really wrong happened with EVM if this assert fails
         if (actualSize != estimatedSize) {
-            o_resultCode = 0;
+            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             o_cognitiveJob = IComputingJob(0);
+            cognitiveJobQueue.put(kernel, dataset, msg.value, msg.sender);
             return (o_cognitiveJob, o_resultCode);
         }
 
-        /// @todo Add payments
-
-        //Running lottery to select worker node to be assigned cognitive job contract
+        // Running lottery to select worker node to be assigned cognitive job contract
         IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers);
         o_cognitiveJob = _initCognitiveJob(kernel, dataset, assignedWorkers);
         o_resultCode = RESULT_CODE_JOB_CREATED;
+
+        // Hold payment from client
+        deposits[msg.sender] = deposits[msg.sender].add(msg.value);
     }
 
     /// @notice Can't be called by the user, for internal use only
@@ -218,6 +229,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
         }
 
+        // @fixme set 'Idle' state to the worker
+
         // Remove cognitive job contract from the storage
         delete jobAddresses[address(job)];
         IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length - 1];
@@ -225,13 +238,13 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         activeJobs.length--;
 
         // After finish, try to start new CognitiveJob from a queue of activeJobs
-        _checksJobQueue();
+        _checkJobQueue();
     }
 
     /// @notice Can't be called by the user or other contract: for private use only
     /// #dev Function is called only by `finishCognitiveJob()` in order to allocate newly freed WorkerNodes
     /// to perform cognitive jobs from the queue.
-    function _checksJobQueue(
+    function _checkJobQueue(
         // No arguments
     )
     private
@@ -240,7 +253,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Iterate queue and check queue depth
         for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
 
-            // Count remainig gas
+            // Count remaining gas
             uint initialGas = msg.gas; // @fixme deprecated in 0.4.21. should be replaced with gasleft()
 
             // Counting number of available worker nodes (in Idle state)
@@ -278,7 +291,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // Gas refund to node
             tx.origin.send(weiUsedForQueuedJob);
 
-            /// @todo withdraw from client's global deposit
+            /// @todo withdraw from client's global deposit -- issue #10
+
+            
         }
     }
 
@@ -324,7 +339,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     returns (
         IWorkerNode[] /// Resulting sublist of the selected WorkerNodes
     ) {
-        // @fixme Implement selection of more than one worker
+        // @fixme Implement selection of more than one worker -- issue #9
+        // @fixme Optimize selection of Idle workers in cognitive job creation enhancement  -- issue #13
         uint256 tryNo = 0;
         uint256 randomNo;
         IWorkerNode assignedWorker;

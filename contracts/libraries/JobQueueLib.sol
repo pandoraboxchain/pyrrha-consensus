@@ -17,6 +17,7 @@ library JobQueueLib {
     struct QueuedJob {
         IKernel kernel;
         IDataset dataset;
+        address client;
     }
 
     /// @dev Returns depth of queue
@@ -26,11 +27,11 @@ library JobQueueLib {
     }
 
     /// @dev Inserts the specified element at the tail of the queue
-    function put(Queue storage _queue, IKernel _kernel, IDataset _dataset, uint256 value) internal returns(uint) {
+    function put(Queue storage _queue, IKernel _kernel, IDataset _dataset, uint256 _value, address _client) internal returns(uint) {
 
         require(_queue.jobArray.length + 1 < _queue.jobArray.length); // exceeded 2^256 push requests
-        _queue.jobArray.push(QueuedJob(_kernel, _dataset));
-        _queue.deposits.push(value);
+        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _client));
+        _queue.deposits.push(_value);
         return queueDepth(_queue);
     }
 
