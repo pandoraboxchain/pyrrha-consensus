@@ -171,7 +171,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // The created job must fit into uint16 size
         require(activeJobs.length < 2 ^ 16 - 1);
 
-        // @todo check payment corresponds to required amount
+        // @todo check payment corresponds to required amount + gas payment
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
@@ -291,9 +291,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // Gas refund to node
             tx.origin.send(weiUsedForQueuedJob);
 
-            /// @todo withdraw from client's global deposit -- issue #10
-
-            
+            // Withdraw from client's deposits
+            deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsedForQueuedJob - value);
         }
     }
 
