@@ -198,7 +198,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
 
         // Running lottery to select worker node to be assigned cognitive job contract
-        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers);
+        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, dataset.batchesCount());
         o_cognitiveJob = _initCognitiveJob(kernel, dataset, assignedWorkers);
         o_resultCode = RESULT_CODE_JOB_CREATED;
 
@@ -280,7 +280,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             (queuedJob, value) = cognitiveJobQueue.requestJob();
 
             // Running lottery to select worker node to be assigned cognitive job contract
-            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers);
+            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.dataset.batchesCount());
 
             _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
 
@@ -289,7 +289,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             uint weiUsedForQueuedJob = (initialGas - remainingGas) / tx.gasprice;
 
             // Gas refund to node
-            tx.origin.send(weiUsedForQueuedJob);
+            bool result = tx.origin.send(weiUsedForQueuedJob);
 
             // Withdraw from client's deposits
             deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsedForQueuedJob - value);
@@ -332,31 +332,25 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Running lottery to select random worker nodes from the provided list. Used by both `createCognitiveJob`
     /// and `_checksJobQueue` functions.
     function _selectWorkersWithLottery(
-        IWorkerNode[] _idleWorkers /// Pre-defined pool of Idle WorkerNodes to select from
+        IWorkerNode[] _idleWorkers, /// Pre-defined pool of Idle WorkerNodes to select from
+        uint _numberWorkersRequired /// Number of workers required by cognitive job, match with number of batches
     )
     private
     returns (
-        IWorkerNode[] /// Resulting sublist of the selected WorkerNodes
+        IWorkerNode[] assignedWorkers /// Resulting sublist of the selected WorkerNodes
     ) {
-        // @fixme Implement selection of more than one worker -- issue #9
-        // @fixme Optimize selection of Idle workers in cognitive job creation enhancement  -- issue #13
         uint256 tryNo = 0;
         uint256 randomNo;
         IWorkerNode assignedWorker;
-        do {
-            assert(tryNo < MAX_WORKER_LOTTERY_TRIES);
-            randomNo = workerLotteryEngine.getRandom(_idleWorkers.length);
-            assignedWorker = _idleWorkers[randomNo];
-            tryNo++;
-        } while (assignedWorker.currentState() != assignedWorker.Idle());
-
-        IWorkerNode[] memory assignedWorkers = new IWorkerNode[](1);
-        assignedWorkers[0] = assignedWorker;
-        return assignedWorkers;
+        assignedWorkers = new IWorkerNode[](_numberWorkersRequired);
+        uint256[] memory randomNumbers = getRandomArray(uint256(_idleWorkers.length));
+        for (uint i = 0; i < _numberWorkersRequired; i++) {
+            assignedWorkers[i] = _idleWorkers[randomNumbers[i]]; // random selection implemented with shuffle
+        }
     }
 
     /// @notice Can't be called by the user or other contract: for private use only
-    /// @dev Pre-cound amount of available Idle WorkerNodes. Required to allocate in-memory list of WorkerNodes.
+    /// @dev Pre-count amount of available Idle WorkerNodes. Required to allocate in-memory list of WorkerNodes.
     function _countIdleWorkers(
         // No arguments
     )
@@ -385,11 +379,31 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     ) {
         IWorkerNode[] memory idleWorkers = new IWorkerNode[](_estimatedSize);
         uint256 actualSize = 0;
-        for (uint j = 0; j < workerNodes.length && j < _estimatedSize; j++) {
+        for (uint j = 0; j < workerNodes.length; j++) {
             if (workerNodes[j].currentState() == workerNodes[j].Idle()) {
                 idleWorkers[actualSize++] = workerNodes[j];
             }
         }
         return idleWorkers;
+    }
+
+    function getRandomArray(uint256 _arrayLength)
+    public
+    returns (uint256[] o_result) {
+        o_result = new uint256[](_arrayLength);
+        // fill the array with ordered numbers
+        for (uint i = 0; i < _arrayLength; i++) {
+            o_result[i] = i;
+        }
+
+        // shuffle numbers on random positions
+        uint256 numberOfSwaps = 20; // number for check
+        for (uint j = 0; j < numberOfSwaps || j < _arrayLength; j++) {
+            uint firstPosition = workerLotteryEngine.getRandom(_arrayLength - 1);
+            uint secondPosition = workerLotteryEngine.getRandom(_arrayLength - 1);
+            uint firstItem = o_result[firstPosition];
+            o_result[firstPosition] = o_result[secondPosition];
+            o_result[secondPosition] = firstItem;
+        }
     }
 }

@@ -7,8 +7,8 @@ import "./IMarket.sol";
 contract PandoraMarket is IMarket {
     IKernel[] public kernels;
     IDataset[] public datasets;
-    mapping(address => uint32) public kernelMap;
-    mapping(address => uint32) public datasetMap;
+    mapping(address => uint256) public kernelMap;
+    mapping(address => uint256) public datasetMap;
 
     /// @dev Since functions of destroyed contracts return zero then we have to reserve zero value as a special
     /// indicator of the failed contract
@@ -87,9 +87,9 @@ contract PandoraMarket is IMarket {
     )
     external
     returns (
-        uin8 o_result
+        uint8 o_result
     ) {
-        uint32 pos = kernelMap[address(_kernel)];
+        uint256 pos = kernelMap[address(_kernel)];
         if (pos == 0) {
             return o_result = STATUS_NOT_EXISTS;
         }
@@ -111,9 +111,9 @@ contract PandoraMarket is IMarket {
     )
     external
     returns (
-        uin8 o_result
+        uint8 o_result
     ) {
-        uint32 pos = datasetMap[address(_dataset)];
+        uint256 pos = datasetMap[address(_dataset)];
         if (pos == 0) {
             return o_result = STATUS_NOT_EXISTS;
         }
