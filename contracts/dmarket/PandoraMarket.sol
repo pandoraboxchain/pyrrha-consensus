@@ -19,9 +19,13 @@ contract PandoraMarket is IMarket {
     uint8 public constant STATUS_NOT_EXISTS = 4;
 
     event KernelAdded(IKernel kernel);
+    event KernelAddFailed(uint8 reason);
     event DatasetAdded(IDataset dataset);
+    event DatasetAddFailed(uint8 reason);
     event KernelRemoved(IKernel kernel);
+    event KernelRemoveFailed(uint8 reason);
     event DatasetRemoved(IDataset dataset);
+    event DatasetRemoveFailed(uint8 reason);
 
     function PandoraMarket() {
     }
@@ -52,10 +56,14 @@ contract PandoraMarket is IMarket {
         uint8 o_result
     ) {
         if (kernels.length >= 0xFFFFFFFE) {
-            return o_result = STATUS_NO_SPACE;
+            o_result = STATUS_NO_SPACE;
+            KernelAddFailed(o_result);
+            return o_result;
         }
         if (kernelMap[address(_kernel)] != 0) {
-            return o_result = STATUS_ALREADY_EXISTS;
+            o_result = STATUS_ALREADY_EXISTS;
+            KernelAddFailed(o_result);
+            return o_result;
         }
         kernels.push(_kernel);
         kernelMap[address(_kernel)] = kernels.length;
@@ -71,10 +79,14 @@ contract PandoraMarket is IMarket {
         uint8 o_result
     ) {
         if (datasets.length >= 0xFFFFFFFE) {
-            return o_result = STATUS_NO_SPACE;
+            o_result = STATUS_NO_SPACE;
+            DatasetAddFailed(o_result);
+            return o_result;
         }
         if (datasetMap[address(_dataset)] != 0) {
-            return o_result = STATUS_ALREADY_EXISTS;
+            o_result = STATUS_ALREADY_EXISTS;
+            DatasetAddFailed(o_result);
+            return o_result;
         }
         datasets.push(_dataset);
         datasetMap[address(_dataset)] = datasets.length;
@@ -91,7 +103,9 @@ contract PandoraMarket is IMarket {
     ) {
         uint32 pos = kernelMap[address(_kernel)];
         if (pos == 0) {
-            return o_result = STATUS_NOT_EXISTS;
+            o_result = STATUS_NOT_EXISTS;
+            KernelRemoveFailed(o_result);
+            return o_result;
         }
 
         uint len = kernels.length;
@@ -115,7 +129,9 @@ contract PandoraMarket is IMarket {
     ) {
         uint32 pos = datasetMap[address(_dataset)];
         if (pos == 0) {
-            return o_result = STATUS_NOT_EXISTS;
+            o_result = STATUS_NOT_EXISTS;
+            DatasetRemoveFailed(o_result);
+            return o_result;
         }
 
         uint len = datasets.length;
