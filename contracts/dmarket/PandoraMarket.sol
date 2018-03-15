@@ -30,7 +30,7 @@ contract PandoraMarket is IMarket {
     external
     view
     returns (
-        uint o_count
+        uint32 o_count
     ) {
         o_count = kernels.length;
     }
@@ -39,7 +39,7 @@ contract PandoraMarket is IMarket {
     external
     view
     returns (
-        uint o_count
+        uint32 o_count
     ) {
         o_count = datasets.length;
     }
