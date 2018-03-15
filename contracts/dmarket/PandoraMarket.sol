@@ -27,7 +27,8 @@ contract PandoraMarket is IMarket {
     event DatasetRemoved(IDataset dataset);
     event DatasetRemoveFailed(uint8 reason);
 
-    function PandoraMarket() {
+    function PandoraMarket()
+    public {
     }
 
     function kernelsCount()
@@ -36,7 +37,7 @@ contract PandoraMarket is IMarket {
     returns (
         uint32 o_count
     ) {
-        o_count = kernels.length;
+        o_count = uint32(kernels.length);
     }
 
     function datasetsCount()
@@ -45,7 +46,7 @@ contract PandoraMarket is IMarket {
     returns (
         uint32 o_count
     ) {
-        o_count = datasets.length;
+        o_count = uint32(datasets.length);
     }
 
     function addKernel(
@@ -66,7 +67,7 @@ contract PandoraMarket is IMarket {
             return o_result;
         }
         kernels.push(_kernel);
-        kernelMap[address(_kernel)] = kernels.length;
+        kernelMap[address(_kernel)] = uint32(kernels.length);
         KernelAdded(_kernel);
         return o_result = STATUS_SUCCESS;
     }
@@ -89,7 +90,7 @@ contract PandoraMarket is IMarket {
             return o_result;
         }
         datasets.push(_dataset);
-        datasetMap[address(_dataset)] = datasets.length;
+        datasetMap[address(_dataset)] = uint32(datasets.length);
         DatasetAdded(_dataset);
         return o_result = STATUS_SUCCESS;
     }
@@ -99,7 +100,7 @@ contract PandoraMarket is IMarket {
     )
     external
     returns (
-        uin8 o_result
+        uint8 o_result
     ) {
         uint32 pos = kernelMap[address(_kernel)];
         if (pos == 0) {
@@ -111,8 +112,8 @@ contract PandoraMarket is IMarket {
         uint len = kernels.length;
         IKernel lastKernel = kernels[len - 1];
         kernels[pos] = lastKernel;
-        kernelMap[address(_kernel)] = 0;
         kernelMap[address(lastKernel)] = pos;
+        delete kernelMap[address(_kernel)];
         delete kernels[len - 1];
 
         KernelRemoved(_kernel);
@@ -125,7 +126,7 @@ contract PandoraMarket is IMarket {
     )
     external
     returns (
-        uin8 o_result
+        uint8 o_result
     ) {
         uint32 pos = datasetMap[address(_dataset)];
         if (pos == 0) {
@@ -137,8 +138,8 @@ contract PandoraMarket is IMarket {
         uint len = datasets.length;
         IDataset lastDataset = datasets[len - 1];
         datasets[pos] = lastDataset;
-        datasetMap[address(_dataset)] = 0;
         datasetMap[address(lastDataset)] = pos;
+        delete datasetMap[address(_dataset)];
         delete datasets[len - 1];
 
         DatasetRemoved(_dataset);
