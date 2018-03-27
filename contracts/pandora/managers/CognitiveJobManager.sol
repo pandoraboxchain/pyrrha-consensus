@@ -84,8 +84,13 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
      */
 
     /// @dev Event firing when a new cognitive job created
-    event CognitiveJobCreated(IComputingJob cognitiveJob);
+    event CognitiveJobCreated(IComputingJob cognitiveJob, uint resultCode);
 
+    /// @dev Event firing when a new cognitive job failed to create
+    event CognitiveJobCreateFailed(IComputingJob cognitiveJob, uint resultCode);
+
+    // @fixme event for debug
+    event Flag(uint number);
 
     /*******************************************************************************************************************
      * ## Constructor and initialization
@@ -155,8 +160,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
     function createCognitiveJob(
-        IKernel kernel, /// Pre-initialized kernel data entity contract
-        IDataset dataset /// Pre-initialized dataset entity contract
+        IKernel _kernel, /// Pre-initialized kernel data entity contract
+        IDataset _dataset /// Pre-initialized dataset entity contract
     )
     external
     payable
@@ -166,7 +171,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         uint8 o_resultCode /// result code of creating cognitiveJob, 0 - no available workers, 1 - job created
     ) {
         // Dimensions of the input data and neural network input layer must be equal
-        require(kernel.dataDim() == dataset.dataDim());
+        require(_kernel.dataDim() == _dataset.dataDim());
 
         // The created job must fit into uint16 size
         require(activeJobs.length < 2 ^ 16 - 1);
@@ -176,12 +181,15 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
+
         uint256 estimatedSize = _countIdleWorkers();
-        // There must be at least one free worker node
-        if (estimatedSize <= 0) {
+
+        // Put task in queue if number of idle workers less than number of batches in dataset
+        uint8 batchesCount = _dataset.batchesCount();
+        if (estimatedSize < uint256(batchesCount)) {
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            o_cognitiveJob = IComputingJob(0);
-            cognitiveJobQueue.put(kernel, dataset, msg.value, msg.sender);
+            cognitiveJobQueue.put(_kernel, _dataset, msg.value, msg.sender);
+            CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
             return (o_cognitiveJob, o_resultCode);
         }
 
@@ -189,21 +197,24 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
         uint actualSize = idleWorkers.length;
 
-        // Something really wrong happened with EVM if this assert fails
-        if (actualSize != estimatedSize) {
-            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            o_cognitiveJob = IComputingJob(0);
-            cognitiveJobQueue.put(kernel, dataset, msg.value, msg.sender);
-            return (o_cognitiveJob, o_resultCode);
-        }
+//        // Something really wrong happened with EVM if this assert fails
+//        if (actualSize != estimatedSize) {
+//            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
+//            cognitiveJobQueue.put(kernel, dataset, msg.value, msg.sender);
+//            CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
+//            return (o_cognitiveJob, o_resultCode);
+//        }
 
         // Running lottery to select worker node to be assigned cognitive job contract
-        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, dataset.batchesCount());
-        o_cognitiveJob = _initCognitiveJob(kernel, dataset, assignedWorkers);
+        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, _dataset.batchesCount());
+
+        o_cognitiveJob = _initCognitiveJob(_kernel, _dataset, assignedWorkers);
         o_resultCode = RESULT_CODE_JOB_CREATED;
 
-        // Hold payment from client
+        //  Hold payment from client
         deposits[msg.sender] = deposits[msg.sender].add(msg.value);
+
+        CognitiveJobCreated(o_cognitiveJob, o_resultCode);
     }
 
     /// @notice Can't be called by the user, for internal use only
@@ -251,6 +262,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     onlyInitialized {
         JobQueueLib.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
+        Flag(cognitiveJobQueue.queueDepth());
         for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
 
             // Count remaining gas
@@ -314,17 +326,15 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     ) {
         o_cognitiveJob = cognitiveJobFactory.create(_kernel, _dataset, _assignedWorkers);
 
-        // Ensuring that contract was successfully created
-        assert(o_cognitiveJob != address(0));
-        // Hint: trying to figure out was the contract body actually created and initialized with proper values
-        assert(o_cognitiveJob.Destroyed() == 0xFF);
+//        // Ensuring that contract was successfully created
+//        assert(o_cognitiveJob != address(0));
+//        // Hint: trying to figure out was the contract body actually created and initialized with proper values
+//        assert(o_cognitiveJob.Destroyed() == 0xFF);
 
         // Save new contract to the storage
         activeJobs.push(o_cognitiveJob);
         jobAddresses[o_cognitiveJob] = uint16(activeJobs.length);
 
-        // Fire global event to notify the selected worker node
-        CognitiveJobCreated(o_cognitiveJob);
         o_cognitiveJob.initialize();
     }
 
@@ -339,13 +349,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     returns (
         IWorkerNode[] assignedWorkers /// Resulting sublist of the selected WorkerNodes
     ) {
-        uint256 tryNo = 0;
-        uint256 randomNo;
-        IWorkerNode assignedWorker;
         assignedWorkers = new IWorkerNode[](_numberWorkersRequired);
-        uint256[] memory randomNumbers = getRandomArray(uint256(_idleWorkers.length));
-        for (uint i = 0; i < _numberWorkersRequired; i++) {
-            assignedWorkers[i] = _idleWorkers[randomNumbers[i]]; // random selection implemented with shuffle
+        uint256[] memory randomNumbers = getRandomArray(
+            assignedWorkers.length,
+            uint256(_idleWorkers.length));
+        for (uint i = 0; i < 1; i++) {
+            assignedWorkers[i] = _idleWorkers[randomNumbers[i]];
         }
     }
 
@@ -387,23 +396,14 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         return idleWorkers;
     }
 
-    function getRandomArray(uint256 _arrayLength)
+    function getRandomArray(
+        uint _arrayLength,
+        uint256 _numbersRange)
     public
     returns (uint256[] o_result) {
         o_result = new uint256[](_arrayLength);
-        // fill the array with ordered numbers
-        for (uint i = 0; i < _arrayLength; i++) {
-            o_result[i] = i;
-        }
-
-        // shuffle numbers on random positions
-        uint256 numberOfSwaps = 20; // number for check
-        for (uint j = 0; j < numberOfSwaps || j < _arrayLength; j++) {
-            uint firstPosition = workerLotteryEngine.getRandom(_arrayLength - 1);
-            uint secondPosition = workerLotteryEngine.getRandom(_arrayLength - 1);
-            uint firstItem = o_result[firstPosition];
-            o_result[firstPosition] = o_result[secondPosition];
-            o_result[secondPosition] = firstItem;
+        for (uint i = 0; i < o_result.length; i++) {
+            o_result[i] = workerLotteryEngine.getRandom(_numbersRange);
         }
     }
 }

@@ -8,13 +8,14 @@ contract('Pandora', accounts => {
 
   let pandora;
   let pandoraAddress;
+  let workerNode;
   const client = accounts[5]
 
   before('setup', async () => {
     pandora = await Pandora.deployed()
 
     await pandora.whitelistWorkerOwner(accounts[0])
-    let workerNode = await pandora.createWorkerNode({from: accounts[0]})
+    workerNode = await pandora.createWorkerNode({from: accounts[0]})
 
     const idleWorkerAddress = await pandora.workerNodes.call(0)
     console.log(idleWorkerAddress, 'worker node')
@@ -36,12 +37,12 @@ contract('Pandora', accounts => {
     let logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0]
     let logEntries = result.logs.length
 
-    console.log(logFailure)
-    console.log(logSuccess)
-    console.log(logEntries)
+    console.log(logFailure, "failure")
+    console.log(logSuccess, "success")
+    console.log(logEntries, "entries")
 
     assert.equal(result.logs[0].args.resultCode, estimatedCode, "result code in event should match RESULT_CODE_ADD_TO_QUEUE" )
-    assert.equal(logEntries, 1, "should be fired only one event")
+    assert.equal(logEntries, 1, "should be fired only 1 event")
     assert.isOk(logFailure, "should be fired failed event")
     assert.isNotOk(logSuccess, "should not be fired successful creation event")
   })
@@ -59,13 +60,21 @@ contract('Pandora', accounts => {
     let logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0]
     let logEntries = result.logs.length
 
-    console.log(logFailure)
-    console.log(logSuccess)
-    console.log(logEntries)
+    console.log(logFailure, "failure")
+    console.log(logSuccess, "success")
+    console.log(logEntries, "entries")
 
-    assert.equal(result.logs[0].args.resultCode, estimatedCode, "result code in event should match RESULT_CODE_JOB_CREATED" )
-    assert.equal(logEntries, 1, "should be fired only one event")
+    assert.equal(result.logs[1].args.resultCode, estimatedCode, "result code in event should match RESULT_CODE_JOB_CREATED" )
+    assert.equal(logEntries, 2, "should be fired only 2 events")
     assert.isNotOk(logFailure, "should not be fired failed event")
     assert.isOk(logSuccess, "should be fired successful creation event")
   })
+
+//  it('Should request cognitive job from queue when computation is finished', async () => {
+//
+//    console.log(accounts[0])
+//    let result = await pandora.finishCognitiveJob({from: accounts[3]})
+//    console.log(result);
+//
+//  })
 })
