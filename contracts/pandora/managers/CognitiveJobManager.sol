@@ -1,5 +1,6 @@
 pragma solidity ^0.4.18;
 
+import 'zeppelin-solidity/contracts/math/SafeMath.sol';
 import '../../lifecycle/Initializable.sol';
 import '../lottery/RoundRobinLottery.sol';
 import './ICognitiveJobManager.sol';
@@ -52,6 +53,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         return activeJobs.length;
     }
 
+    // Deposits from clients used as payment for work
+    mapping(address => uint256) deposits;
+
     /// @notice Status code returned by `createCognitiveJob()` method when no Idle WorkerNodes were available
     /// and job was not created but was put into the job queue to be processed lately
     uint8 constant public RESULT_CODE_ADD_TO_QUEUE = 0;
@@ -73,13 +77,17 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Cognitive job queue used for case when no idle workers available
     JobQueueLib.Queue internal cognitiveJobQueue;
 
+    using SafeMath for uint;
+
     /*******************************************************************************************************************
      * ## Events
      */
 
     /// @dev Event firing when a new cognitive job created
-    event CognitiveJobCreated(IComputingJob cognitiveJob);
+    event CognitiveJobCreated(IComputingJob cognitiveJob, uint resultCode);
 
+    /// @dev Event firing when a new cognitive job failed to create
+    event CognitiveJobCreateFailed(IComputingJob cognitiveJob, uint resultCode);
 
     /*******************************************************************************************************************
      * ## Constructor and initialization
@@ -149,8 +157,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
     function createCognitiveJob(
-        IKernel kernel, /// Pre-initialized kernel data entity contract
-        IDataset dataset /// Pre-initialized dataset entity contract
+        IKernel _kernel, /// Pre-initialized kernel data entity contract
+        IDataset _dataset /// Pre-initialized dataset entity contract
     )
     external
     payable
@@ -159,20 +167,31 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IComputingJob o_cognitiveJob, /// Newly created cognitive jobs (starts automatically)
         uint8 o_resultCode /// result code of creating cognitiveJob, 0 - no available workers, 1 - job created
     ) {
+
+        // Restriction for batches count came from potential high gas usage in JobQueue processing
+        // todo check max restriction with tests
+        require(_dataset.batchesCount() <= 10);
+
         // Dimensions of the input data and neural network input layer must be equal
-        require(kernel.dataDim() == dataset.dataDim());
+        require(_kernel.dataDim() == _dataset.dataDim());
 
         // The created job must fit into uint16 size
         require(activeJobs.length < 2 ^ 16 - 1);
 
+        // @todo check payment corresponds to required amount + gas payment
+
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
+
         uint256 estimatedSize = _countIdleWorkers();
-        // There must be at least one free worker node
-        if (estimatedSize <= 0) {
-            o_resultCode = 0;
-            o_cognitiveJob = IComputingJob(0);
+
+        // Put task in queue if number of idle workers less than number of batches in dataset
+        uint8 batchesCount = _dataset.batchesCount();
+        if (estimatedSize < uint256(batchesCount)) {
+            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
+            cognitiveJobQueue.put(_kernel, _dataset, msg.value, msg.sender);
+            CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
             return (o_cognitiveJob, o_resultCode);
         }
 
@@ -180,19 +199,24 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
         uint actualSize = idleWorkers.length;
 
-        // Something really wrong happened with EVM if this assert fails
-        if (actualSize != estimatedSize) {
-            o_resultCode = 0;
-            o_cognitiveJob = IComputingJob(0);
-            return (o_cognitiveJob, o_resultCode);
-        }
+//        // Something really wrong happened with EVM if this assert fails
+//        if (actualSize != estimatedSize) {
+//            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
+//            cognitiveJobQueue.put(kernel, dataset, msg.value, msg.sender);
+//            CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
+//            return (o_cognitiveJob, o_resultCode);
+//        }
 
-        /// @todo Add payments
+        // Running lottery to select worker node to be assigned cognitive job contract
+        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, _dataset.batchesCount());
 
-        //Running lottery to select worker node to be assigned cognitive job contract
-        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers);
-        o_cognitiveJob = _initCognitiveJob(kernel, dataset, assignedWorkers);
+        o_cognitiveJob = _initCognitiveJob(_kernel, _dataset, assignedWorkers);
         o_resultCode = RESULT_CODE_JOB_CREATED;
+
+        //  Hold payment from client
+        deposits[msg.sender] = deposits[msg.sender].add(msg.value);
+
+        CognitiveJobCreated(o_cognitiveJob, o_resultCode);
     }
 
     /// @notice Can't be called by the user, for internal use only
@@ -202,7 +226,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // No arguments - cognitive job is taken from msg.sender
     )
     external
-    onlyInitialized {
+    onlyInitialized
+    {
         uint16 index = jobAddresses[msg.sender];
         require(index != 0);
         index--;
@@ -218,6 +243,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
         }
 
+        // @fixme set 'Idle' state to the worker
+
         // Remove cognitive job contract from the storage
         delete jobAddresses[address(job)];
         IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length - 1];
@@ -225,22 +252,25 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         activeJobs.length--;
 
         // After finish, try to start new CognitiveJob from a queue of activeJobs
-        _checksJobQueue();
+        _checkJobQueue();
     }
 
     /// @notice Can't be called by the user or other contract: for private use only
     /// #dev Function is called only by `finishCognitiveJob()` in order to allocate newly freed WorkerNodes
     /// to perform cognitive jobs from the queue.
-    function _checksJobQueue(
+    function _checkJobQueue(
         // No arguments
     )
     private
     onlyInitialized {
         JobQueueLib.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
-        for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
 
-            // Count remainig gas
+        uint maxNumberOfQueueRequests = 10; // todo check max restriction for queue requests with tests
+
+        for (uint256 k = 0; (k < cognitiveJobQueue.queueDepth()) || (k < maxNumberOfQueueRequests); k++) {
+
+            // Count remaining gas
             uint initialGas = msg.gas; // @fixme deprecated in 0.4.21. should be replaced with gasleft()
 
             // Counting number of available worker nodes (in Idle state)
@@ -267,18 +297,21 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             (queuedJob, value) = cognitiveJobQueue.requestJob();
 
             // Running lottery to select worker node to be assigned cognitive job contract
-            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers);
+            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.dataset.batchesCount());
 
-            _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
+            IComputingJob createdCognitiveJob = _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
+            uint resultCode = RESULT_CODE_JOB_CREATED;
+
+            CognitiveJobCreated(createdCognitiveJob, resultCode);
 
             // Count used funds for queue
-            uint remainingGas = msg.gas;
-            uint weiUsedForQueuedJob = (initialGas - remainingGas) / tx.gasprice;
+            uint weiUsedForQueuedJob = (initialGas - msg.gas) / tx.gasprice;
 
             // Gas refund to node
             tx.origin.send(weiUsedForQueuedJob);
 
-            /// @todo withdraw from client's global deposit
+            // Withdraw from client's deposits
+            deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsedForQueuedJob - value);
         }
     }
 
@@ -309,8 +342,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         activeJobs.push(o_cognitiveJob);
         jobAddresses[o_cognitiveJob] = uint16(activeJobs.length);
 
-        // Fire global event to notify the selected worker node
-        CognitiveJobCreated(o_cognitiveJob);
         o_cognitiveJob.initialize();
     }
 
@@ -318,30 +349,24 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Running lottery to select random worker nodes from the provided list. Used by both `createCognitiveJob`
     /// and `_checksJobQueue` functions.
     function _selectWorkersWithLottery(
-        IWorkerNode[] _idleWorkers /// Pre-defined pool of Idle WorkerNodes to select from
+        IWorkerNode[] _idleWorkers, /// Pre-defined pool of Idle WorkerNodes to select from
+        uint _numberWorkersRequired /// Number of workers required by cognitive job, match with number of batches
     )
     private
     returns (
-        IWorkerNode[] /// Resulting sublist of the selected WorkerNodes
+        IWorkerNode[] assignedWorkers /// Resulting sublist of the selected WorkerNodes
     ) {
-        // @fixme Implement selection of more than one worker
-        uint256 tryNo = 0;
-        uint256 randomNo;
-        IWorkerNode assignedWorker;
-        do {
-            assert(tryNo < MAX_WORKER_LOTTERY_TRIES);
-            randomNo = workerLotteryEngine.getRandom(_idleWorkers.length);
-            assignedWorker = _idleWorkers[randomNo];
-            tryNo++;
-        } while (assignedWorker.currentState() != assignedWorker.Idle());
-
-        IWorkerNode[] memory assignedWorkers = new IWorkerNode[](1);
-        assignedWorkers[0] = assignedWorker;
-        return assignedWorkers;
+        assignedWorkers = new IWorkerNode[](_numberWorkersRequired);
+        uint256[] memory randomNumbers = getRandomArray(
+            assignedWorkers.length,
+            uint256(_idleWorkers.length));
+        for (uint i = 0; i < assignedWorkers.length; i++) {
+            assignedWorkers[i] = _idleWorkers[randomNumbers[i]];
+        }
     }
 
     /// @notice Can't be called by the user or other contract: for private use only
-    /// @dev Pre-cound amount of available Idle WorkerNodes. Required to allocate in-memory list of WorkerNodes.
+    /// @dev Pre-count amount of available Idle WorkerNodes. Required to allocate in-memory list of WorkerNodes.
     function _countIdleWorkers(
         // No arguments
     )
@@ -370,11 +395,22 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     ) {
         IWorkerNode[] memory idleWorkers = new IWorkerNode[](_estimatedSize);
         uint256 actualSize = 0;
-        for (uint j = 0; j < workerNodes.length && j < _estimatedSize; j++) {
+        for (uint j = 0; j < workerNodes.length; j++) {
             if (workerNodes[j].currentState() == workerNodes[j].Idle()) {
                 idleWorkers[actualSize++] = workerNodes[j];
             }
         }
         return idleWorkers;
+    }
+
+    function getRandomArray(
+        uint _arrayLength,
+        uint256 _numbersRange)
+    public
+    returns (uint256[] o_result) {
+        o_result = new uint256[](_arrayLength);
+        for (uint i = 0; i < o_result.length; i++) {
+            o_result[i] = workerLotteryEngine.getRandom(_numbersRange);
+        }
     }
 }

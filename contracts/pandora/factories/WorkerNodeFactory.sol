@@ -7,6 +7,7 @@ import '../IPandora.sol';
 contract WorkerNodeFactory is Ownable {
     function WorkerNodeFactory() public {}
 
+    event WorkerNodeOwner(address owner);
     /// @dev Creates worker node contract for the main Pandora contract and does necessary preparations of it
     /// (transferring ownership). Can be called only by a Pandora contract (Pandora is the owner of the factory)
     function create(
@@ -26,5 +27,7 @@ contract WorkerNodeFactory is Ownable {
         // Transferring ownership to the owner supplied by Pandora (it must be a caller of `Pandora.createWorkerNode`
         // function
         o_workerNode.transferOwnership(_nodeOwner);
+
+        WorkerNodeOwner(_nodeOwner);
     }
 }
