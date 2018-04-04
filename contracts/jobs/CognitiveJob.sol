@@ -34,6 +34,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         stateMachine.currentState = Uninitialized;
     }
 
+        event Flag(uint number);
+
     function _fireStateEvent() internal {
         if (currentState() == InsufficientWorkers) {
             WorkersNotFound();
@@ -205,6 +207,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         // All actual work is performed by function modifier transitionToState
     }
 
+
     function _transitionIfReady(uint8 _newState) private checkReadiness transitionToState(_newState) {
         for (uint256 no = 0; no < responseTimestamps.length; no++) {
             responseFlags[no] = false;  // no response or update is given yet
@@ -229,7 +232,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function initialize()
     external
-    onlyPandora
+//    onlyPandora //removed for job queue proper work - TODO research and test consequences of removing modifier
     requireState(Uninitialized)
     transitionToState(GatheringWorkers) {
         // Select initial worker

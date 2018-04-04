@@ -89,9 +89,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Event firing when a new cognitive job failed to create
     event CognitiveJobCreateFailed(IComputingJob cognitiveJob, uint resultCode);
 
-    // @fixme event for debug
-    event Flag(uint number);
-
     /*******************************************************************************************************************
      * ## Constructor and initialization
      */
@@ -224,7 +221,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // No arguments - cognitive job is taken from msg.sender
     )
     external
-    onlyInitialized {
+    onlyInitialized
+    {
         uint16 index = jobAddresses[msg.sender];
         require(index != 0);
         index--;
@@ -262,7 +260,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     onlyInitialized {
         JobQueueLib.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
-        Flag(cognitiveJobQueue.queueDepth());
         for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
 
             // Count remaining gas
@@ -294,14 +291,16 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.dataset.batchesCount());
 
-            _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
+            IComputingJob createdCognitiveJob = _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
+            uint resultCode = RESULT_CODE_JOB_CREATED;
+
+            CognitiveJobCreated(createdCognitiveJob, resultCode);
 
             // Count used funds for queue
-            uint remainingGas = msg.gas;
-            uint weiUsedForQueuedJob = (initialGas - remainingGas) / tx.gasprice;
+            uint weiUsedForQueuedJob = (initialGas - msg.gas) / tx.gasprice;
 
             // Gas refund to node
-            bool result = tx.origin.send(weiUsedForQueuedJob);
+            tx.origin.send(weiUsedForQueuedJob);
 
             // Withdraw from client's deposits
             deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsedForQueuedJob - value);
@@ -326,10 +325,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     ) {
         o_cognitiveJob = cognitiveJobFactory.create(_kernel, _dataset, _assignedWorkers);
 
-//        // Ensuring that contract was successfully created
-//        assert(o_cognitiveJob != address(0));
-//        // Hint: trying to figure out was the contract body actually created and initialized with proper values
-//        assert(o_cognitiveJob.Destroyed() == 0xFF);
+        // Ensuring that contract was successfully created
+        assert(o_cognitiveJob != address(0));
+        // Hint: trying to figure out was the contract body actually created and initialized with proper values
+        assert(o_cognitiveJob.Destroyed() == 0xFF);
 
         // Save new contract to the storage
         activeJobs.push(o_cognitiveJob);
@@ -353,7 +352,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         uint256[] memory randomNumbers = getRandomArray(
             assignedWorkers.length,
             uint256(_idleWorkers.length));
-        for (uint i = 0; i < 1; i++) {
+        for (uint i = 0; i < assignedWorkers.length; i++) {
             assignedWorkers[i] = _idleWorkers[randomNumbers[i]];
         }
     }

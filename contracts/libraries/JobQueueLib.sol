@@ -20,8 +20,6 @@ library JobQueueLib {
         address client;
     }
 
-    event Flag(uint number); //@fixme event for debug
-
     /// @dev Returns depth of queue
     function queueDepth(
         Queue storage _queue
