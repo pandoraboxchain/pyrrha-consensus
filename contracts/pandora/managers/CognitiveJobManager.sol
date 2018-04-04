@@ -167,6 +167,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IComputingJob o_cognitiveJob, /// Newly created cognitive jobs (starts automatically)
         uint8 o_resultCode /// result code of creating cognitiveJob, 0 - no available workers, 1 - job created
     ) {
+
+        // Restriction for batches count came from potential high gas usage in JobQueue processing
+        // todo check max restriction with tests
+        require(_dataset.batchesCount() <= 10);
+
         // Dimensions of the input data and neural network input layer must be equal
         require(_kernel.dataDim() == _dataset.dataDim());
 
@@ -260,7 +265,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     onlyInitialized {
         JobQueueLib.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
-        for (uint256 k = 0; k < cognitiveJobQueue.queueDepth(); k++) {
+
+        uint maxNumberOfQueueRequests = 10; // todo check max restriction for queue requests with tests
+
+        for (uint256 k = 0; (k < cognitiveJobQueue.queueDepth()) || (k < maxNumberOfQueueRequests); k++) {
 
             // Count remaining gas
             uint initialGas = msg.gas; // @fixme deprecated in 0.4.21. should be replaced with gasleft()
