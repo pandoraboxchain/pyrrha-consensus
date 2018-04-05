@@ -1,4 +1,4 @@
-let Pandora = artifacts.require("Pandora") // *** NB: version with hooks (for testing) instead of normal contract)
+let Pandora = artifacts.require("Pandora")
 let Dataset = artifacts.require("Dataset")
 let Kernel = artifacts.require("Kernel")
 let WorkerNode = artifacts.require("WorkerNode")
