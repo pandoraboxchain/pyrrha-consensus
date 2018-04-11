@@ -30,8 +30,9 @@ module.exports = function(deployer, network, accounts) {
   .then(_ => Pandora.deployed())
   .then(instance => {
     pandora = instance
-    return wnf.transferOwnership(pandora.address)
+    return pandora.whitelistWorkerOwner(accounts[0])
   })
+  .then(_ => wnf.transferOwnership(pandora.address))
   .then(_ => cjf.transferOwnership(pandora.address))
   .then(_ => pandora.initialize())
   .catch(e => console.error(e))

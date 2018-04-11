@@ -100,7 +100,7 @@ contract PandoraMarket is IMarket {
         kernelMap[address(_kernel)] = 0;
         kernelMap[address(lastKernel)] = pos;
         delete kernels[len - 1];
-        kernels.length = kernels.length - 1;
+        kernels.length--;
 
         KernelRemoved(_kernel);
 
@@ -125,7 +125,7 @@ contract PandoraMarket is IMarket {
         datasetMap[address(_dataset)] = 0;
         datasetMap[address(lastDataset)] = pos;
         delete datasets[len - 1];
-        datasets.length = datasets.length - 1;
+        datasets.length--;
 
         DatasetRemoved(_dataset);
 
