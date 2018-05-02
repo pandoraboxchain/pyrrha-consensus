@@ -20,5 +20,6 @@ jobs:
     - stage: build
       if: tag IS present
       script:
+        - npm i --save ethereumjs-abi
         - npx truffle migrate --network infura_rinkeby
         - npx ghu issue -k "$GITHUB_API_TOKEN" -o pandoraboxchain -r github-utils -t "Contracts addresses update required" -b "Pandora:$(< ./build/addresses/Pandora.json),\nPandoraMarket:$(< ./build/addresses/PandoraMarket.json)"
