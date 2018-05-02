@@ -33,14 +33,14 @@
       "type": "function"
     }
   ],
-  "bytecode": "0x606060405260b6806100126000396000f300606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630c3f6acf146044575b600080fd5b3415604e57600080fd5b60546070565b604051808260ff1660ff16815260200191505060405180910390f35b6000600160000160019054906101000a900460ff169050905600a165627a7a72305820d8f2c7d55f9312d8fb6b1030e534a20855d570080952e57a1cfb5f5f5e77c1300029",
-  "deployedBytecode": "0x606060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630c3f6acf146044575b600080fd5b3415604e57600080fd5b60546070565b604051808260ff1660ff16815260200191505060405180910390f35b6000600160000160019054906101000a900460ff169050905600a165627a7a72305820d8f2c7d55f9312d8fb6b1030e534a20855d570080952e57a1cfb5f5f5e77c1300029",
+  "bytecode": "0x608060405260b8806100126000396000f300608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630c3f6acf146044575b600080fd5b348015604f57600080fd5b5060566072565b604051808260ff1660ff16815260200191505060405180910390f35b6000600160000160019054906101000a900460ff169050905600a165627a7a7230582021f7ab41614525cd086ec55957a211228213c94c0a5e1e9a359e8ed19e87c7d40029",
+  "deployedBytecode": "0x608060405260043610603f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff1680630c3f6acf146044575b600080fd5b348015604f57600080fd5b5060566072565b604051808260ff1660ff16815260200191505060405180910390f35b6000600160000160019054906101000a900460ff169050905600a165627a7a7230582021f7ab41614525cd086ec55957a211228213c94c0a5e1e9a359e8ed19e87c7d40029",
   "sourceMap": "165:3046:14:-;;;;;;;;;",
-  "deployedSourceMap": "165:3046:14:-;;;;;;;;;;;;;;;;;;;;;;;;608:133;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;662:5;709:12;:25;;;;;;;;;;;;702:32;;608:133;:::o",
+  "deployedSourceMap": "165:3046:14:-;;;;;;;;;;;;;;;;;;;;;;;;608:133;;8:9:-1;5:2;;;30:1;27;20:12;5:2;608:133:14;;;;;;;;;;;;;;;;;;;;;;;;;;;;662:5;709:12;:25;;;;;;;;;;;;702:32;;608:133;:::o",
   "source": "pragma solidity ^0.4.18;\n\nimport './IStateMachine.sol';\nimport '../lifecycle/OnlyOnce.sol';\nimport {StateMachineLib as SM} from '../libraries/StateMachineLib.sol';\n\ncontract StateMachine is IStateMachine, OnlyOnce {\n    /**\n     * ## State Machine implementation\n     */\n\n    using SM for SM.StateMachine;\n\n    /// @dev Structure holding the state of the contract\n    SM.StateMachine internal stateMachine;\n\n    event StateChanged(uint8 oldState, uint8 newState);\n\n    /// @notice Returns current state of the contract state machine\n    /// @dev Shortcut to receive current state from external contracts\n    function currentState() public view returns (\n        uint8 /// Current state\n    ) {\n        return stateMachine.currentState;\n    }\n\n    /// @dev State transition function from StateMachineLib put into modifier form.\n    /// **Important:** state transition happens _after_ the main code of the calling function.\n    modifier transitionToState(\n        uint8 _newState /// New state to transition into\n    ) {\n        uint8 oldState = stateMachine.currentState;\n        stateMachine.transitionToState(_newState);\n        _;\n        stateMachine.currentState = _newState;\n        StateChanged(oldState, stateMachine.currentState);\n        _fireStateEvent();\n    }\n\n    /// @dev State transition function from StateMachineLib put into modifier form.\n    /// **Important:** state transition happens _before_ the main code of the calling function, and _after_ the\n    /// execution contract is returned to the original state.\n    modifier transitionThroughState(\n        uint8 _transitionState /// Intermediary state to transition through\n    ) {\n        var initialState = stateMachine.currentState;\n        stateMachine.transitionThroughState(_transitionState);\n        StateChanged(initialState, stateMachine.currentState);\n        _fireStateEvent();\n        _;\n        stateMachine.currentState = initialState;\n        StateChanged(_transitionState, stateMachine.currentState);\n        _fireStateEvent();\n    }\n\n    /// @dev Modifier requiring contract to be present in certain state; otherwise the exception is generated and the\n    /// function does not execute\n    modifier requireState(\n        uint8 _requiredState /// Required state\n    ) {\n        require(stateMachine.currentState == _requiredState);\n        _;\n    }\n\n    /// @dev Modifier requiring contract to be present in one of two certain states; otherwise an exception is\n    /// generated and the function does not execute\n    modifier requireStates2(\n        uint8 _requiredState1, /// Required state, option 1\n        uint8 _requiredState2 /// Required state, option 2\n    ) {\n        stateMachine.requireStates2(_requiredState1, _requiredState2);\n        _;\n    }\n\n    /// @dev Private method initializing state machine. Must be called only once from the contract constructor\n    function _initStateMachine() internal onlyOnce('_initStateMachine') {\n        // Initializing state machine via library code\n        stateMachine.initStateMachine();\n    }\n\n    /// @dev Hook for inherited contracts to fire contract-specific state change events\n    function _fireStateEvent() internal {\n        // Implemented by child contracts\n    }\n}\n",
-  "sourcePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/libraries/StateMachine.sol",
+  "sourcePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/libraries/StateMachine.sol",
   "ast": {
-    "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/libraries/StateMachine.sol",
+    "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/libraries/StateMachine.sol",
     "exportedSymbols": {
       "StateMachine": [
         2170
@@ -61,7 +61,7 @@
         "src": "0:24:14"
       },
       {
-        "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/libraries/IStateMachine.sol",
+        "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/libraries/IStateMachine.sol",
         "file": "./IStateMachine.sol",
         "id": 2026,
         "nodeType": "ImportDirective",
@@ -72,7 +72,7 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/lifecycle/OnlyOnce.sol",
+        "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/lifecycle/OnlyOnce.sol",
         "file": "../lifecycle/OnlyOnce.sol",
         "id": 2027,
         "nodeType": "ImportDirective",
@@ -83,7 +83,7 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/libraries/StateMachineLib.sol",
+        "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/libraries/StateMachineLib.sol",
         "file": "../libraries/StateMachineLib.sol",
         "id": 2029,
         "nodeType": "ImportDirective",
@@ -101,7 +101,7 @@
       {
         "baseContracts": [
           {
-            "arguments": [],
+            "arguments": null,
             "baseName": {
               "contractScope": null,
               "id": 2030,
@@ -119,7 +119,7 @@
             "src": "190:13:14"
           },
           {
-            "arguments": [],
+            "arguments": null,
             "baseName": {
               "contractScope": null,
               "id": 2032,
@@ -178,7 +178,7 @@
               "src": "289:15:14",
               "typeDescriptions": {
                 "typeIdentifier": "t_struct$_StateMachine_$2182_storage_ptr",
-                "typeString": "struct StateMachineLib.StateMachine storage pointer"
+                "typeString": "struct StateMachineLib.StateMachine"
               }
             }
           },
@@ -193,7 +193,7 @@
             "storageLocation": "default",
             "typeDescriptions": {
               "typeIdentifier": "t_struct$_StateMachine_$2182_storage",
-              "typeString": "struct StateMachineLib.StateMachine storage ref"
+              "typeString": "struct StateMachineLib.StateMachine"
             },
             "typeName": {
               "contractScope": null,
@@ -204,7 +204,7 @@
               "src": "368:15:14",
               "typeDescriptions": {
                 "typeIdentifier": "t_struct$_StateMachine_$2182_storage_ptr",
-                "typeString": "struct StateMachineLib.StateMachine storage pointer"
+                "typeString": "struct StateMachineLib.StateMachine"
               }
             },
             "value": null,
@@ -1321,8 +1321,11 @@
                       "id": 2129,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 5320,
+                      "overloadedDeclarations": [
+                        5318,
+                        5319
+                      ],
+                      "referencedDeclaration": 5318,
                       "src": "2264:7:14",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -1727,7 +1730,7 @@
     "src": "0:3212:14"
   },
   "legacyAST": {
-    "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/libraries/StateMachine.sol",
+    "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/libraries/StateMachine.sol",
     "exportedSymbols": {
       "StateMachine": [
         2170
@@ -1748,7 +1751,7 @@
         "src": "0:24:14"
       },
       {
-        "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/libraries/IStateMachine.sol",
+        "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/libraries/IStateMachine.sol",
         "file": "./IStateMachine.sol",
         "id": 2026,
         "nodeType": "ImportDirective",
@@ -1759,7 +1762,7 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/lifecycle/OnlyOnce.sol",
+        "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/lifecycle/OnlyOnce.sol",
         "file": "../lifecycle/OnlyOnce.sol",
         "id": 2027,
         "nodeType": "ImportDirective",
@@ -1770,7 +1773,7 @@
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/aleksei/pandora-pyrrha/pyrrha-consensus/contracts/libraries/StateMachineLib.sol",
+        "absolutePath": "/home/kostysh/Dropbox/pandora/pyrrha-consensus/contracts/libraries/StateMachineLib.sol",
         "file": "../libraries/StateMachineLib.sol",
         "id": 2029,
         "nodeType": "ImportDirective",
@@ -1788,7 +1791,7 @@
       {
         "baseContracts": [
           {
-            "arguments": [],
+            "arguments": null,
             "baseName": {
               "contractScope": null,
               "id": 2030,
@@ -1806,7 +1809,7 @@
             "src": "190:13:14"
           },
           {
-            "arguments": [],
+            "arguments": null,
             "baseName": {
               "contractScope": null,
               "id": 2032,
@@ -1865,7 +1868,7 @@
               "src": "289:15:14",
               "typeDescriptions": {
                 "typeIdentifier": "t_struct$_StateMachine_$2182_storage_ptr",
-                "typeString": "struct StateMachineLib.StateMachine storage pointer"
+                "typeString": "struct StateMachineLib.StateMachine"
               }
             }
           },
@@ -1880,7 +1883,7 @@
             "storageLocation": "default",
             "typeDescriptions": {
               "typeIdentifier": "t_struct$_StateMachine_$2182_storage",
-              "typeString": "struct StateMachineLib.StateMachine storage ref"
+              "typeString": "struct StateMachineLib.StateMachine"
             },
             "typeName": {
               "contractScope": null,
@@ -1891,7 +1894,7 @@
               "src": "368:15:14",
               "typeDescriptions": {
                 "typeIdentifier": "t_struct$_StateMachine_$2182_storage_ptr",
-                "typeString": "struct StateMachineLib.StateMachine storage pointer"
+                "typeString": "struct StateMachineLib.StateMachine"
               }
             },
             "value": null,
@@ -3008,8 +3011,11 @@
                       "id": 2129,
                       "name": "require",
                       "nodeType": "Identifier",
-                      "overloadedDeclarations": [],
-                      "referencedDeclaration": 5320,
+                      "overloadedDeclarations": [
+                        5318,
+                        5319
+                      ],
+                      "referencedDeclaration": 5318,
                       "src": "2264:7:14",
                       "typeDescriptions": {
                         "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
@@ -3415,9 +3421,9 @@
   },
   "compiler": {
     "name": "solc",
-    "version": "0.4.21+commit.dfe3193c.Emscripten.clang"
+    "version": "0.4.23+commit.124ca40d.Emscripten.clang"
   },
   "networks": {},
   "schemaVersion": "2.0.0",
-  "updatedAt": "2018-04-11T12:12:45.953Z"
+  "updatedAt": "2018-04-27T11:00:28.893Z"
 }
