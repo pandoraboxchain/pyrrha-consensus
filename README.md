@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/pandoraboxchain/pyrrha-consensus.svg?branch=master)](https://travis-ci.org/pandoraboxchain/pyrrha-consensus)  
+
 # Pandora Smart Contracts
 
 Core set of Ethereum contracts for Pandora Boxchain implementing the first level of consensus. 
