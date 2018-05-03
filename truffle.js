@@ -2,10 +2,11 @@
 
 require('@babel/register');
 
-const HDWalletProvider = require("truffle-hdwallet-provider");
+const PrivateKeyProvider = require("truffle-privatekey-provider");
 
 const infura_apikey = process.env.INFURA_API_KEY;
-const mnemonic = process.env.HDWALLET_MNEMONIC;
+const privateKey = process.env.ACCOUNT_PRIVATE_KEY;
+
 const lowGas = 4700000;
 const highGas = 6700000;
 
@@ -17,12 +18,12 @@ module.exports = {
       network_id: '*'
     },
     infura_ropsten: {
-      provider: _ => new HDWalletProvider(mnemonic, "https://ropsten.infura.io/" + infura_apikey),
+      provider: _ => new PrivateKeyProvider(privateKey, "https://ropsten.infura.io/" + infura_apikey),
       network_id: 3,
       gas: lowGas
     },
     infura_rinkeby: {
-      provider: _ => new HDWalletProvider(mnemonic, "https://rinkeby.infura.io/" + infura_apikey),
+      provider: _ => new PrivateKeyProvider(privateKey, "https://rinkeby.infura.io/" + infura_apikey),
       network_id: '*',
       gas: highGas
     },
