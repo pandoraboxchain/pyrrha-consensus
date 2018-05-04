@@ -8,7 +8,7 @@ branches:
   only:
     - master
     - develop
-    - "/v\\d+\\.\\d+\\.\\d+(-\\w+)?/"
+    - "/^v\d+\.\d+(\.\d+)?(-\S*)?$/"
 stages:
   - lint
   - test
@@ -17,17 +17,23 @@ jobs:
   include:
     - stage: lint
       script:
+        - set -e
         - npm link
         - npm run lint
         - npm run compile
+        - set +e
     - stage: test
       script:
+        - set -e
         - npm link
         - npm run test:coverage
         - npm run coveralls
+        - set +e
     - stage: deploy
       if: tag IS present
       script:
+        - set -e
         - npm link
         - npx truffle migrate --network infura_rinkeby
         - npx ghu issue -k "$GITHUB_API_TOKEN" -o pandoraboxchain -r pyrrha-webclient,pyrrha-pynode,pyrrha-boxproxy,pyrrha -t "Contracts addresses update required" -b "Pandora:$(< ./build/addresses/Pandora.json), PandoraMarket:$(< ./build/addresses/PandoraMarket.json)"
+        - set +e

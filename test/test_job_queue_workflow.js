@@ -1,156 +1,178 @@
-let Pandora = artifacts.require("Pandora")
-let Dataset = artifacts.require("Dataset")
-let Kernel = artifacts.require("Kernel")
-let WorkerNode = artifacts.require("WorkerNode")
-let CognitiveJob = artifacts.require("CognitiveJob")
-
+const Pandora = artifacts.require('Pandora');
+const Dataset = artifacts.require('Dataset');
+const Kernel = artifacts.require('Kernel');
+const WorkerNode = artifacts.require('WorkerNode');
+const CognitiveJob = artifacts.require('CognitiveJob');
 
 contract('Pandora', accounts => {
 
-  let pandora
-  let pandoraAddress
-  let pandoraAddress1
-  let pandoraAddress2
-  let workerNode
-  let workerNode1
-  let workerNode2
-  let workerInstance
-  let workerInstance1
-  let workerInstance2
-  const workerOwner = accounts[2]
-  const workerOwner1 = accounts[3]
-  const workerOwner2 = accounts[4]
-  const client = accounts[5]
+    let pandora;
+    let pandoraAddress;
+    let pandoraAddress1;
+    let pandoraAddress2;
+    let workerNode;
+    let workerNode1;
+    let workerNode2;
+    let workerInstance;
+    let workerInstance1;
+    let workerInstance2;
 
-  before('setup', async () => {
-    pandora = await Pandora.deployed()
+    const workerOwner = accounts[2];
+    const workerOwner1 = accounts[3];
+    const workerOwner2 = accounts[4];
+    const client = accounts[5];
 
-    await pandora.whitelistWorkerOwner(workerOwner)
-    workerNode = await pandora.createWorkerNode({from: workerOwner})
+    before('setup', async () => {
 
-    // create worker node #1 first and set state to 'idle'
+        pandora = await Pandora.deployed();
 
-    const idleWorkerAddress = await pandora.workerNodes.call(0)
-    console.log(idleWorkerAddress, 'worker node')
+        await pandora.whitelistWorkerOwner(workerOwner);
+        workerNode = await pandora.createWorkerNode({
+            from: workerOwner
+        });
 
-    workerInstance = await WorkerNode.at(idleWorkerAddress)
-    let workerAliveResult = await workerInstance.alive({from: workerOwner})
-  })
+        // create worker node #1 first and set state to 'idle'
 
-  it('Worker node should request cognitive job from queue when computation is finished', async () => {
+        const idleWorkerAddress = await pandora.workerNodes.call(0);
+        console.log(idleWorkerAddress, 'worker node');
 
-    // create cognitive job #1 with 2 batches to put it in queue
+        workerInstance = await WorkerNode.at(idleWorkerAddress);
+        let workerAliveResult = await workerInstance.alive({
+            from: workerOwner
+        });
+    });
 
-    let numberOfBatches = 2
-    let testDataset = await Dataset.new('', 1, 0, numberOfBatches, 0)
-    let testKernel = await Kernel.new('', 1, 0, 0)
-    let estimatedCode = 0
+    it.skip('Worker node should request cognitive job from queue when computation is finished', async () => {
 
-    let result = await pandora.createCognitiveJob(testKernel.address, testDataset.address)
+        // create cognitive job #1 with 2 batches to put it in queue
 
-    assert.equal(result.logs[0].args.resultCode.toNumber(), estimatedCode, "result code in event should match RESULT_CODE_ADD_TO_QUEUE" )
+        let numberOfBatches = 2;
+        let testDataset = await Dataset.new('', 1, 0, numberOfBatches, 0);
+        let testKernel = await Kernel.new('', 1, 0, 0);
+        let estimatedCode = 0;
 
-    let logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0]
-    let logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0]
+        let result = await pandora.createCognitiveJob(testKernel.address, testDataset.address);
 
-    assert.isOk(logFailure, "should be fired failed event")
-    assert.isNotOk(logSuccess, "should not be fired successful creation event")
+        assert.equal(result.logs[0].args.resultCode.toNumber(), estimatedCode, 'result code in event should match RESULT_CODE_ADD_TO_QUEUE');
 
-    // create cognitive job #2 for computing with 1 worker
+        let logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
+        let logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
 
-    let numberOfBatches2 = 1
-    let testDataset2 = await Dataset.new('', 1, 0, numberOfBatches2, 0)
-    let testKernel2 = await Kernel.new('', 1, 0, 0)
-    let estimatedCode2 = 1
+        assert.isOk(logFailure, 'should be fired failed event');
+        assert.isNotOk(logSuccess, 'should not be fired successful creation event');
 
-    let result2 = await pandora.createCognitiveJob(testKernel2.address, testDataset2.address)
-    let activeJob = await workerInstance.activeJob.call()
-    let workerState = await workerInstance.currentState.call()
+        // create cognitive job #2 for computing with 1 worker
 
-    assert.equal(workerState.toNumber(), 3, "worker state should be 'assigned' (3)")
-    assert.notEqual(activeJob, '0x0000000000000000000000000000000000000000', "should set activeJob to worker node")
-    assert.equal(result2.logs[1].args.resultCode, estimatedCode2, "result code in event should match RESULT_CODE_JOB_CREATED" )
+        let numberOfBatches2 = 1;
+        let testDataset2 = await Dataset.new('', 1, 0, numberOfBatches2, 0);
+        let testKernel2 = await Kernel.new('', 1, 0, 0);
+        let estimatedCode2 = 1;
 
-    // setup 2 additional worker nodes, so they could take queued job after any current job being finished
+        let result2 = await pandora.createCognitiveJob(testKernel2.address, testDataset2.address);
+        let activeJob = await workerInstance.activeJob.call();
+        let workerState = await workerInstance.currentState.call();
 
-    //#2
-    await pandora.whitelistWorkerOwner(workerOwner1)
-    workerNode1 = await pandora.createWorkerNode({from: workerOwner1})
-    const idleWorkerAddress1 = await pandora.workerNodes.call(1)
-    console.log(idleWorkerAddress1, 'worker node1')
-    workerInstance1 = await WorkerNode.at(idleWorkerAddress1)
-    let workerAliveResult1 = await workerInstance1.alive({from: workerOwner1})
+        assert.equal(workerState.toNumber(), 3, `worker state should be "assigned" (3)`);
+        assert.notEqual(activeJob, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node');
+        assert.equal(result2.logs[1].args.resultCode, estimatedCode2, 'result code in event should match RESULT_CODE_JOB_CREATED');
 
-    //#3
-    await pandora.whitelistWorkerOwner(workerOwner2)
-    workerNode2 = await pandora.createWorkerNode({from: workerOwner2})
-    const idleWorkerAddress2 = await pandora.workerNodes.call(2)
-    console.log(idleWorkerAddress2, 'worker node2')
-    workerInstance2 = await WorkerNode.at(idleWorkerAddress2)
-    let workerAliveResult2 = await workerInstance2.alive({from: workerOwner2})
+        // setup 2 additional worker nodes, so they could take queued job after any current job being finished
 
-    //preparing to finish job on worker node #1
+        //#2
+        await pandora.whitelistWorkerOwner(workerOwner1);
+        workerNode1 = await pandora.createWorkerNode({
+            from: workerOwner1
+        });
+        const idleWorkerAddress1 = await pandora.workerNodes.call(1);
+        console.log(idleWorkerAddress1, 'worker node1');
+        workerInstance1 = await WorkerNode.at(idleWorkerAddress1);
+        let workerAliveResult1 = await workerInstance1.alive({
+            from: workerOwner1
+        });
 
-    activeJob = await workerInstance.activeJob.call()
-    console.log(activeJob, "activeJob #0")
+        //#3
+        await pandora.whitelistWorkerOwner(workerOwner2);
+        workerNode2 = await pandora.createWorkerNode({
+            from: workerOwner2
+        });
+        const idleWorkerAddress2 = await pandora.workerNodes.call(2);
+        console.log(idleWorkerAddress2, 'worker node2');
+        workerInstance2 = await WorkerNode.at(idleWorkerAddress2);
+        let workerAliveResult2 = await workerInstance2.alive({
+            from: workerOwner2
+        });
 
-    workerState = await workerInstance.currentState.call()
-    console.log(workerState.toNumber(), "worker #0 state")
+        //preparing to finish job on worker node #1
 
-    let preparingValidationResult = await workerInstance.acceptAssignment({from: workerOwner})
-//    console.log(preparingValidationResult)
+        activeJob = await workerInstance.activeJob.call();
+        console.log(activeJob, 'activeJob #0');
 
-    let validatingDataResult = await workerInstance.processToDataValidation({from: workerOwner})
-//    console.log(validatingDataResult)
+        workerState = await workerInstance.currentState.call();
+        console.log(workerState.toNumber(), 'worker #0 state');
 
-    let readyForComputingResult = await workerInstance.acceptValidData({from: workerOwner})
-//    console.log(readyForComputingResult)
+        let preparingValidationResult = await workerInstance.acceptAssignment({
+            from: workerOwner
+        });
+        //    console.log(preparingValidationResult)
 
-    let processToCognitionResult = await workerInstance.processToCognition({from: workerOwner})
-//    console.log(processToCognitionResult)
+        let validatingDataResult = await workerInstance.processToDataValidation({
+            from: workerOwner
+        });
+        //    console.log(validatingDataResult)
 
-    workerState = await workerInstance.currentState.call()
-    console.log(workerState.toNumber(), "worker #0 state")
-    assert.equal(workerState.toNumber(), 7, "worker state should be 'computing' (7)")
+        let readyForComputingResult = await workerInstance.acceptValidData({
+            from: workerOwner
+        });
+        //    console.log(readyForComputingResult)
 
-    activeJob = await workerInstance.activeJob.call()
-    console.log(activeJob, "activeJob #0")
+        let processToCognitionResult = await workerInstance.processToCognition({
+            from: workerOwner
+        });
+        //    console.log(processToCognitionResult)
 
-    let activeJobInstance = await CognitiveJob.at(activeJob)
-    let jobBatches = await activeJobInstance.batches.call()
-    console.log(jobBatches.toNumber(), "batches in active job #0")
+        workerState = await workerInstance.currentState.call();
+        console.log(workerState.toNumber(), 'worker #0 state');
+        assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
 
-    let jobWorkers = await activeJobInstance.activeWorkers.call(0)
-    console.log(jobWorkers, "active workers in active job #0")
+        activeJob = await workerInstance.activeJob.call();
+        console.log(activeJob, 'activeJob #0');
 
-    // after providing results should be called _checkQueue() with queue logic
-    //where congitiveJob created from queue and assigned to workers
+        let activeJobInstance = await CognitiveJob.at(activeJob);
+        let jobBatches = await activeJobInstance.batches.call();
+        console.log(jobBatches.toNumber(), 'batches in active job #0');
 
-    let completeResult = await workerInstance.provideResults('0x0', {from: workerOwner})
-//    console.log(completeResult)
+        let jobWorkers = await activeJobInstance.activeWorkers.call(0);
+        console.log(jobWorkers, 'active workers in active job #0');
 
-    console.log(workerState.toNumber(), "worker #0 state")
+        // after providing results should be called _checkQueue() with queue logic
+        //where congitiveJob created from queue and assigned to workers
 
-    let jobState = await CognitiveJob.at(activeJob).currentState.call()
-    console.log(jobState.toNumber(), "activeJob #0 state")
-    assert.equal(jobState.toNumber(), 7, "Cognitive job (#1) state should be 'Completed' (7)")
+        let completeResult = await workerInstance.provideResults('0x0', {
+            from: workerOwner
+        });
+        //    console.log(completeResult)
 
-    // check that 2 idle workers assigned to job
-    let workerState1 = await workerInstance1.currentState.call()
-    let activeJob1 = await workerInstance1.activeJob.call()
+        console.log(workerState.toNumber(), 'worker #0 state');
 
-    console.log(workerState1.toNumber(), "worker #1 state")
+        let jobState = await CognitiveJob.at(activeJob).currentState.call();
+        console.log(jobState.toNumber(), 'activeJob #0 state');
+        assert.equal(jobState.toNumber(), 7, `Cognitive job (#1) state should be "Completed" (7)`);
 
-    assert.equal(workerState1.toNumber(), 3, "worker state should be 'assigned' (3)")
-    assert.notEqual(activeJob1, '0x0000000000000000000000000000000000000000', "should set activeJob to worker node 1")
+        // check that 2 idle workers assigned to job
+        let workerState1 = await workerInstance1.currentState.call();
+        let activeJob1 = await workerInstance1.activeJob.call();
 
-    let workerState2 = await workerInstance2.currentState.call()
-    let activeJob2 = await workerInstance2.activeJob.call()
+        console.log(workerState1.toNumber(), 'worker #1 state');
 
-    assert.equal(workerState2.toNumber(), 3, "worker state should be 'assigned' (3)")
-    assert.notEqual(activeJob2, '0x0000000000000000000000000000000000000000', "should set activeJob to worker node 2")
+        assert.equal(workerState1.toNumber(), 3, `worker state should be "assigned" (3)`);
+        assert.notEqual(activeJob1, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node 1');
 
-    console.log(workerState2.toNumber(), "worker #2 state")
+        let workerState2 = await workerInstance2.currentState.call();
+        let activeJob2 = await workerInstance2.activeJob.call();
 
-  })
-})
+        assert.equal(workerState2.toNumber(), 3, `worker state should be "assigned" (3)`);
+        assert.notEqual(activeJob2, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node 2');
+
+        console.log(workerState2.toNumber(), 'worker #2 state');
+    });
+});

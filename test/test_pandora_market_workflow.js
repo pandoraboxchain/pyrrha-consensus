@@ -1,100 +1,99 @@
-let PandoraMarket = artifacts.require("PandoraMarket")
-let Dataset = artifacts.require("Dataset")
-let Kernel = artifacts.require("Kernel")
-
+const PandoraMarket = artifacts.require('PandoraMarket');
+const Dataset = artifacts.require('Dataset');
+const Kernel = artifacts.require('Kernel');
 
 contract('PandoraMarket', accounts => {
 
-  let market
+    let market;
+    let testDataset;
+    let testKernel;
+    let newDatasetAddress;
+    let newKernelAddress;
 
-  let testDataset
-  let testKernel
+    before('setup', async () => {
 
-  let newDatasetAddress
-  let newKernelAddress
+        market = await PandoraMarket.deployed();
 
-  before('setup', async () => {
+        let numberOfBatches = 2;
+        testDataset = await Dataset.new('', 1, 0, numberOfBatches, 0);
 
-    market = await PandoraMarket.deployed()
+        testKernel = await Kernel.new('', 1, 0, 0);
+    });
 
-    let numberOfBatches = 2
-    testDataset = await Dataset.new('', 1, 0, numberOfBatches, 0)
+    it('New Kernel should be added to PandoraMarket', async () => {
 
-    testKernel = await Kernel.new('', 1, 0, 0)
-  })
+        let result = await market.addKernel(testKernel.address, {
+            from: accounts[1]
+        });
+        let logSuccess = result.logs.filter(l => l.event === 'KernelAdded')[0];
+        console.log(logSuccess, 'Kernel added log');
 
+        let newKernelAddress = await market.kernels(1); //there is 1 kernel already on 0 position after initial deployment
+        console.log(newKernelAddress, 'kernelInMarket');
 
-  it('New Kernel should be added to PandoraMarket', async () => {
+        let kernelInMarketMap = await market.kernelMap(newKernelAddress);
+        console.log(kernelInMarketMap.toNumber(), 'kernelInMarketMap');
 
-    let result = await market.addKernel(testKernel.address, {from: accounts[1]})
-    let logSuccess = result.logs.filter(l => l.event === 'KernelAdded')[0]
-    console.log(logSuccess, "Kernel added log")
+        assert.equal(result.logs[0].args.kernel, newKernelAddress,
+            'Address of kernel in array should match with created dataset')
+        assert.equal(kernelInMarketMap.toNumber(), 2, 'Index of kernel in mapping should match 2');
+    });
 
-    let newKernelAddress = await market.kernels(1) //there is 1 kernel already on 0 position after initial deployment
-    console.log(newKernelAddress, "kernelInMarket")
+    it('New Kernel should be added to PandoraMarket', async () => {
 
-    let kernelInMarketMap = await market.kernelMap(newKernelAddress)
-    console.log(kernelInMarketMap.toNumber(), "kernelInMarketMap")
+        let result = await market.addDataset(testDataset.address, {
+            from: accounts[1]
+        });
 
-    assert.equal(result.logs[0].args.kernel, newKernelAddress,
-        "Address of kernel in array should match with created dataset" )
-    assert.equal(kernelInMarketMap.toNumber(), 2, "Index of kernel in mapping should match 2" )
+        let logSuccess = result.logs.filter(l => l.event === 'DatasetAdded')[0];
+        console.log(logSuccess, 'Dataset added log');
 
-  })
+        let newDatasetAddress = await market.datasets(1); //there is 1 dataset already on 0 position after initial deployment
+        console.log(newDatasetAddress, 'datasetInMarket');
 
-  it('New Kernel should be added to PandoraMarket', async () => {
+        let datasetInMarketMap = await market.datasetMap(newDatasetAddress);
+        console.log(datasetInMarketMap.toNumber(), 'datasetInMarketMap');
 
-    let result = await market.addDataset(testDataset.address, {from: accounts[1]})
+        assert.equal(result.logs[0].args.dataset, newDatasetAddress,
+            'Address of dataset in array should match with created dataset');
+        assert.equal(datasetInMarketMap.toNumber(), 2, 'Index of dataset in mapping should match 2');
+    });
 
-    let logSuccess = result.logs.filter(l => l.event === 'DatasetAdded')[0]
-    console.log(logSuccess, "Dataset added log")
+    it('Should delete Kernel and fire event', async () => {
 
-    let newDatasetAddress = await market.datasets(1) //there is 1 dataset already on 0 position after initial deployment
-    console.log(newDatasetAddress, "datasetInMarket")
+        let newKernelAddress = await market.kernels(1);
 
-    let datasetInMarketMap = await market.datasetMap(newDatasetAddress)
-    console.log(datasetInMarketMap.toNumber(), "datasetInMarketMap")
+        assert.equal(testKernel.address, newKernelAddress,
+            'Newly created address should match with newly added kernel in market');
 
-    assert.equal(result.logs[0].args.dataset, newDatasetAddress,
-        "Address of dataset in array should match with created dataset")
-    assert.equal(datasetInMarketMap.toNumber(), 2, "Index of dataset in mapping should match 2")
+        let kernelInMarketMap = await market.kernelMap(testKernel.address);
+        console.log(kernelInMarketMap.toNumber(), 'kernelInMarketMap');
 
-  })
+        let result = await market.removeKernel(testKernel.address, {
+            from: accounts[1]
+        });
+        console.log(result, 'Deleting kernel log');
 
-  it('Should delete Kernel and fire event', async () => {
+        let logSuccess = result.logs.filter(l => l.event === 'KernelRemoved')[0];
+        console.log(logSuccess, 'Kernel remove event');
+    });
 
-    let newKernelAddress = await market.kernels(1)
+    it('Should delete Dataset and fire event', async () => {
 
-    assert.equal(testKernel.address, newKernelAddress,
-        "Newly created address should match with newly added kernel in market")
+        let newDatasetAddress = await market.datasets(1);
 
-    let kernelInMarketMap = await market.kernelMap(testKernel.address)
-    console.log(kernelInMarketMap.toNumber(), "kernelInMarketMap")
+        assert.equal(testDataset.address, newDatasetAddress,
+            'Newly created address should match with newly added dataset in market');
 
-    let result = await market.removeKernel(testKernel.address, {from: accounts[1]})
-    console.log(result, "Deleting kernel log")
+        let datasetInMarketMap = await market.datasetMap(testDataset.address);
+        console.log(datasetInMarketMap.toNumber(), 'datasetInMarketMap');
 
-    let logSuccess = result.logs.filter(l => l.event === 'KernelRemoved')[0]
-    console.log(logSuccess, "Kernel remove event")
+        let result = await market.removeDataset(testDataset.address, {
+            from: accounts[1]
+        });
+        console.log(result, 'Deleting dataset log');
 
-  })
-
-  it('Should delete Dataset and fire event', async () => {
-
-    let newDatasetAddress = await market.datasets(1)
-
-    assert.equal(testDataset.address, newDatasetAddress,
-        "Newly created address should match with newly added dataset in market")
-
-    let datasetInMarketMap = await market.datasetMap(testDataset.address)
-    console.log(datasetInMarketMap.toNumber(), "datasetInMarketMap")
-
-    let result = await market.removeDataset(testDataset.address, {from: accounts[1]})
-    console.log(result, "Deleting dataset log")
-
-    let logSuccess = result.logs.filter(l => l.event === 'DatasetRemoved')[0]
-    console.log(logSuccess, "Kernel remove event")
-
-  })
-
-})
+        let logSuccess = result.logs.filter(l => l.event === 'DatasetRemoved')[0];
+        console.log(logSuccess, 'Kernel remove event');
+    });
+});

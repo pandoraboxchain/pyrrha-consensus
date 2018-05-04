@@ -1,19 +1,19 @@
-let Pandora = artifacts.require("Pandora")
-
+const Pandora = artifacts.require('Pandora');
 
 contract('Pandora', accounts => {
 
-  let pandora
+    let pandora;
 
-  before('setup', async () => {
-    pandora = await Pandora.deployed()
-  })
+    before('setup', async () => {
 
-  it('Account #0 should be whitelisted during deployment', async () => {
+        pandora = await Pandora.deployed();
+    });
 
-    let result = await pandora.workerNodeOwners(accounts[0])
-    console.log(result)
+    it('Account #0 should be whitelisted during deployment', async () => {
 
-    assert.equal(result, true, "account #0 should be whitelisted")
-  })
-})
+        let result = await pandora.workerNodeOwners(accounts[0]);
+        console.log(result);
+
+        assert.equal(result, true, 'account #0 should be whitelisted');
+    });
+});
