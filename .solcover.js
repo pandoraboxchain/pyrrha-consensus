@@ -1,5 +1,5 @@
 module.exports = {
-    norpc: true,
+    norpc: false,
     dir: '.',
     testCommand: 'npx truffle test --network coverage',
     copyPackages: [
@@ -8,4 +8,4 @@ module.exports = {
     skipFiles: [
         'Migrations.sol'
     ]
-}
+};

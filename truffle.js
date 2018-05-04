@@ -2,7 +2,7 @@
 
 require('@babel/register');
 
-const PrivateKeyProvider = require("truffle-privatekey-provider");
+const PrivateKeyProvider = require('truffle-privatekey-provider');
 
 const infura_apikey = process.env.INFURA_API_KEY;
 const privateKey = process.env.ACCOUNT_PRIVATE_KEY;
@@ -25,12 +25,12 @@ module.exports = {
       gasPrice: 0x01
     },
     infura_ropsten: {
-      provider: _ => new PrivateKeyProvider(privateKey, "https://ropsten.infura.io/" + infura_apikey),
+      provider: _ => new PrivateKeyProvider(privateKey, 'https://ropsten.infura.io/' + infura_apikey),
       network_id: 3,
       gas: lowGas
     },
     infura_rinkeby: {
-      provider: _ => new PrivateKeyProvider(privateKey, "https://rinkeby.infura.io/" + infura_apikey),
+      provider: _ => new PrivateKeyProvider(privateKey, 'https://rinkeby.infura.io/' + infura_apikey),
       network_id: '*',
       gas: highGas
     },
