@@ -1,7 +1,7 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import './DataEntity.sol';
-import './IDataset.sol';
+import "./DataEntity.sol";
+import "./IDataset.sol";
 
 /*
  */
@@ -13,7 +13,7 @@ contract Dataset is DataEntity, IDataset {
     /// @dev Constructor receives an address of the main IPFS dataset information file (in JSON format) and four
     /// core arguments (also present in that file) which are required for smartcontracts to be able to initialize
     /// cognitive jobs and check compliance with the selected kernel
-    function Dataset (
+    constructor(
         bytes _ipfsAddress,     /// Address for the JSON file stored in IPFS that keeps all necessary information on
                                 /// the dataset, including IPFS addresses for each batch in HD5F format
         uint256 _dataDim,       /// Dimension of the single dataset sample (that goes to the input layer of the

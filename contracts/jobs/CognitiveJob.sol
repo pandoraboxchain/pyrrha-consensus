@@ -1,7 +1,7 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import '../libraries/StateMachine.sol';
-import './IComputingJob.sol';
+import "../libraries/StateMachine.sol";
+import "./IComputingJob.sol";
 
 /*
 
@@ -13,9 +13,11 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
      */
 
     modifier requireActiveStates() {
-        require(stateMachine.currentState == GatheringWorkers ||
-        stateMachine.currentState == DataValidation ||
-        stateMachine.currentState == Cognition);
+        require(
+            stateMachine.currentState == GatheringWorkers ||
+            stateMachine.currentState == DataValidation ||
+            stateMachine.currentState == Cognition
+        );
         _;
     }
 
@@ -34,24 +36,24 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         stateMachine.currentState = Uninitialized;
     }
 
-        event Flag(uint number);
+    event Flag(uint number);
 
     function _fireStateEvent() internal {
         if (currentState() == InsufficientWorkers) {
-            WorkersNotFound();
+            emit WorkersNotFound();
             _cleanStorage();
         } else if (currentState() == DataValidation) {
-            DataValidationStarted();
+            emit DataValidationStarted();
         } else if (currentState() == InvalidData) {
-            DataValidationFailed();
+            emit DataValidationFailed();
             _cleanStorage();
         } else if (currentState() == Cognition) {
-            CognitionStarted();
+            emit CognitionStarted();
         } else if (currentState() == PartialResult) {
-            CognitionCompleted(true);
+            emit CognitionCompleted(true);
             pandora.finishCognitiveJob();
         } else if (currentState() == Completed) {
-            CognitionCompleted(false);
+            emit CognitionCompleted(false);
             pandora.finishCognitiveJob();
         }
     }
@@ -84,7 +86,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     event CognitionProgressed(uint8 precent);
     event CognitionCompleted(bool partialResult);
 
-    function CognitiveJob(
+    constructor(
         IPandora _pandora,
         IKernel _kernel,
         IDataset _dataset,
@@ -128,7 +130,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _;
     }
 
-    function _getWorkerIndex(IWorkerNode _worker) private constant returns (uint256) {
+    function _getWorkerIndex(IWorkerNode _worker) private view returns (uint256) {
         for (uint256 index = 0; index < activeWorkers.length; index++) {
             if (msg.sender == address(activeWorkers[index])) {
                 return index;
@@ -137,7 +139,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         return uint256(-1);
     }
 
-    function _getWorkerFromSender() private constant returns (IWorkerNode o_workerNode, uint256 o_workerIndex) {
+    function _getWorkerFromSender() private view returns (IWorkerNode o_workerNode, uint256 o_workerIndex) {
         o_workerIndex = _getWorkerIndex(IWorkerNode(msg.sender));
         if (o_workerIndex > activeWorkers.length) {
             return (IWorkerNode(0), uint256(-1));
@@ -160,7 +162,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         responseTimestamps[workerIndex] = block.timestamp;
         activeWorkers[workerIndex] = replacementWorker;
         replacementWorker.assignJob(this);
-        WorkersUpdated();
+        emit WorkersUpdated();
     }
 
     function _insufficientWorkers() private requireActiveStates {
@@ -195,7 +197,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
                 } else if (stateMachine.currentState == Cognition) {
                     penalty = IWorkerNode.Penalties.OfflineWhileCognition;
                 } else {
-                   revert(); // This should not happen due to requireActiveStates function modifier
+                    revert();// This should not happen due to requireActiveStates function modifier
                 }
                 pandora.penaltizeWorkerNode(guiltyWorker, penalty);
                 _replaceWorker(no);
@@ -232,7 +234,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function initialize()
     external
-//    onlyPandora //removed for job queue proper work - TODO research and test consequences of removing modifier
+// onlyPandora //removed for job queue proper work - TODO research and test consequences of removing modifier
     requireState(Uninitialized)
     transitionToState(GatheringWorkers) {
         // Select initial worker
@@ -250,7 +252,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             workersPool.push(workersPool[pool]);
         }
 
-        WorkersUpdated();
+        emit WorkersUpdated();
     }
 
     /// @dev Main entry point for

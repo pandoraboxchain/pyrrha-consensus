@@ -1,4 +1,5 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
+
 
 contract JobStates {
     // Since `destroyself()` zeroes values of all variables, we need the first state (corresponding to zero)

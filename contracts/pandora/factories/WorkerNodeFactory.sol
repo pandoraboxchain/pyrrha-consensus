@@ -1,11 +1,11 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
-import '../../nodes/WorkerNode.sol';
-import '../IPandora.sol';
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../../nodes/WorkerNode.sol";
+import "../IPandora.sol";
 
 contract WorkerNodeFactory is Ownable {
-    function WorkerNodeFactory() public {}
+    constructor() public {}
 
     event WorkerNodeOwner(address owner);
     /// @dev Creates worker node contract for the main Pandora contract and does necessary preparations of it
@@ -28,6 +28,6 @@ contract WorkerNodeFactory is Ownable {
         // function
         o_workerNode.transferOwnership(_nodeOwner);
 
-        WorkerNodeOwner(_nodeOwner);
+        emit WorkerNodeOwner(_nodeOwner);
     }
 }

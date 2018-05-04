@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
 import "../Pandora.sol";
 
@@ -6,7 +6,7 @@ contract PandoraHooks is Pandora {
 
     address[3] _workerNodeOwners;
 
-    function PandoraHooks(
+    constructor(
         CognitiveJobFactory _jobFactory,
         WorkerNodeFactory _nodeFactory
     )

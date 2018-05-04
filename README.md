@@ -19,6 +19,22 @@ Contract deployment is tested with local Ganache, Ethereum Testnets (Ropsten, Ri
 
 ## Contracts documentation
 Automatically generated documentation is placed in repository folder [./docs](https://github.com/pandoraboxchain/pyrrha-consensus/tree/master/docs)
+For updating a documentation please run:
+```sh
+npm run docs
+```
+
+## Linting and testing
+```sh
+npm run lint
+npm run test
+```
+run tests with coverage check:  
+```sh
+npm run test:coverage
+npm run coveralls
+```  
+Linting and test covering will be done automatically (by CI system) every commit to the repository.
 
 ## Known problems
 ### Deployment to the Ropsten network

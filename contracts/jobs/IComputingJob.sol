@@ -1,11 +1,11 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import 'zeppelin-solidity/contracts/lifecycle/Destructible.sol';
-import '../libraries/IStateMachine.sol';
-import '../entities/IDataEntity.sol';
-import '../pandora/IPandora.sol';
-import '../nodes/IWorkerNode.sol';
-import './JobStates.sol';
+import "zeppelin-solidity/contracts/lifecycle/Destructible.sol";
+import "../libraries/IStateMachine.sol";
+import "../entities/IDataEntity.sol";
+import "../pandora/IPandora.sol";
+import "../nodes/IWorkerNode.sol";
+import "./JobStates.sol";
 
 contract IComputingJob is IStateMachine, Destructible, JobStates {
     enum DataValidationResponse {

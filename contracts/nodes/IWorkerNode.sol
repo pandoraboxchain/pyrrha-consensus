@@ -1,11 +1,11 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import 'zeppelin-solidity/contracts/ownership/Ownable.sol';
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 
-import '../libraries/IStateMachine.sol';
-import '../pandora/IPandora.sol';
-import '../jobs/IComputingJob.sol';
-import './WorkerNodeStates.sol';
+import "../libraries/IStateMachine.sol";
+import "../pandora/IPandora.sol";
+import "../jobs/IComputingJob.sol";
+import "./WorkerNodeStates.sol";
 
 contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
     /// @notice Defines possible cases for penaltize worker nodes. Used in `WorkerNodeManager.penaltizeWorkerNode`

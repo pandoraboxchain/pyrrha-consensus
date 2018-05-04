@@ -1,12 +1,12 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import 'zeppelin-solidity/contracts/math/SafeMath.sol';
-import '../../lifecycle/Initializable.sol';
-import '../lottery/RoundRobinLottery.sol';
-import './ICognitiveJobManager.sol';
-import './WorkerNodeManager.sol';
-import '../../jobs/IComputingJob.sol';
-import '../../libraries/JobQueueLib.sol';
+import "zeppelin-solidity/contracts/math/SafeMath.sol";
+import "../../lifecycle/Initializable.sol";
+import "../lottery/RoundRobinLottery.sol";
+import "./ICognitiveJobManager.sol";
+import "./WorkerNodeManager.sol";
+import "../../jobs/IComputingJob.sol";
+import "../../libraries/JobQueueLib.sol";
 
 /**
  * @title Pandora Smart Contract
@@ -96,7 +96,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// ### Constructor
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
-    function CognitiveJobManager (
+    constructor(
         CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
         WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
     )
@@ -191,7 +191,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         if (estimatedSize < uint256(batchesCount)) {
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             cognitiveJobQueue.put(_kernel, _dataset, msg.value, msg.sender);
-            CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
+            emit CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
             return (o_cognitiveJob, o_resultCode);
         }
 
@@ -216,10 +216,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         //  Hold payment from client
         deposits[msg.sender] = deposits[msg.sender].add(msg.value);
 
-        CognitiveJobCreated(o_cognitiveJob, o_resultCode);
+        emit CognitiveJobCreated(o_cognitiveJob, o_resultCode);
     }
 
-    /// @notice Can't be called by the user, for internal use only
+    /// @notice Can"t be called by the user, for internal use only
     /// @dev Function must be called only by the master node running cognitive job. It completes the job, updates
     /// worker node back to `Idle` state (in smart contract) and removes job contract from the list of active contracts
     function finishCognitiveJob(
@@ -243,7 +243,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
         }
 
-        // @fixme set 'Idle' state to the worker
+        // @fixme set "Idle" state to the worker
 
         // Remove cognitive job contract from the storage
         delete jobAddresses[address(job)];
@@ -255,7 +255,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         _checkJobQueue();
     }
 
-    /// @notice Can't be called by the user or other contract: for private use only
+    /// @notice Can"t be called by the user or other contract: for private use only
     /// #dev Function is called only by `finishCognitiveJob()` in order to allocate newly freed WorkerNodes
     /// to perform cognitive jobs from the queue.
     function _checkJobQueue(
@@ -302,20 +302,20 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             IComputingJob createdCognitiveJob = _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
             uint resultCode = RESULT_CODE_JOB_CREATED;
 
-            CognitiveJobCreated(createdCognitiveJob, resultCode);
+            emit CognitiveJobCreated(createdCognitiveJob, resultCode);
 
             // Count used funds for queue
             uint weiUsedForQueuedJob = (initialGas - msg.gas) / tx.gasprice;
 
             // Gas refund to node
-            tx.origin.send(weiUsedForQueuedJob);
+            tx.origin.transfer(weiUsedForQueuedJob);
 
-            // Withdraw from client's deposits
+            // Withdraw from client"s deposits
             deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsedForQueuedJob - value);
         }
     }
 
-    /// @notice Can't be called by the user or other contract: for private use only
+    /// @notice Can"t be called by the user or other contract: for private use only
     /// @dev Creates cognitive job contract, saves it to storage and fires global event to notify selected worker node.
     /// Used both by `createCognitiveJob()` and `_checksJobQueue()` methods.
     function _initCognitiveJob(
@@ -345,7 +345,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         o_cognitiveJob.initialize();
     }
 
-    /// @notice Can't be called by the user or other contract: for private use only
+    /// @notice Can"t be called by the user or other contract: for private use only
     /// @dev Running lottery to select random worker nodes from the provided list. Used by both `createCognitiveJob`
     /// and `_checksJobQueue` functions.
     function _selectWorkersWithLottery(
@@ -365,7 +365,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
     }
 
-    /// @notice Can't be called by the user or other contract: for private use only
+    /// @notice Can"t be called by the user or other contract: for private use only
     /// @dev Pre-count amount of available Idle WorkerNodes. Required to allocate in-memory list of WorkerNodes.
     function _countIdleWorkers(
         // No arguments
@@ -383,7 +383,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         return o_estimatedSize;
     }
 
-    /// @notice Can't be called by the user or other contract: for private use only
+    /// @notice Can"t be called by the user or other contract: for private use only
     /// @dev Allocates and returns in-memory array of all Idle WorkerNodes taking estimated size as an argument
     /// (returned by `_countIdleWorkers()`)
     function _listIdleWorkers(

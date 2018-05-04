@@ -1,12 +1,12 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import '../jobs/IComputingJob.sol';
-import '../entities/IKernel.sol';
-import '../entities/IDataset.sol';
+import "../jobs/IComputingJob.sol";
+import "../entities/IKernel.sol";
+import "../entities/IDataset.sol";
 
 library JobQueueLib {
 
-    // implementation with 'unlimited' array
+    // implementation with "unlimited" array
 
     struct Queue {
         QueuedJob[] jobArray;
@@ -25,7 +25,7 @@ library JobQueueLib {
         Queue storage _queue
     )
     internal
-    constant
+    view
     returns(uint depth) {
 
         depth = _queue.jobArray.length - _queue.cursorPosition;

@@ -1,12 +1,12 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import './ILotteryEngine.sol';
+import "./ILotteryEngine.sol";
 
 contract RoundRobinLottery is ILotteryEngine {
 
     uint256 internal m_lastValue;
 
-    function RoundRobinLottery()
+    constructor()
     public {
         m_lastValue = 0;
     }

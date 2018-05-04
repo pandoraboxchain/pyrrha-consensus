@@ -1,9 +1,9 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import '../../entities/IDataEntity.sol';
-import '../../nodes/IWorkerNode.sol';
-import '../../jobs/IComputingJob.sol';
-import '../factories/CognitiveJobFactory.sol';
+import "../../entities/IDataEntity.sol";
+import "../../nodes/IWorkerNode.sol";
+import "../../jobs/IComputingJob.sol";
+import "../factories/CognitiveJobFactory.sol";
 
 contract ICognitiveJobManager {
     CognitiveJobFactory public cognitiveJobFactory;

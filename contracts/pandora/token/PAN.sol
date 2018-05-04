@@ -1,6 +1,6 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import 'zeppelin-solidity/contracts/token/ERC20/StandardToken.sol';
+import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
 /**
  * @title PAN Token Contract (Pandora Artificial Neuronetwork Token) for Pyrrha cognitive network
@@ -28,7 +28,7 @@ contract PAN is StandardToken {
     /// [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
     uint public constant INITIAL_SUPPLY = 5000000 * 100000000;
 
-    function PAN()
+    constructor()
     public
     {
         totalSupply = INITIAL_SUPPLY;

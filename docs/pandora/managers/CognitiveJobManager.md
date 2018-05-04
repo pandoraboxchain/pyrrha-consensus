@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1608800 gas
+**Deployment cost**: less than 1613600 gas
 
 **Combined cost**: No bound available
 
@@ -171,7 +171,7 @@ Returns:
 --- 
 ### finishCognitiveJob()
 >
->Can't be called by the user, for internal use only
+>Can"t be called by the user, for internal use only
 >
 > Function must be called only by the master node running cognitive job. It completes the job, updates worker node back to `Idle` state (in smart contract) and removes job contract from the list of active contracts
 

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity ^0.4.23;
 
 import "../../contracts/pandora/IPandora.sol";
 import "../../contracts/entities/IKernel.sol";
@@ -9,6 +9,7 @@ import "../../contracts/jobs/CognitiveJob.sol";
 
 contract WorkerNodeCreateProxy {
     function create(IPandora pandora)
+    public
     returns (WorkerNode) {
         return new WorkerNode(pandora);
     }

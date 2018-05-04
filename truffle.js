@@ -17,6 +17,13 @@ module.exports = {
       port: 8545,
       network_id: '*'
     },
+    coverage: {
+      host: 'localhost',
+      network_id: '*',
+      port: 8555,
+      gas: 0xfffffffffff,
+      gasPrice: 0x01
+    },
     infura_ropsten: {
       provider: _ => new PrivateKeyProvider(privateKey, "https://ropsten.infura.io/" + infura_apikey),
       network_id: 3,

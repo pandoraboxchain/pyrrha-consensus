@@ -1,6 +1,6 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import './IDataEntity.sol';
+import "./IDataEntity.sol";
 
 /**
  * @title DataEntity Contract (parent for Kernel and Dataset contracts)
@@ -28,7 +28,7 @@ contract DataEntity is IDataEntity {
     event PriceUpdated(uint256 oldPrice, uint256 newPrice);
 
 
-    function DataEntity (
+    constructor(
         bytes _ipfsAddress,
         uint256 _dataDim,
         uint256 _initialPrice
@@ -47,7 +47,7 @@ contract DataEntity is IDataEntity {
         uint256 oldPrice = currentPrice;
         currentPrice = _newPrice;
 
-        PriceUpdated(oldPrice, _newPrice);
+        emit PriceUpdated(oldPrice, _newPrice);
     }
 
     /// @notice Withdraws full balance to the owner account. Can be called only by the owner of the contract.

@@ -7,17 +7,25 @@ services:
 branches:
   only:
     - master
+    - develop
     - "/v\\d+\\.\\d+\\.\\d+(-\\w+)?/"
 stages:
+  - lint
   - test
   - deploy
 jobs:
   include:
-    - stage: test
-      install: skip
+    - stage: lint
       script:
-      - echo "Tests are skiped for now"
-    - stage: build
+        - npm link
+        - npm run lint
+        - npm run compile
+    - stage: test
+      script:
+        - npm link
+        - npm run test:coverage
+        - npm run coveralls
+    - stage: deploy
       if: tag IS present
       script:
         - npm link

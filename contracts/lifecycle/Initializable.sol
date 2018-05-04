@@ -1,10 +1,10 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
 
 contract Initializable {
     bool public initialized = false;
 
-    function Initializable() public {
+    constructor() public {
         initialized = false;
     }
 

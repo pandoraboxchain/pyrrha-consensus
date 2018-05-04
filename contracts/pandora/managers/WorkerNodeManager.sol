@@ -1,7 +1,7 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
-import '../../lifecycle/Initializable.sol';
-import './IWorkerNodeManager.sol';
+import "../../lifecycle/Initializable.sol";
+import "./IWorkerNodeManager.sol";
 
 /**
  * @title Pandora Smart Contract
@@ -63,7 +63,6 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     /// @dev Event firing when some worker node was destroyed
     event WorkerNodeDestroyed(IWorkerNode workerNode);
 
-
     /*******************************************************************************************************************
      * ## Constructor and initialization
      */
@@ -71,7 +70,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     /// ### Constructor
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
-    function WorkerNodeManager (
+    constructor(
         WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
     ) public {
         // Must ensure that the supplied factories are already created contracts
@@ -120,7 +119,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     )
     onlyOwner // Only by owner of Pandora contract
     external {
-        // Whitelist is organised in a form of mapping with whitelisted addresses set to 'true'
+        // Whitelist is organised in a form of mapping with whitelisted addresses set to "true"
         workerNodeOwners[_workerOwner] = true;
     }
 
@@ -173,7 +172,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
         workerAddresses[address(workerNode)] = uint16(workerNodes.length);
 
         // Firing event
-        WorkerNodeCreated(workerNode);
+        emit WorkerNodeCreated(workerNode);
 
         return workerNode;
     }
@@ -204,8 +203,8 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
 
         /// Call worker node destroy function (can be triggered only by this Pandora contract). All balance
         /// is transferred to the node owner.
-        /// We do this before removing worker node from the lists since we need to ensure that the node didn't
-        /// got into non-idle state (self-destruct puts node into Destroyed state and it can't be assigned any
+        /// We do this before removing worker node from the lists since we need to ensure that the node didn"t
+        /// got into non-idle state (self-destruct puts node into Destroyed state and it can"t be assigned any
         /// tasks after that)
         _workerNode.destroy();
 
@@ -219,6 +218,6 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
         /// @todo Return the unspent stake
 
         /// Firing the event
-        WorkerNodeDestroyed(_workerNode);
+        emit WorkerNodeDestroyed(_workerNode);
     }
 }

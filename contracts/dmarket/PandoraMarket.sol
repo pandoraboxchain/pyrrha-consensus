@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.23;
 
 import "../entities/IKernel.sol";
 import "../entities/IDataset.sol";
@@ -23,7 +23,7 @@ contract PandoraMarket is IMarket {
     event KernelRemoved(IKernel kernel);
     event DatasetRemoved(IDataset dataset);
 
-    function PandoraMarket() {
+    constructor() {
     }
 
     function kernelsCount()
@@ -59,7 +59,7 @@ contract PandoraMarket is IMarket {
         }
         kernels.push(_kernel);
         kernelMap[address(_kernel)] = kernels.length;
-        KernelAdded(_kernel);
+        emit KernelAdded(_kernel);
         return o_result = STATUS_SUCCESS;
     }
 
@@ -78,7 +78,7 @@ contract PandoraMarket is IMarket {
         }
         datasets.push(_dataset);
         datasetMap[address(_dataset)] = datasets.length;
-        DatasetAdded(_dataset);
+        emit DatasetAdded(_dataset);
         return o_result = STATUS_SUCCESS;
     }
 
@@ -102,7 +102,7 @@ contract PandoraMarket is IMarket {
         delete kernels[len - 1];
         kernels.length--;
 
-        KernelRemoved(_kernel);
+        emit KernelRemoved(_kernel);
 
         return o_result = STATUS_SUCCESS;
     }
@@ -127,7 +127,7 @@ contract PandoraMarket is IMarket {
         delete datasets[len - 1];
         datasets.length--;
 
-        DatasetRemoved(_dataset);
+        emit DatasetRemoved(_dataset);
 
         return o_result = STATUS_SUCCESS;
     }
