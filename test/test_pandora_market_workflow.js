@@ -40,7 +40,16 @@ contract('PandoraMarket', accounts => {
         assert.equal(kernelInMarketMap.toNumber(), 1, 'Index of kernel in mapping should match 1');
     });
 
-    it('New Kernel should be added to PandoraMarket', async () => {
+    it('#kernelsCount should return count of added kernels', async () => {
+
+        const result = await market.addKernel(testKernel.address, {
+            from: accounts[1]
+        });
+        const count = await market.kernelsCount();
+        assert.isOk(count > 0, 'kernels count more then 0');
+    });
+
+    it('New Dataset should be added to PandoraMarket', async () => {
 
         const result = await market.addDataset(testDataset.address, {
             from: accounts[1]
@@ -60,7 +69,16 @@ contract('PandoraMarket', accounts => {
         assert.equal(datasetInMarketMap.toNumber(), 1, 'Index of dataset in mapping should match 1');
     });
 
-    it('Should delete Kernel and fire event', async () => {
+    it('#datasetsCount should return count of added datasets', async () => {
+
+        const result = await market.addDataset(testDataset.address, {
+            from: accounts[1]
+        });
+        const count = await market.datasetsCount();
+        assert.isOk(count > 0, 'datasets count more then 0');
+    });
+
+    it('#removeKernel should delete Kernel and fire event', async () => {
 
         const newKernelAddress = await market.kernels(0);
 
@@ -77,6 +95,16 @@ contract('PandoraMarket', accounts => {
 
         let logSuccess = result.logs.filter(l => l.event === 'KernelRemoved')[0];
         console.log(logSuccess, 'Kernel remove event');
+    });
+
+    it('#removeKernel should not fire an event KernelRemoved on trying to remove not existed kernel', async () => {
+
+        const result = await market.removeKernel('', {
+            from: accounts[1]
+        });
+
+        const log = result.logs.filter(l => l.event === 'KernelRemoved')[0];
+        assert.equal(log, undefined, 'no KernelRemoved events');
     });
 
     it('Should delete Dataset and fire event', async () => {
@@ -96,5 +124,15 @@ contract('PandoraMarket', accounts => {
 
         const logSuccess = result.logs.filter(l => l.event === 'DatasetRemoved')[0];
         console.log(logSuccess, 'Kernel remove event');
+    });
+
+    it('#removeDataset should not fire an event DatasetRemoved on trying to remove not existed dataset', async () => {
+
+        const result = await market.removeDataset('', {
+            from: accounts[1]
+        });
+
+        const log = result.logs.filter(l => l.event === 'DatasetRemoved')[0];
+        assert.equal(log, undefined, 'no DatasetRemoved events');
     });
 });

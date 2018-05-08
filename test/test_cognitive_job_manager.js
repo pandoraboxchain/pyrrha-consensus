@@ -71,10 +71,19 @@ contract('Pandora', accounts => {
         console.log(logSuccess, 'success');
         console.log(logEntries, 'entries');
 
+        const activeJobsCount = await pandora.activeJobsCount();
+
+        assert.equal(activeJobsCount.toNumber(), 0, 'activeJobsCount = 0');
         assert.equal(result.logs[0].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_ADD_TO_QUEUE');
         assert.equal(logEntries, 1, 'should be fired only 1 event');
         assert.isOk(logFailure, 'should be fired failed event');
         assert.isNotOk(logSuccess, 'should not be fired successful creation event');
+    });
+
+    it('#isActiveJob to be falsy if job not exist', async () => {
+
+        const isActiveJob = await pandora.isActiveJob('');
+        assert.equal(isActiveJob, false, 'job is not in the jobAddresses list');
     });
 
     it('Should create job if number of idle workers >= number of batches in dataset', async () => {
@@ -98,6 +107,9 @@ contract('Pandora', accounts => {
 
         const workerState = await workerInstance.currentState.call();
 
+        const activeJobsCount = await pandora.activeJobsCount();
+
+        assert.equal(activeJobsCount.toNumber(), 1, 'activeJobsCount = 1');
         assert.equal(workerState.toNumber(), 3, `worker state should be "assigned" (3)`);
         assert.notEqual(activeJob, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node');
         assert.equal(result.logs[1].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_JOB_CREATED');
