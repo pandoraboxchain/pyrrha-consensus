@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/pandoraboxchain/pyrrha-consensus.svg?branch=master)](https://travis-ci.org/pandoraboxchain/pyrrha-consensus)  
+[![Build Status](https://travis-ci.org/pandoraboxchain/pyrrha-consensus.svg?branch=master)](https://travis-ci.org/pandoraboxchain/pyrrha-consensus) [![Coverage Status](https://coveralls.io/repos/github/pandoraboxchain/pyrrha-consensus/badge.svg?branch=master)](https://coveralls.io/github/pandoraboxchain/pyrrha-consensus?branch=master)  
 
 # Pandora Smart Contracts
 

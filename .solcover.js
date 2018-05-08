@@ -1,7 +1,7 @@
 module.exports = {
-    norpc: false,
-    dir: '.',
-    testCommand: 'npx truffle test --network coverage',
+    norpc: true,
+    compileCommand: 'npx truffle compile',
+    testCommand: 'npx --node-arg=--max-old-space-size=4096 truffle test --network coverage',
     copyPackages: [
         "zeppelin-solidity"
     ],

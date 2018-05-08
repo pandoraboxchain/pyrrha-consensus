@@ -11,7 +11,7 @@ contract('Pandora', accounts => {
 
     it('Account #0 should be whitelisted during deployment', async () => {
 
-        let result = await pandora.workerNodeOwners(accounts[0]);
+        const result = await pandora.workerNodeOwners(accounts[0]);
         console.log(result);
 
         assert.equal(result, true, 'account #0 should be whitelisted');
