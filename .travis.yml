@@ -27,8 +27,9 @@ jobs:
         - set -e
         - npm link
         - npm run test:coverage
-        - npx coveralls < ./coverage/lcov.info
         - set +e
+      after_success:
+        - cat ./coverage/lcov.info | npx coveralls
     - stage: deploy
       if: tag IS present
       script:
