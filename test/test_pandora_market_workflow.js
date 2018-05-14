@@ -27,13 +27,13 @@ contract('PandoraMarket', accounts => {
             from: accounts[1]
         });
         const logSuccess = result.logs.filter(l => l.event === 'KernelAdded')[0];
-        console.log(logSuccess, 'Kernel added log');
+        // console.log(logSuccess, 'Kernel added log');
 
         const newKernelAddress = await market.kernels(0);
-        console.log(newKernelAddress, 'kernelInMarket');
+        // console.log(newKernelAddress, 'kernelInMarket');
 
         const kernelInMarketMap = await market.kernelMap(newKernelAddress);
-        console.log(kernelInMarketMap.toNumber(), 'kernelInMarketMap');
+        // console.log(kernelInMarketMap.toNumber(), 'kernelInMarketMap');
 
         assert.equal(result.logs[0].args.kernel, newKernelAddress,
             'Address of kernel in array should match with created dataset');
@@ -56,13 +56,13 @@ contract('PandoraMarket', accounts => {
         });
 
         const logSuccess = result.logs.filter(l => l.event === 'DatasetAdded')[0];
-        console.log(logSuccess, 'Dataset added log');
+        // console.log(logSuccess, 'Dataset added log');
 
         const newDatasetAddress = await market.datasets(0);
-        console.log(newDatasetAddress, 'datasetInMarket');
+        // console.log(newDatasetAddress, 'datasetInMarket');
 
         const datasetInMarketMap = await market.datasetMap(newDatasetAddress);
-        console.log(datasetInMarketMap.toNumber(), 'datasetInMarketMap');
+        // console.log(datasetInMarketMap.toNumber(), 'datasetInMarketMap');
 
         assert.equal(result.logs[0].args.dataset, newDatasetAddress,
             'Address of dataset in array should match with created dataset');
@@ -86,15 +86,15 @@ contract('PandoraMarket', accounts => {
             'Newly created address should match with newly added kernel in market');
 
         const kernelInMarketMap = await market.kernelMap(testKernel.address);
-        console.log(kernelInMarketMap.toNumber(), 'kernelInMarketMap');
+        // console.log(kernelInMarketMap.toNumber(), 'kernelInMarketMap');
 
         const result = await market.removeKernel(testKernel.address, {
             from: accounts[1]
         });
-        console.log(result, 'Deleting kernel log');
+        // console.log(result, 'Deleting kernel log');
 
         let logSuccess = result.logs.filter(l => l.event === 'KernelRemoved')[0];
-        console.log(logSuccess, 'Kernel remove event');
+        // console.log(logSuccess, 'Kernel remove event');
     });
 
     it('#removeKernel should not fire an event KernelRemoved on trying to remove not existed kernel', async () => {
@@ -115,15 +115,15 @@ contract('PandoraMarket', accounts => {
             'Newly created address should match with newly added dataset in market');
 
         const datasetInMarketMap = await market.datasetMap(testDataset.address);
-        console.log(datasetInMarketMap.toNumber(), 'datasetInMarketMap');
+        // console.log(datasetInMarketMap.toNumber(), 'datasetInMarketMap');
 
         const result = await market.removeDataset(testDataset.address, {
             from: accounts[1]
         });
-        console.log(result, 'Deleting dataset log');
+        // console.log(result, 'Deleting dataset log');
 
         const logSuccess = result.logs.filter(l => l.event === 'DatasetRemoved')[0];
-        console.log(logSuccess, 'Kernel remove event');
+        // console.log(logSuccess, 'Kernel remove event');
     });
 
     it('#removeDataset should not fire an event DatasetRemoved on trying to remove not existed dataset', async () => {

@@ -37,7 +37,7 @@ contract('Pandora', accounts => {
 
         const idleWorkerAddress = await pandora.workerNodes.call(0);
 
-        console.log(idleWorkerAddress, 'worker node');
+        // console.log(idleWorkerAddress, 'worker node');
 
         workerInstance = await WorkerNode.at(idleWorkerAddress);
         const workerAliveResult = await workerInstance.alive({
@@ -67,9 +67,9 @@ contract('Pandora', accounts => {
         const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
         const logEntries = result.logs.length;
 
-        console.log(logFailure, 'failure');
-        console.log(logSuccess, 'success');
-        console.log(logEntries, 'entries');
+        // console.log(logFailure, 'failure');
+        // console.log(logSuccess, 'success');
+        // console.log(logEntries, 'entries');
 
         const activeJobsCount = await pandora.activeJobsCount();
 
@@ -99,9 +99,9 @@ contract('Pandora', accounts => {
         const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
         const logEntries = result.logs.length;
 
-        console.log(logFailure, 'failure');
-        console.log(logSuccess, 'success');
-        console.log(logEntries, 'entries');
+        // console.log(logFailure, 'failure');
+        // console.log(logSuccess, 'success');
+        // console.log(logEntries, 'entries');
 
         const activeJob = await workerInstance.activeJob.call();
 
@@ -118,53 +118,53 @@ contract('Pandora', accounts => {
         assert.isOk(logSuccess, 'should be fired successful creation event');
     });
 
-    it('Congitive job should be successfully completed after computation', async () => {
+    it.skip('Congitive job should be successfully completed after computation', async () => {
 
         //preparing to finish job on worker node #1
 
         const activeJob = await workerInstance.activeJob.call();
-        console.log(activeJob, 'activeJob');
+        // console.log(activeJob, 'activeJob');
 
         let workerState = await workerInstance.currentState.call();
-        console.log(workerState.toNumber(), 'workerState');
+        // console.log(workerState.toNumber(), 'workerState');
 
         const preparingValidationResult = await workerInstance.acceptAssignment({
             from: workerOwner
         });
-        console.log(preparingValidationResult);
+        // console.log(preparingValidationResult);
 
         const validatingDataResult = await workerInstance.processToDataValidation({
             from: workerOwner
         });
-        console.log(validatingDataResult);
+        // console.log(validatingDataResult);
 
         const readyForComputingResult = await workerInstance.acceptValidData({
             from: workerOwner
         });
-        console.log(readyForComputingResult);
+        // console.log(readyForComputingResult);
 
         const processToCognitionResult = await workerInstance.processToCognition({
             from: workerOwner
         });
-        console.log(processToCognitionResult);
+        // console.log(processToCognitionResult);
 
         workerState = await workerInstance.currentState.call();
-        console.log(workerState.toNumber(), 'workerState');
+        // console.log(workerState.toNumber(), 'workerState');
         assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
 
         const completeResult = await workerInstance.provideResults('0x0', {
             from: workerOwner
         });
-        console.log(completeResult)
+        // console.log(completeResult)
 
         const logEntries = completeResult.logs.length;
-        console.log(logEntries);
+        // console.log(logEntries);
 
         workerState = await workerInstance.currentState.call();
-        console.log(workerState.toNumber(), 'workerState');
+        // console.log(workerState.toNumber(), 'workerState');
 
         const jobState = await CognitiveJob.at(activeJob).currentState.call();
-        console.log(jobState.toNumber(), 'Active job state');
+        // console.log(jobState.toNumber(), 'Active job state');
         assert.equal(jobState.toNumber(), 7, `Cognitive job state should be "Completed" (7)`);
     });
 });
