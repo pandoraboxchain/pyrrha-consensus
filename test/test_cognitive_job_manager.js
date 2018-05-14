@@ -118,7 +118,7 @@ contract('Pandora', accounts => {
         assert.isOk(logSuccess, 'should be fired successful creation event');
     });
 
-    it.skip('Congitive job should be successfully completed after computation', async () => {
+    it('Congitive job should be successfully completed after computation', async () => {
 
         //preparing to finish job on worker node #1
 
