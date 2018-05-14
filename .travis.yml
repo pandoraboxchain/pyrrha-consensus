@@ -12,6 +12,7 @@ branches:
 stages:
   - lint
   - test
+  - coverage
   - deploy
 jobs:
   include:
@@ -28,7 +29,8 @@ jobs:
         - npm link
         - npm run test
         - set +e
-      after_script:
+    - stage: coverage
+      script:
         - set -e
         - npm run test:coverage
         - cat ./coverage/lcov.info | npx coveralls
