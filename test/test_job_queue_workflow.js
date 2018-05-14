@@ -154,7 +154,7 @@ contract('Pandora', accounts => {
         const completeResult = await workerInstance.provideResults('0x0', {
             from: workerOwner
         });
-        console.log(completeResult)
+        // console.log(completeResult)
 
         // // console.log(workerState.toNumber(), 'worker #0 state');
 
