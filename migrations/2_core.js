@@ -37,7 +37,7 @@ module.exports = (deployer, network, accounts) => {
         .then(instance => {
             pandora = instance
             console.log('>>>>>>>>>>>>>>>>>', deployer);
-            console.log('=================', path.resolve(__dirname));
+            console.log('=================', path.resolve('.'));
             return saveAddressToFile(deployer.basePath, 'Pandora.json', JSON.stringify(pandora.address));
         })
         .then(_ => pandora.whitelistWorkerOwner(accounts[0]))
