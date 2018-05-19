@@ -141,8 +141,11 @@ contract('Pandora', accounts => {
         activeJob = await workerInstance.activeJob.call();
         // console.log(activeJob, 'activeJob #0');
 
+
         const activeJobInstance = await CognitiveJob.at(activeJob);
-        const jobBatches = await activeJobInstance.batches.call();
+        let results = await activeJobInstance.ipfsResultsCount.call()
+        console.log("ipfsResults count: " + results.toNumber())
+        // const jobBatches = await activeJobInstance.batches.call();
         // console.log(jobBatches.toNumber(), 'batches in active job #0');
 
         const jobWorkers = await activeJobInstance.activeWorkers.call(0);

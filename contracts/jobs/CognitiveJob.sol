@@ -8,55 +8,6 @@ import "./IComputingJob.sol";
  */
 
 contract CognitiveJob is IComputingJob, StateMachine /* final */ {
-    /**
-     * ## State Machine implementation
-     */
-
-    modifier requireActiveStates() {
-        require(
-            stateMachine.currentState == GatheringWorkers ||
-            stateMachine.currentState == DataValidation ||
-            stateMachine.currentState == Cognition
-        );
-        _;
-    }
-
-    function _initStateMachine() internal {
-        // Creating table of possible state transitions
-        var transitions = stateMachine.transitionTable;
-        transitions[Uninitialized] = [GatheringWorkers];
-        transitions[GatheringWorkers] = [InsufficientWorkers, DataValidation];
-        transitions[DataValidation] = [InvalidData, Cognition, InsufficientWorkers];
-        transitions[Cognition] = [Completed, PartialResult];
-
-        // Initializing state machine via base contract code
-        super._initStateMachine();
-
-        // Going into initial state (Uninitialized)
-        stateMachine.currentState = Uninitialized;
-    }
-
-    event Flag(uint number);
-
-    function _fireStateEvent() internal {
-        if (currentState() == InsufficientWorkers) {
-            emit WorkersNotFound();
-            _cleanStorage();
-        } else if (currentState() == DataValidation) {
-            emit DataValidationStarted();
-        } else if (currentState() == InvalidData) {
-            emit DataValidationFailed();
-            _cleanStorage();
-        } else if (currentState() == Cognition) {
-            emit CognitionStarted();
-        } else if (currentState() == PartialResult) {
-            emit CognitionCompleted(true);
-            pandora.finishCognitiveJob();
-        } else if (currentState() == Completed) {
-            emit CognitionCompleted(false);
-            pandora.finishCognitiveJob();
-        }
-    }
 
     /**
      * ## Main functionality
@@ -137,6 +88,10 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             }
         }
         return uint256(-1);
+    }
+
+    function ipfsResultsCount() public returns (uint256 count) {
+        count = ipfsResults.length;
     }
 
     function _getWorkerFromSender() private view returns (IWorkerNode o_workerNode, uint256 o_workerIndex) {
@@ -241,7 +196,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         activeWorkers = new IWorkerNode[](batches);
         responseTimestamps = new uint[](batches);
         responseFlags = new bool[](batches);
-        /// @fixme ipfsResults = new bytes[](batches);
+        ipfsResults = new bytes[](batches);
         for (uint8 batch = 0; batch < batches; batch++) {
             responseFlags[batch] = false; // no response is given yet
             responseTimestamps[batch] = block.timestamp;
@@ -299,7 +254,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     onlyActiveWorkers
     external {
         var (,workerIndex) = _getWorkerFromSender();
-        /// @fixme ipfsResults[workerIndex] = _ipfsResults;
+        ipfsResults[workerIndex] = _ipfsResults;
         responseFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
         _trackOfflineWorkers();
@@ -320,5 +275,55 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     external
     returns(bool) {
         return responseFlags[no] == true;
+    }
+
+    /**
+     * ## State Machine implementation
+     */
+
+    modifier requireActiveStates() {
+        require(
+            stateMachine.currentState == GatheringWorkers ||
+            stateMachine.currentState == DataValidation ||
+            stateMachine.currentState == Cognition
+        );
+        _;
+    }
+
+    function _initStateMachine() internal {
+        // Creating table of possible state transitions
+        var transitions = stateMachine.transitionTable;
+        transitions[Uninitialized] = [GatheringWorkers];
+        transitions[GatheringWorkers] = [InsufficientWorkers, DataValidation];
+        transitions[DataValidation] = [InvalidData, Cognition, InsufficientWorkers];
+        transitions[Cognition] = [Completed, PartialResult];
+
+        // Initializing state machine via base contract code
+        super._initStateMachine();
+
+        // Going into initial state (Uninitialized)
+        stateMachine.currentState = Uninitialized;
+    }
+
+    event Flag(uint number);
+
+    function _fireStateEvent() internal {
+        if (currentState() == InsufficientWorkers) {
+            emit WorkersNotFound();
+            _cleanStorage();
+        } else if (currentState() == DataValidation) {
+            emit DataValidationStarted();
+        } else if (currentState() == InvalidData) {
+            emit DataValidationFailed();
+            _cleanStorage();
+        } else if (currentState() == Cognition) {
+            emit CognitionStarted();
+        } else if (currentState() == PartialResult) {
+            emit CognitionCompleted(true);
+            pandora.finishCognitiveJob();
+        } else if (currentState() == Completed) {
+            emit CognitionCompleted(false);
+            pandora.finishCognitiveJob();
+        }
     }
 }
