@@ -1,6 +1,6 @@
 pragma solidity 0.4.23;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "zeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../../jobs/CognitiveJob.sol";
 import "../../entities/IDataEntity.sol";
 import "../../entities/IDataset.sol";

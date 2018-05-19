@@ -1,6 +1,6 @@
 pragma solidity 0.4.23;
 
-import "openzeppelin-solidity/contracts/math/SafeMath.sol";
+import "zeppelin-solidity/contracts/math/SafeMath.sol";
 import "../../lifecycle/Initializable.sol";
 import "../lottery/RoundRobinLottery.sol";
 import "./ICognitiveJobManager.sol";

@@ -1,6 +1,6 @@
 pragma solidity 0.4.23;
 
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "zeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
 
 /**
  * @title PAN Token Contract (Pandora Artificial Neuronetwork Token) for Pyrrha cognitive network
