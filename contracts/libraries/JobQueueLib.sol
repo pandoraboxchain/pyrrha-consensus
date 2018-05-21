@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity ^0.4.23;
 
 import "../jobs/IComputingJob.sol";
 import "../entities/IKernel.sol";

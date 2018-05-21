@@ -1,4 +1,4 @@
-pragma solidity 0.4.23;
+pragma solidity ^0.4.23;
 
 import "../lifecycle/OnlyOnce.sol";
 import "../nodes/IWorkerNode.sol";
@@ -32,7 +32,7 @@ contract Pandora is IPandora, OnlyOnce, CognitiveJobManager {
 
     /// ### Public variables
 
-    bytes32 public constant version = "0.3.9";
+    bytes32 public constant version = "0.3.10";
 
 
     /*******************************************************************************************************************
