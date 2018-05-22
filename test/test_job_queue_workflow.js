@@ -46,7 +46,7 @@ contract('Pandora', accounts => {
         });
     });
 
-    it('Worker node should request cognitive job from queue when computation is finished', async () => {
+    it.skip('Worker node should request cognitive job from queue when computation is finished', async () => {
 
         // console.log('Create cognitive job #1 with 2 batches to put it in queue');
 
