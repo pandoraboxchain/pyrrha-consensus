@@ -9,6 +9,8 @@ import "./IDataset.sol";
 contract Dataset is DataEntity, IDataset {
     uint256 public samplesCount;
     uint8 public batchesCount;
+    bytes32[] metadata;
+    bytes32 description;
 
     /// @dev Constructor receives an address of the main IPFS dataset information file (in JSON format) and four
     /// core arguments (also present in that file) which are required for smartcontracts to be able to initialize
@@ -21,7 +23,9 @@ contract Dataset is DataEntity, IDataset {
         uint256 _samplesCount,  /// Total amount of samples in dataset (sum of samples in all batches)
         uint8 _batchesCount,    /// Amount of batches defined in the information JSON file (each batch will be computed
                                 /// by a separate worker node
-        uint256 _initialPrice   /// Price for which Dataset owner is ready to rent the kernel
+        uint256 _initialPrice,  /// Price for which Dataset owner is ready to rent the kernel
+        bytes32[] _metadata,    /// Data, tags that helps to recognize dataset
+        bytes32 _description    /// Dataset description
     )
     DataEntity(_ipfsAddress, _dataDim, _initialPrice)
     public {

@@ -18,6 +18,9 @@ contract IComputingJob is IStateMachine, Destructible, JobStates {
     IKernel public kernel;
     IDataset public dataset;
     uint256 public batches;
+    uint256 public complexity; //todo find better name
+    uint256 public jobType;
+    bytes32 public description;
     IWorkerNode[] public activeWorkers;
     IWorkerNode[] public workersPool;
 
