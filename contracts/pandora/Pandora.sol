@@ -49,9 +49,10 @@ contract Pandora is IPandora, OnlyOnce, CognitiveJobManager {
     /// of worker nodes contracts
     constructor(
         CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
-        WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
+        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
+        Reputation _reputation
     ) public
-    CognitiveJobManager(_jobFactory, _nodeFactory)
+    CognitiveJobManager(_jobFactory, _nodeFactory, _reputation)
     // Ensure that the contract is still uninitialized and `initialize` function be called to check the proper
     // setup of class factories
     Initializable()

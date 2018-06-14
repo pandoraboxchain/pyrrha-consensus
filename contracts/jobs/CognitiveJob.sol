@@ -18,18 +18,18 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     IPandora public pandora;
     IKernel public kernel;
     IDataset public dataset;
-    uint8 public batches;
+    uint256 public batches;
     IWorkerNode[] public activeWorkers;
     IWorkerNode[] public workersPool;
 
     uint256[] internal responseTimestamps;
     bool[] internal responseFlags;
 
+    //TODO implement progress report
     uint8 public progress = 0;
     bytes[] public ipfsResults;
 
     event WorkersUpdated();
-
     event WorkersNotFound();
     event DataValidationStarted();
     event DataValidationFailed();

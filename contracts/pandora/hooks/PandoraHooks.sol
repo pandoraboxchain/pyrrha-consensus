@@ -8,9 +8,10 @@ contract PandoraHooks is Pandora {
 
     constructor(
         CognitiveJobFactory _jobFactory,
-        WorkerNodeFactory _nodeFactory
+        WorkerNodeFactory _nodeFactory,
+        Reputation _reputation
     )
-    Pandora(_jobFactory, _nodeFactory)
+    Pandora(_jobFactory, _nodeFactory, _reputation)
     public {
     }
 

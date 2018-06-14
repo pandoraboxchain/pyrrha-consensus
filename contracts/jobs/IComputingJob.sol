@@ -17,7 +17,7 @@ contract IComputingJob is IStateMachine, Destructible, JobStates {
     IPandora public pandora;
     IKernel public kernel;
     IDataset public dataset;
-    uint8 public batches;
+    uint256 public batches;
     IWorkerNode[] public activeWorkers;
     IWorkerNode[] public workersPool;
 

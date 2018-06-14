@@ -7,6 +7,7 @@ import "./ICognitiveJobManager.sol";
 import "./WorkerNodeManager.sol";
 import "../../jobs/IComputingJob.sol";
 import "../../libraries/JobQueueLib.sol";
+import "../token/Reputation.sol";
 
 /**
  * @title Pandora Smart Contract
@@ -47,6 +48,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     /// @dev List of all active cognitive jobs
     IComputingJob[] public activeJobs;
+
+    /// @dev Reputation values for every address
+    Reputation reputation;
 
     /// @dev Returns total count of active jobs
     function activeJobsCount() onlyInitialized view public returns (uint256) {
@@ -98,7 +102,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// of worker nodes contracts
     constructor(
         CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
-        WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
+        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
+        Reputation _reputation
     )
     public
     WorkerNodeManager(_nodeFactory) {
@@ -108,6 +113,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Assign factories to storage variables
         cognitiveJobFactory = _jobFactory;
+
+        reputation = _reputation;
 
         // Initializing worker lottery engine
         // In Pyrrha we use round robin algorithm to give our whitelisted nodes equal and consequential chances
@@ -178,7 +185,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // The created job must fit into uint16 size
         require(activeJobs.length < 2 ^ 16 - 1);
 
-        // @todo check payment corresponds to required amount + gas payment
+        // @todo check payment corresponds to required amount + gas payment (from tests)
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
@@ -219,6 +226,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         emit CognitiveJobCreated(o_cognitiveJob, o_resultCode);
     }
 
+    //todo should be called after providing full resulta of entire job
+
     /// @notice Can"t be called by the user, for internal use only
     /// @dev Function must be called only by the master node running cognitive job. It completes the job, updates
     /// worker node back to `Idle` state (in smart contract) and removes job contract from the list of active contracts
@@ -253,10 +262,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // After finish, try to start new CognitiveJob from a queue of activeJobs
         _checkJobQueue();
+
+        //todo return remaining funds (for gas)
     }
 
-    /// @notice Can"t be called by the user or other contract: for private use only
-    /// #dev Function is called only by `finishCognitiveJob()` in order to allocate newly freed WorkerNodes
+    /// @notice Private function which checks queue of jobs and create new jobs
+    /// #dev Function is called only in `finishCognitiveJob()` in order to allocate newly freed WorkerNodes
     /// to perform cognitive jobs from the queue.
     function _checkJobQueue(
         // No arguments
@@ -266,12 +277,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         JobQueueLib.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
 
-        uint maxNumberOfQueueRequests = 10; // todo check max restriction for queue requests with tests
+        uint limitQueueRequests = 10; // todo check limit for queue requests with tests
 
-        for (uint256 k = 0; (k < cognitiveJobQueue.queueDepth()) || (k < maxNumberOfQueueRequests); k++) {
+        for (uint256 k = 0; (k < cognitiveJobQueue.queueDepth()) || (k < limitQueueRequests); k++) {
 
             // Count remaining gas
-            uint initialGas = msg.gas; // @fixme deprecated in 0.4.21. should be replaced with gasleft()
+            uint initialGas = gasleft();
 
             // Counting number of available worker nodes (in Idle state)
             uint256 estimatedSize = _countIdleWorkers();
@@ -305,7 +316,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             emit CognitiveJobCreated(createdCognitiveJob, resultCode);
 
             // Count used funds for queue
-            uint weiUsedForQueuedJob = (initialGas - msg.gas) / tx.gasprice;
+            uint weiUsedForQueuedJob = (initialGas - gasleft()) * tx.gasprice;
 
             // Gas refund to node
             tx.origin.transfer(weiUsedForQueuedJob);
