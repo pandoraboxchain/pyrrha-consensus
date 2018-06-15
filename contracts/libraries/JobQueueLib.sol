@@ -18,6 +18,7 @@ library JobQueueLib {
         IKernel kernel;
         IDataset dataset;
         address client;
+        uint256 complexity;
     }
 
     /// @dev Returns depth of queue
@@ -37,12 +38,13 @@ library JobQueueLib {
         IKernel _kernel,
         IDataset _dataset,
         uint256 _value,
-        address _client
+        address _client,
+        uint256 _complexity
     )
     internal
     returns(uint) {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _client));
+        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _client, _complexity));
         _queue.deposits.push(_value);
         return queueDepth(_queue);
     }
