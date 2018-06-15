@@ -9,7 +9,7 @@ import "./IDataset.sol";
 contract Dataset is DataEntity, IDataset {
     uint256 public samplesCount;
     uint8 public batchesCount;
-    bytes32[] metadata;
+    bytes32 metadata;
     bytes32 description;
 
     /// @dev Constructor receives an address of the main IPFS dataset information file (in JSON format) and four

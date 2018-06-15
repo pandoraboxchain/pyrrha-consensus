@@ -14,7 +14,7 @@ import "./IKernel.sol";
 
 contract Kernel is DataEntity, IKernel {
     uint256 public complexity;
-    bytes32[] metadata;
+    bytes32 metadata;
     bytes32 description;
 
     /// @dev Constructor receives an address of the main IPFS kernel info file and three core arguments (also present
