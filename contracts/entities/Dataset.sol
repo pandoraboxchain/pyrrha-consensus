@@ -31,5 +31,7 @@ contract Dataset is DataEntity, IDataset {
     public {
         samplesCount = _samplesCount;
         batchesCount = _batchesCount;
+        metadata = _metadata;
+        description = _description;
     }
 }

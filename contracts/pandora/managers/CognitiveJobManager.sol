@@ -49,7 +49,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev List of all active cognitive jobs
     IComputingJob[] public activeJobs;
 
-    /// @dev Reputation values for every address
+    /// @dev Contract, that store rep. values for each address
     Reputation reputation;
 
     /// @dev Returns total count of active jobs
@@ -254,18 +254,22 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // @fixme set "Idle" state to the worker
 
+        //todo add removed job to completed job array
         // Remove cognitive job contract from the storage
         delete jobAddresses[address(job)];
         IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length - 1];
         jobAddresses[movedJob] = index + 1;
+        //todo delete job from array (not only change length)
         activeJobs.length--;
 
         // After finish, try to start new CognitiveJob from a queue of activeJobs
         _checkJobQueue();
 
-        // Increase reputation of workers involved in computation
-
-        //todo return remaining funds (for gas)
+        // Increase reputation of workers involved to computation
+        for (i = 0; i <= job.activeWorkers.length; i++) {
+            reputation.increaseReputation(address(i));
+        }
+        //todo: user have to able to withdraw remaining funds if worker is idle
     }
 
     /// @notice Private function which checks queue of jobs and create new jobs

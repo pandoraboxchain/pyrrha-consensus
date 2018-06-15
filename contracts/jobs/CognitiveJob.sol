@@ -44,7 +44,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         IPandora _pandora,
         IKernel _kernel,
         IDataset _dataset,
-        IWorkerNode[] _workersPool
+        IWorkerNode[] _workersPool,
+        uint256 _complexity
     )
     public {
         batches = _dataset.batchesCount();
@@ -58,7 +59,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         kernel = _kernel;
         dataset = _dataset;
         workersPool = _workersPool;
-
+        complexity = _complexity;
         _initStateMachine();
     }
 

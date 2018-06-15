@@ -266,64 +266,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         activeJob.completeWork(_ipfsAddress);
     }
 
-    function increaseReputation(
-        // No arguments
-    ) external // Can"t be called internally
-        onlyPandora
-    {
-        reputation++;
-    }
-
-    function decreaseReputation(
-    ) external // Can"t be called internally
-        onlyPandora
-        transitionThroughState(UnderPenalty)
-    {
-        if (reputation == 0) {
-            pandora.destroyWorkerNode(this);
-        } else {
-            reputation--;
-        }
-    }
-
-    function resetReputation(
-        // No arguments
-    ) external // Can"t be called internally
-        // Only Pandora contract can put such penalty
-        onlyPandora
-        // State machine processes
-        transitionThroughState(UnderPenalty)
-    {
-        reputation = 0;
-    }
-
-    function maxPenalty(
-        // No arguments
-    ) external // Can"t be called internally
-        // Only Pandora contract can put such penalty
-        onlyPandora
-        // State machine processes
-        transitionThroughState(UnderPenalty)
-    {
-        reputation = 0;
-    }
-
-    /// @notice For internal use by main Pandora contract
-    /// @dev Zeroes reputation and destroys node
-    function deathPenalty(
-    ) external // Can"t be called internally
-        // Only Pandora contract can put such penalty
-        onlyPandora
-        // State machine processes
-        transitionThroughState(UnderPenalty)
-    {
-        // First, we put remove all reputation
-        reputation = 0;
-
-        // Use function from OpenZepplin Destructible contract
-        pandora.destroyWorkerNode(this);
-    }
-
     /// @notice Withdraws full balance to the owner account. Can be called only by the owner of the contract.
     function withdrawBalance(
         // No arguments

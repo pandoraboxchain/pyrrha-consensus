@@ -34,11 +34,6 @@ contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
     function reportInvalidData() external;
     function processToCognition() external;
     function provideResults(bytes ipfs) external;
-    function increaseReputation() external;
-    function decreaseReputation() external;
-    function resetReputation() external;
-    function maxPenalty() external;
-    function deathPenalty() external;
     function withdrawBalance() external;
 
     event WorkerDestroyed();

@@ -33,5 +33,7 @@ contract Kernel is DataEntity, IKernel {
     DataEntity(_ipfsAddress, _dataDim, _initialPrice)
     public {
         complexity = _complexity;
+        metadata = _metadata;
+        description = _description;
     }
 }
