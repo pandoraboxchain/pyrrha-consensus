@@ -228,28 +228,49 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### dataValidationResponse(uint8)
+### owner()
 
 
 **Execution cost**: No bound available
 
+**Attributes**: constant
 
-Params:
 
-1. **response** *of type `uint8`*
 
+Returns:
+
+
+1. **output_0** *of type `address`*
 
 --- 
-### completeWork(bytes)
+### activeWorkersCount()
 
 
 **Execution cost**: No bound available
 
+**Attributes**: constant
 
-Params:
 
-1. **ipfs** *of type `bytes`*
 
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### Uninitialized()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### activeWorkers(uint256)
@@ -270,7 +291,22 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### activeWorkersCount()
+### progress()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### complexity()
 
 
 **Execution cost**: No bound available
@@ -297,22 +333,19 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `uint8`*
+1. **output_0** *of type `uint256`*
 
 --- 
-### Uninitialized()
+### completeWork(bytes)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
+Params:
 
+1. **ipfs** *of type `bytes`*
 
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### ipfsResults(uint256)
@@ -333,7 +366,7 @@ Returns:
 1. **output_0** *of type `bytes`*
 
 --- 
-### dataset()
+### description()
 
 
 **Execution cost**: No bound available
@@ -345,7 +378,7 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `address`*
+1. **output_0** *of type `bytes32`*
 
 --- 
 ### currentState()
@@ -363,6 +396,33 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### dataValidationResponse(uint8)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **response** *of type `uint8`*
+
+
+--- 
+### dataset()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
 ### kernel()
 
 
@@ -378,6 +438,15 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
+### destroy()
+
+
+**Execution cost**: No bound available
+
+
+
+
+--- 
 ### destroyAndSend(address)
 
 
@@ -387,15 +456,6 @@ Returns:
 Params:
 
 1. **_recipient** *of type `address`*
-
-
---- 
-### destroy()
-
-
-**Execution cost**: No bound available
-
-
 
 
 --- 
@@ -438,7 +498,7 @@ Params:
 
 
 --- 
-### owner()
+### jobType()
 
 
 **Execution cost**: No bound available
@@ -450,7 +510,7 @@ Params:
 Returns:
 
 
-1. **output_0** *of type `address`*
+1. **output_0** *of type `uint256`*
 
 --- 
 ### pandora()
@@ -466,21 +526,6 @@ Returns:
 
 
 1. **output_0** *of type `address`*
-
---- 
-### progress()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### reportOfflineWorker(address)

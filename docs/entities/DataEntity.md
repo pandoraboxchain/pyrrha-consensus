@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 204000 gas
+**Deployment cost**: less than 200800 gas
 
 **Combined cost**: No bound available
 
@@ -111,7 +111,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22875 gas
+**Execution cost**: less than 22863 gas
 
 
 Params:
@@ -126,7 +126,7 @@ Params:
 ### updatePrice(uint256)
 
 
-**Execution cost**: less than 22034 gas
+**Execution cost**: less than 22022 gas
 
 
 Params:

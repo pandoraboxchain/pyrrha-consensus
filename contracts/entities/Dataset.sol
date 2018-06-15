@@ -9,8 +9,8 @@ import "./IDataset.sol";
 contract Dataset is DataEntity, IDataset {
     uint256 public samplesCount;
     uint8 public batchesCount;
-    bytes32 metadata;
-    bytes32 description;
+    bytes32 public metadata;
+    bytes32 public description;
 
     /// @dev Constructor receives an address of the main IPFS dataset information file (in JSON format) and four
     /// core arguments (also present in that file) which are required for smartcontracts to be able to initialize

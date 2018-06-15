@@ -14,8 +14,8 @@ import "./IKernel.sol";
 
 contract Kernel is DataEntity, IKernel {
     uint256 public complexity;
-    bytes32 metadata;
-    bytes32 description;
+    bytes32 public metadata;
+    bytes32 public description;
 
     /// @dev Constructor receives an address of the main IPFS kernel info file and three core arguments (also present
     /// in that file) which are required for smartcontracts to be able to initialize cognitive jobs and check

@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 224200 gas
+**Deployment cost**: less than 236200 gas
 
 **Combined cost**: No bound available
 
@@ -18,6 +18,8 @@ Params:
 3. **_samplesCount** *of type `uint256`*
 4. **_batchesCount** *of type `uint8`*
 5. **_initialPrice** *of type `uint256`*
+6. **_metadata** *of type `bytes32`*
+7. **_description** *of type `bytes32`*
 
 ## Events
 ### OwnershipTransferred(address,address)
@@ -45,25 +47,22 @@ Params:
 
 
 ## Methods
-### batchesCount()
+### updatePrice(uint256)
 
 
-**Execution cost**: less than 443 gas
-
-**Attributes**: constant
+**Execution cost**: less than 22110 gas
 
 
+Params:
 
-Returns:
+1. **_newPrice** *of type `uint256`*
 
-
-1. **output_0** *of type `uint8`*
 
 --- 
-### currentPrice()
+### metadata()
 
 
-**Execution cost**: less than 494 gas
+**Execution cost**: less than 384 gas
 
 **Attributes**: constant
 
@@ -72,13 +71,13 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `bytes32`*
 
 --- 
-### dataDim()
+### description()
 
 
-**Execution cost**: less than 516 gas
+**Execution cost**: less than 428 gas
 
 **Attributes**: constant
 
@@ -87,7 +86,7 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `bytes32`*
 
 --- 
 ### ipfsAddress()
@@ -105,10 +104,55 @@ Returns:
 1. **output_0** *of type `bytes`*
 
 --- 
+### batchesCount()
+
+
+**Execution cost**: less than 487 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### dataDim()
+
+
+**Execution cost**: less than 560 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### currentPrice()
+
+
+**Execution cost**: less than 538 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
 ### owner()
 
 
-**Execution cost**: less than 625 gas
+**Execution cost**: less than 669 gas
 
 **Attributes**: constant
 
@@ -123,7 +167,7 @@ Returns:
 ### samplesCount()
 
 
-**Execution cost**: less than 406 gas
+**Execution cost**: less than 450 gas
 
 **Attributes**: constant
 
@@ -140,7 +184,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22919 gas
+**Execution cost**: less than 22951 gas
 
 
 Params:
@@ -149,18 +193,6 @@ Params:
 
     > The address to transfer ownership to.
 
-
-
---- 
-### updatePrice(uint256)
-
-
-**Execution cost**: less than 22078 gas
-
-
-Params:
-
-1. **_newPrice** *of type `uint256`*
 
 
 --- 

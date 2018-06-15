@@ -4,11 +4,11 @@
 > Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
-**Execution cost**: less than 61605 gas
+**Execution cost**: less than 61575 gas
 
-**Deployment cost**: less than 511000 gas
+**Deployment cost**: less than 502800 gas
 
-**Combined cost**: less than 572605 gas
+**Combined cost**: less than 564375 gas
 
 ## Constructor
 
@@ -101,7 +101,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23081 gas
+**Execution cost**: less than 23069 gas
 
 
 Params:
@@ -147,7 +147,7 @@ Params:
 > Can be called only by the owner of Pandora contract
 
 
-**Execution cost**: less than 21085 gas
+**Execution cost**: less than 21073 gas
 
 
 Params:
@@ -163,7 +163,7 @@ Params:
 > Can be called only by the owner of Pandora contract
 
 
-**Execution cost**: less than 20981 gas
+**Execution cost**: less than 20969 gas
 
 
 Params:

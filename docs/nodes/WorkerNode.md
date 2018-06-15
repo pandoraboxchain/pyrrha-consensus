@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1217400 gas
+**Deployment cost**: less than 1209000 gas
 
 **Combined cost**: No bound available
 
@@ -55,7 +55,7 @@ Params:
 ### destroy()
 
 
-**Execution cost**: less than 32148 gas
+**Execution cost**: less than 32136 gas
 
 
 
@@ -181,7 +181,7 @@ Returns:
 ### increaseReputation()
 
 
-**Execution cost**: less than 21634 gas
+**Execution cost**: less than 21622 gas
 
 
 
@@ -470,7 +470,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23491 gas
+**Execution cost**: less than 23479 gas
 
 
 Params:

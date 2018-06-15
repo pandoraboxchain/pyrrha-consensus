@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 211600 gas
+**Deployment cost**: less than 223600 gas
 
 **Combined cost**: No bound available
 
@@ -17,6 +17,8 @@ Params:
 2. **_dataDim** *of type `uint256`*
 3. **_complexity** *of type `uint256`*
 4. **_initialPrice** *of type `uint256`*
+5. **_metadata** *of type `bytes32`*
+6. **_description** *of type `bytes32`*
 
 ## Events
 ### OwnershipTransferred(address,address)
@@ -62,7 +64,7 @@ Returns:
 ### currentPrice()
 
 
-**Execution cost**: less than 472 gas
+**Execution cost**: less than 516 gas
 
 **Attributes**: constant
 
@@ -77,7 +79,7 @@ Returns:
 ### dataDim()
 
 
-**Execution cost**: less than 494 gas
+**Execution cost**: less than 538 gas
 
 **Attributes**: constant
 
@@ -87,6 +89,21 @@ Returns:
 
 
 1. **output_0** *of type `uint256`*
+
+--- 
+### description()
+
+
+**Execution cost**: less than 450 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bytes32`*
 
 --- 
 ### ipfsAddress()
@@ -104,10 +121,25 @@ Returns:
 1. **output_0** *of type `bytes`*
 
 --- 
+### metadata()
+
+
+**Execution cost**: less than 406 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bytes32`*
+
+--- 
 ### owner()
 
 
-**Execution cost**: less than 603 gas
+**Execution cost**: less than 647 gas
 
 **Attributes**: constant
 
@@ -124,7 +156,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22897 gas
+**Execution cost**: less than 22929 gas
 
 
 Params:
@@ -139,7 +171,7 @@ Params:
 ### updatePrice(uint256)
 
 
-**Execution cost**: less than 22056 gas
+**Execution cost**: less than 22088 gas
 
 
 Params:

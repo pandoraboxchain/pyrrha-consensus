@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1769400 gas
+**Deployment cost**: less than 1763600 gas
 
 **Combined cost**: No bound available
 
@@ -117,7 +117,7 @@ Params:
 
 
 ## Methods
-### gatheringWorkersResponse(bool)
+### commitProgress(uint8)
 
 
 **Execution cost**: No bound available
@@ -125,7 +125,7 @@ Params:
 
 Params:
 
-1. **_acceptanceFlag** *of type `bool`*
+1. **percent** *of type `uint8`*
 
 
 --- 
@@ -147,7 +147,7 @@ Returns:
 ### Completed()
 
 
-**Execution cost**: less than 809 gas
+**Execution cost**: less than 875 gas
 
 **Attributes**: constant
 
@@ -162,7 +162,7 @@ Returns:
 ### Destroyed()
 
 
-**Execution cost**: less than 699 gas
+**Execution cost**: less than 765 gas
 
 **Attributes**: constant
 
@@ -192,7 +192,7 @@ Returns:
 ### DataValidation()
 
 
-**Execution cost**: less than 677 gas
+**Execution cost**: less than 743 gas
 
 **Attributes**: constant
 
@@ -207,7 +207,7 @@ Returns:
 ### InsufficientWorkers()
 
 
-**Execution cost**: less than 655 gas
+**Execution cost**: less than 721 gas
 
 **Attributes**: constant
 
@@ -237,7 +237,7 @@ Returns:
 ### InvalidData()
 
 
-**Execution cost**: less than 479 gas
+**Execution cost**: less than 501 gas
 
 **Attributes**: constant
 
@@ -249,7 +249,30 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### dataValidationResponse(uint8)
+### destroy()
+>
+> Transfers the current balance to the owner and terminates the contract.
+
+
+**Execution cost**: less than 31158 gas
+
+
+
+
+--- 
+### destroyAndSend(address)
+
+
+**Execution cost**: less than 31303 gas
+
+
+Params:
+
+1. **_recipient** *of type `address`*
+
+
+--- 
+### completeWork(bytes)
 
 
 **Execution cost**: No bound available
@@ -257,14 +280,66 @@ Returns:
 
 Params:
 
-1. **_response** *of type `uint8`*
+1. **_ipfsResults** *of type `bytes`*
 
 
 --- 
-### activeWorkersCount()
+### currentState()
+>
+>Returns current state of the contract state machine
+>
+> Shortcut to receive current state from external contracts
 
 
-**Execution cost**: less than 582 gas
+**Execution cost**: less than 455 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### activeWorkers(uint256)
+
+
+**Execution cost**: less than 1123 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `uint256`*
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### complexity()
+
+
+**Execution cost**: less than 560 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### batches()
+
+
+**Execution cost**: less than 978 gas
 
 **Attributes**: constant
 
@@ -291,51 +366,6 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### activeWorkers(uint256)
-
-
-**Execution cost**: less than 1101 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### pandora()
-
-
-**Execution cost**: less than 647 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### destroyAndSend(address)
-
-
-**Execution cost**: less than 31249 gas
-
-
-Params:
-
-1. **_recipient** *of type `address`*
-
-
---- 
 ### dataset()
 
 
@@ -351,26 +381,10 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### commitProgress(uint8)
+### description()
 
 
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **percent** *of type `uint8`*
-
-
---- 
-### currentState()
->
->Returns current state of the contract state machine
->
-> Shortcut to receive current state from external contracts
-
-
-**Execution cost**: less than 455 gas
+**Execution cost**: less than 780 gas
 
 **Attributes**: constant
 
@@ -379,24 +393,25 @@ Params:
 Returns:
 
 
-1. **output_0** *of type `uint8`*
+1. **output_0** *of type `bytes32`*
 
 --- 
-### destroy()
->
-> Transfers the current balance to the owner and terminates the contract.
+### dataValidationResponse(uint8)
 
 
-**Execution cost**: less than 31104 gas
+**Execution cost**: No bound available
 
 
+Params:
+
+1. **_response** *of type `uint8`*
 
 
 --- 
-### batches()
+### activeWorkersCount()
 
 
-**Execution cost**: less than 938 gas
+**Execution cost**: less than 604 gas
 
 **Attributes**: constant
 
@@ -405,25 +420,40 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `uint8`*
+1. **output_0** *of type `uint256`*
 
 --- 
-### completeWork(bytes)
+### workersPool(uint256)
+
+
+**Execution cost**: less than 1167 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `uint256`*
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### initialize()
 
 
 **Execution cost**: No bound available
 
 
-Params:
-
-1. **_ipfsResults** *of type `bytes`*
 
 
 --- 
 ### didWorkerCompute(uint256)
 
 
-**Execution cost**: less than 2949 gas
+**Execution cost**: less than 3015 gas
 
 **Attributes**: constant
 
@@ -438,12 +468,15 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### initialize()
+### gatheringWorkersResponse(bool)
 
 
 **Execution cost**: No bound available
 
 
+Params:
+
+1. **_acceptanceFlag** *of type `bool`*
 
 
 --- 
@@ -468,7 +501,7 @@ Returns:
 ### ipfsResultsCount()
 
 
-**Execution cost**: less than 560 gas
+**Execution cost**: less than 582 gas
 
 
 
@@ -478,10 +511,25 @@ Returns:
 1. **count** *of type `uint256`*
 
 --- 
+### jobType()
+
+
+**Execution cost**: less than 802 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
 ### kernel()
 
 
-**Execution cost**: less than 1087 gas
+**Execution cost**: less than 1153 gas
 
 **Attributes**: constant
 
@@ -496,7 +544,22 @@ Returns:
 ### owner()
 
 
-**Execution cost**: less than 955 gas
+**Execution cost**: less than 1021 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### pandora()
+
+
+**Execution cost**: less than 647 gas
 
 **Attributes**: constant
 
@@ -511,7 +574,7 @@ Returns:
 ### progress()
 
 
-**Execution cost**: less than 641 gas
+**Execution cost**: less than 663 gas
 
 **Attributes**: constant
 
@@ -544,7 +607,7 @@ Params:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23381 gas
+**Execution cost**: less than 23435 gas
 
 
 Params:
@@ -554,23 +617,5 @@ Params:
     > The address to transfer ownership to.
 
 
-
---- 
-### workersPool(uint256)
-
-
-**Execution cost**: less than 1145 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
 
 [Back to the top ↑](#cognitivejob)

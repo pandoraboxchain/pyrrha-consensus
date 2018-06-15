@@ -1,11 +1,11 @@
 # WorkerNodeFactory
 
 
-**Execution cost**: less than 22109 gas
+**Execution cost**: less than 22014 gas
 
-**Deployment cost**: less than 1651600 gas
+**Deployment cost**: less than 1640200 gas
 
-**Combined cost**: less than 1673709 gas
+**Combined cost**: less than 1662214 gas
 
 ## Constructor
 
@@ -75,7 +75,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22787 gas
+**Execution cost**: less than 22775 gas
 
 
 Params:

@@ -1,11 +1,11 @@
 # CognitiveJobFactory
 
 
-**Execution cost**: less than 22748 gas
+**Execution cost**: less than 22638 gas
 
-**Deployment cost**: less than 2223800 gas
+**Deployment cost**: less than 2199400 gas
 
-**Combined cost**: less than 2246548 gas
+**Combined cost**: less than 2222038 gas
 
 ## Constructor
 
@@ -64,7 +64,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22787 gas
+**Execution cost**: less than 22775 gas
 
 
 Params:

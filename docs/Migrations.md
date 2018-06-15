@@ -1,11 +1,11 @@
 # Migrations
 
 
-**Execution cost**: less than 20538 gas
+**Execution cost**: less than 20451 gas
 
-**Deployment cost**: less than 116000 gas
+**Deployment cost**: less than 114400 gas
 
-**Combined cost**: less than 136538 gas
+**Combined cost**: less than 134851 gas
 
 ## Constructor
 
@@ -48,7 +48,7 @@ Returns:
 ### setCompleted(uint256)
 
 
-**Execution cost**: less than 20456 gas
+**Execution cost**: less than 20444 gas
 
 
 Params:
