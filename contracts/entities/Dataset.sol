@@ -24,7 +24,7 @@ contract Dataset is DataEntity, IDataset {
         uint8 _batchesCount,    /// Amount of batches defined in the information JSON file (each batch will be computed
                                 /// by a separate worker node
         uint256 _initialPrice,  /// Price for which Dataset owner is ready to rent the kernel
-        bytes32[] _metadata,    /// Data, tags that helps to recognize dataset
+        bytes32 _metadata,    /// Data, tags that helps to recognize dataset
         bytes32 _description    /// Dataset description
     )
     DataEntity(_ipfsAddress, _dataDim, _initialPrice)

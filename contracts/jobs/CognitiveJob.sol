@@ -324,6 +324,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         } else if (currentState() == PartialResult) {
             emit CognitionCompleted(true);
             pandora.finishCognitiveJob();
+            //todo separate finishing in cognitiveJobManager
         } else if (currentState() == Completed) {
             emit CognitionCompleted(false);
             pandora.finishCognitiveJob();

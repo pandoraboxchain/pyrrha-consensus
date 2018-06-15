@@ -263,6 +263,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // After finish, try to start new CognitiveJob from a queue of activeJobs
         _checkJobQueue();
 
+        // Increase reputation of workers involved in computation
+
         //todo return remaining funds (for gas)
     }
 
@@ -311,9 +313,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.dataset.batchesCount());
 
             IComputingJob createdCognitiveJob = _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
-            uint resultCode = RESULT_CODE_JOB_CREATED;
 
-            emit CognitiveJobCreated(createdCognitiveJob, resultCode);
+            emit CognitiveJobCreated(createdCognitiveJob, RESULT_CODE_JOB_CREATED);
 
             // Count used funds for queue
             uint weiUsedForQueuedJob = (initialGas - gasleft()) * tx.gasprice;

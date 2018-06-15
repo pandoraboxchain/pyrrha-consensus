@@ -27,7 +27,7 @@ contract Kernel is DataEntity, IKernel {
         uint256 _complexity,    /// Amount of computing operations that must be performed for a single data pass
                                 /// throughout neural network to get a single result
         uint256 _initialPrice,  /// Price for which Kernel author is ready to rent the kernel
-        bytes32[] _metadata,    /// Data, tags that helps to recognize kernel
+        bytes32 _metadata,    /// Data, tags that helps to recognize kernel
         bytes32 _description    /// Kernel description
     )
     DataEntity(_ipfsAddress, _dataDim, _initialPrice)
