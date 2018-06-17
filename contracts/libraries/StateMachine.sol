@@ -49,7 +49,7 @@ contract StateMachine is IStateMachine, OnlyOnce {
     modifier transitionThroughState(
         uint8 _transitionState /// Intermediary state to transition through
     ) {
-        var initialState = stateMachine.currentState;
+        uint8 initialState = stateMachine.currentState;
         stateMachine.transitionThroughState(_transitionState);
         emit StateChanged(initialState, stateMachine.currentState);
         _fireStateEvent();

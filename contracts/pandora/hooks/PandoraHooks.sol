@@ -17,18 +17,15 @@ contract PandoraHooks is Pandora {
 
     function hook_whitelistedOwner(uint256 no)
     public
+    view
     returns (address) {
         return _workerNodeOwners[no];
     }
 
     function hook_whitelistedOwnerCount()
     public
+    view
     returns (uint) {
         return _workerNodeOwners.length;
-    }
-
-    function hook_resetAllWorkers()
-    public {
-
     }
 }

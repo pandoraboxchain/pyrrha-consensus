@@ -207,7 +207,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Initializing in-memory array for idle node list and populating it with data
         IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
-        uint actualSize = idleWorkers.length;
+//        uint actualSize = idleWorkers.length;
 
 //        // Something really wrong happened with EVM if this assert fails
 //        if (actualSize != estimatedSize) {
@@ -400,6 +400,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // No arguments
     )
     private
+    view
     returns (
         uint o_estimatedSize /// Amount of currently available (Idle) WorkerNodes
     ) {
@@ -419,6 +420,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         uint _estimatedSize /// Size of array to return
     )
     private
+    view
     returns (
         IWorkerNode[] /// Returned array of all Idle WorkerNodes
     ) {

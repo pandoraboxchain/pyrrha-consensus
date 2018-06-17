@@ -6,16 +6,21 @@ contract Reputation is Ownable {
 
 	mapping(address => uint256) public values;
 
-	constructor() {
+	constructor()
+	public {
 		owner = msg.sender;
 	}
 
-	function incrReputation(address account, uint256 amount) onlyOwner {
+	function incrReputation(address account, uint256 amount)
+	onlyOwner
+	public {
 		assert(values[account] + amount >= values[account]);
-		values[account] + amount;
+		values[account] += amount;
 	}
 
-	function decrReputation(address account, uint256 amount) onlyOwner {
+	function decrReputation(address account, uint256 amount)
+	onlyOwner
+	public {
 		if (values[account] - amount < values[account]) {
 			values[account] -= amount;
 		} else {

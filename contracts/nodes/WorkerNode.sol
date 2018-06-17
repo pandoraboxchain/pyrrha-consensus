@@ -43,7 +43,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// @dev Private method initializing state machine. Must be called only once from the contract constructor
     function _initStateMachine() internal {
         // Creating table of possible state transitions
-        var transitions = stateMachine.transitionTable;
+        mapping(uint8 => uint8[]) transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
         transitions[Offline] = [Idle];
         transitions[Idle] = [Offline, UnderPenalty, Assigned, Destroyed];
@@ -274,6 +274,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireStates2(Idle, Offline)
     {
         /// @todo Handle stakes etc
-        owner.transfer(this.balance);
+        owner.transfer(address(this).balance);
     }
 }
