@@ -17,12 +17,10 @@ contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
         OfflineWhileCognition
     }
 
-    function destroy() external;
-
     IPandora public pandora;
     IComputingJob public activeJob;
-    uint256 public reputation;
 
+    function destroy() external;
     function alive() external;
     function assignJob(IComputingJob job) external;
     function cancelJob() external;

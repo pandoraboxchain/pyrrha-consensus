@@ -78,11 +78,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// @dev Valid (non-zero) only for active states (see `activeStates` modified for the list of such states)
     IComputingJob public activeJob;
 
-    /// @notice Current worker node reputation. Can be changed only by the main Pandora contract via special
-    /// external function calls
-    /// @dev Reputation can"t be transferred or bought.
-    uint256 public reputation;
-
     event WorkerDestroyed();
 
     /// ### Constructor and destructor
@@ -94,25 +89,12 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         require(_pandora != address(0));
         pandora = _pandora;
 
-        // Initial reputation is always zero
-        reputation = 0;
-
         // There should be no active cognitive job upon contract creation
         activeJob = IComputingJob(0);
 
         // Initialize state machine (state transition table and initial state). Always must be performed at the very
         // end of contract constructor code.
         _initStateMachine();
-    }
-
-    function destroy()
-    external
-    onlyPandora {
-        /// Call event before doing the actual contract suicide
-        emit WorkerDestroyed();
-
-        /// Suiciding
-        selfdestruct(owner);
     }
 
     /// ### Function modifiers
@@ -139,6 +121,16 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     modifier onlyActiveCognitiveJob() {
         require(msg.sender == address(activeJob));
         _;
+    }
+
+    function destroy()
+    external
+    onlyPandora {
+        /// Call event before doing the actual contract suicide
+        emit WorkerDestroyed();
+
+        /// Suiciding
+        selfdestruct(owner);
     }
 
     /// ### External and public functions
