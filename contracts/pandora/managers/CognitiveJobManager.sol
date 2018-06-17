@@ -365,7 +365,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Ensuring that contract was successfully created
         assert(o_cognitiveJob != address(0));
         // Hint: trying to figure out was the contract body actually created and initialized with proper values
-        assert(o_cognitiveJob.Destroyed() == 0xFF);
+        assert(o_cognitiveJob.currentState() == o_cognitiveJob.Uninitialized());
 
         // Save new contract to the storage
         activeJobs.push(o_cognitiveJob);
