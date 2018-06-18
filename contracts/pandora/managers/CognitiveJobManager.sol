@@ -207,7 +207,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Initializing in-memory array for idle node list and populating it with data
         IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
-        uint actualSize = idleWorkers.length;
+//        uint actualSize = idleWorkers.length;
 
 //        // Something really wrong happened with EVM if this assert fails
 //        if (actualSize != estimatedSize) {
@@ -248,6 +248,13 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(address(job) == msg.sender);
 
         // @todo Kill the job contract
+
+//        for (uint no = 0; no < job.activeWorkersCount(); no++) {
+//            if (job.didWorkerCompute(no) == true) {
+//                job.activeWorkers(no).increaseReputation();
+//            }
+//        }
+
         // @fixme set "Idle" state to the worker
 
         //todo add removed job to completed job array
@@ -262,8 +269,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         _checkJobQueue();
 
         // Increase reputation of workers involved to computation
+        uint256 reputationReward = job.complexity(); //todo add koef for complexity-reputation
         for (uint256 i = 0; i <= job.activeWorkersCount(); i++) {
-            reputation.incrReputation(address(i), job.complexity());
+            reputation.incrReputation(address(i), reputationReward);
         }
         //todo: user have to able to withdraw remaining funds if worker is idle
     }
@@ -358,7 +366,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Ensuring that contract was successfully created
         assert(o_cognitiveJob != address(0));
         // Hint: trying to figure out was the contract body actually created and initialized with proper values
-        assert(o_cognitiveJob.Destroyed() == 0xFF);
+        assert(o_cognitiveJob.currentState() == o_cognitiveJob.Uninitialized());
 
         // Save new contract to the storage
         activeJobs.push(o_cognitiveJob);
@@ -393,6 +401,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // No arguments
     )
     private
+    view
     returns (
         uint o_estimatedSize /// Amount of currently available (Idle) WorkerNodes
     ) {
@@ -412,6 +421,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         uint _estimatedSize /// Size of array to return
     )
     private
+    view
     returns (
         IWorkerNode[] /// Returned array of all Idle WorkerNodes
     ) {

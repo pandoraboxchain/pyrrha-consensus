@@ -43,7 +43,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// @dev Private method initializing state machine. Must be called only once from the contract constructor
     function _initStateMachine() internal {
         // Creating table of possible state transitions
-        var transitions = stateMachine.transitionTable;
+        mapping(uint8 => uint8[]) transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
         transitions[Offline] = [Idle];
         transitions[Idle] = [Offline, UnderPenalty, Assigned, Destroyed];
@@ -89,7 +89,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         require(_pandora != address(0));
         pandora = _pandora;
 
-
         // There should be no active cognitive job upon contract creation
         activeJob = IComputingJob(0);
 
@@ -124,8 +123,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         _;
     }
 
-    /// ### External and public functions
-
     function destroy()
     external
     onlyPandora {
@@ -135,6 +132,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         /// Suiciding
         selfdestruct(owner);
     }
+
+    /// ### External and public functions
 
     function alive(
         // No arguments
@@ -267,6 +266,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireStates2(Idle, Offline)
     {
         /// @todo Handle stakes etc
-        owner.transfer(this.balance);
+        owner.transfer(address(this).balance);
     }
 }

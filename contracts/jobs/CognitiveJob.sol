@@ -62,8 +62,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         dataset = _dataset;
         workersPool = _workersPool;
         complexity = _complexity;
-	    jobType = _jobType;
-	    description = _description;
+        jobType = _jobType;
+        description = _description;
         _initStateMachine();
     }
 
@@ -73,7 +73,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     }
 
     modifier onlyActiveWorkers() {
-        var (workerNode,) = _getWorkerFromSender();
+        IWorkerNode workerNode;
+        (workerNode,) = _getWorkerFromSender();
         require(workerNode != IWorkerNode(0));
         require(msg.sender == address(workerNode));
         require(tx.origin == workerNode.owner());
@@ -91,14 +92,14 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function _getWorkerIndex(IWorkerNode _worker) private view returns (uint256) {
         for (uint256 index = 0; index < activeWorkers.length; index++) {
-            if (msg.sender == address(activeWorkers[index])) {
+            if (_worker == address(activeWorkers[index])) {
                 return index;
             }
         }
         return uint256(-1);
     }
 
-    function ipfsResultsCount() public returns (uint256 count) {
+    function ipfsResultsCount() public view returns (uint256 count) {
         count = ipfsResults.length;
     }
 
@@ -181,7 +182,9 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     }
 
     function _processWorkerResponse(bool _acceptanceFlag, IWorkerNode.Penalties _penaltyForDecline, uint8 _nextState) private {
-        var (reportingWorker, workerIndex) = _getWorkerFromSender();
+        IWorkerNode reportingWorker;
+        uint256 workerIndex;
+        (reportingWorker, workerIndex) = _getWorkerFromSender();
         require(reportingWorker != IWorkerNode(0));
 
         if (_acceptanceFlag == false) {
@@ -261,7 +264,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     function completeWork(bytes _ipfsResults)
     onlyActiveWorkers
     external {
-        var (,workerIndex) = _getWorkerFromSender();
+        uint256 workerIndex;
+        (,workerIndex) = _getWorkerFromSender();
         ipfsResults[workerIndex] = _ipfsResults;
         responseFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
@@ -300,7 +304,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function _initStateMachine() internal {
         // Creating table of possible state transitions
-        var transitions = stateMachine.transitionTable;
+        mapping(uint8 => uint8[]) transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [GatheringWorkers];
         transitions[GatheringWorkers] = [InsufficientWorkers, DataValidation];
         transitions[DataValidation] = [InvalidData, Cognition, InsufficientWorkers];
