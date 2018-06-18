@@ -19,6 +19,8 @@ library JobQueueLib {
         IDataset dataset;
         address client;
         uint256 complexity;
+        uint256 jobType;
+        bytes32 description;
     }
 
     /// @dev Returns depth of queue
@@ -28,7 +30,6 @@ library JobQueueLib {
     internal
     view
     returns(uint depth) {
-
         depth = _queue.jobArray.length - _queue.cursorPosition;
     }
 
@@ -39,12 +40,14 @@ library JobQueueLib {
         IDataset _dataset,
         uint256 _value,
         address _client,
-        uint256 _complexity
+        uint256 _complexity,
+        uint256 _jobType,
+        bytes32 _description
     )
     internal
     returns(uint) {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _client, _complexity));
+        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _client, _complexity, _jobType, _description));
         _queue.deposits.push(_value);
         return queueDepth(_queue);
     }

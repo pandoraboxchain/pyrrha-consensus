@@ -45,7 +45,9 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         IKernel _kernel,
         IDataset _dataset,
         IWorkerNode[] _workersPool,
-        uint256 _complexity
+        uint256 _complexity,
+        uint256 jobType,
+        bytes32 description
     )
     public {
         batches = _dataset.batchesCount();
