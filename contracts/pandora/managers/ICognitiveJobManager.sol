@@ -18,7 +18,6 @@ contract ICognitiveJobManager {
         IKernel kernel,
         IDataset dataset,
         uint comlexity,
-        uint256 jobType,
         bytes32 description) external payable returns (IComputingJob, uint8);
     function finishCognitiveJob() external;
 

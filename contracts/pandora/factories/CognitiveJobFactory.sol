@@ -16,7 +16,6 @@ contract CognitiveJobFactory is Ownable {
         IDataset _dataset,
         IWorkerNode[] _workersPool,
         uint256 _complexity,
-        uint256 _jobType,
         bytes32 _description
     )
     onlyOwner
@@ -24,7 +23,7 @@ contract CognitiveJobFactory is Ownable {
     returns (CognitiveJob o_cognitiveJob) {
         // Creating job
         o_cognitiveJob = new CognitiveJob(
-            IPandora(owner), _kernel, _dataset, _workersPool, _complexity, _jobType, _description);
+            IPandora(owner), _kernel, _dataset, _workersPool, _complexity, _description);
 
 //        // Checking that it was created correctly
 //        assert(o_cognitiveJob != CognitiveJob(0));

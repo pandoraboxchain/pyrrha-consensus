@@ -7,7 +7,6 @@ import "./IDataset.sol";
  */
 
 contract Dataset is DataEntity, IDataset {
-    uint256 public samplesCount;
     uint8 public batchesCount;
     bytes32 public metadata;
     bytes32 public description;
@@ -20,7 +19,6 @@ contract Dataset is DataEntity, IDataset {
                                 /// the dataset, including IPFS addresses for each batch in HD5F format
         uint256 _dataDim,       /// Dimension of the single dataset sample (that goes to the input layer of the
                                 /// kernel neural network
-        uint256 _samplesCount,  /// Total amount of samples in dataset (sum of samples in all batches)
         uint8 _batchesCount,    /// Amount of batches defined in the information JSON file (each batch will be computed
                                 /// by a separate worker node
         uint256 _initialPrice,  /// Price for which Dataset owner is ready to rent the kernel
@@ -29,7 +27,6 @@ contract Dataset is DataEntity, IDataset {
     )
     DataEntity(_ipfsAddress, _dataDim, _initialPrice)
     public {
-        samplesCount = _samplesCount;
         batchesCount = _batchesCount;
         metadata = _metadata;
         description = _description;

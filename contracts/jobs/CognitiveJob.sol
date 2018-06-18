@@ -20,7 +20,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     IDataset public dataset;
     uint256 public batches;
     uint256 public complexity; //todo find better name
-    uint256 public jobType;
     bytes32 public description;
     IWorkerNode[] public activeWorkers;
     IWorkerNode[] public workersPool;
@@ -46,7 +45,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         IDataset _dataset,
         IWorkerNode[] _workersPool,
         uint256 _complexity,
-        uint256 _jobType,
         bytes32 _description
     )
     public {
@@ -62,7 +60,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         dataset = _dataset;
         workersPool = _workersPool;
         complexity = _complexity;
-        jobType = _jobType;
         description = _description;
         _initStateMachine();
     }
