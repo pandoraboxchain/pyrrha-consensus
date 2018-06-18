@@ -16,8 +16,7 @@ module.exports = {
         ganache_cli: {
             host: 'localhost',
             port: 8545,
-            network_id: '*',
-            gas: highGas
+            network_id: '*'
         },
         coverage: {
             host: 'localhost',

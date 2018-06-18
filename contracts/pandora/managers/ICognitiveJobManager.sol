@@ -8,10 +8,10 @@ import "../factories/CognitiveJobFactory.sol";
 contract ICognitiveJobManager {
     CognitiveJobFactory public cognitiveJobFactory;
 
-    IComputingJob[] public activeJobs;
+    IComputingJob[] public cognitiveJobs;
     mapping(address => uint16) public jobAddresses;
 
-    function activeJobsCount() view public returns (uint256);
+    function cognitiveJobsCount() view public returns (uint256);
     function isActiveJob(IComputingJob job) view public returns (bool);
 
     function createCognitiveJob(

@@ -47,14 +47,14 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     mapping(address => uint16) public jobAddresses;
 
     /// @dev List of all active cognitive jobs
-    IComputingJob[] public activeJobs;
+    IComputingJob[] public cognitiveJobs;
 
     /// @dev Contract, that store rep. values for each address
     Reputation reputation;
 
     /// @dev Returns total count of active jobs
-    function activeJobsCount() onlyInitialized view public returns (uint256) {
-        return activeJobs.length;
+    function cognitiveJobsCount() onlyInitialized view public returns (uint256) {
+        return cognitiveJobs.length;
     }
 
     // Deposits from clients used as payment for work
@@ -155,7 +155,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         index--;
 
         // Retrieving the job contract from the index
-        IComputingJob job = activeJobs[index];
+        IComputingJob job = cognitiveJobs[index];
         // Double-checking that the job at the index is the actual job being tested
         return(job == _job);
     }
@@ -185,7 +185,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(_kernel.dataDim() == _dataset.dataDim());
 
         // The created job must fit into uint16 size
-        require(activeJobs.length < 2 ^ 16 - 1);
+        require(cognitiveJobs.length < 2 ^ 16 - 1);
 
         // @todo check payment corresponds to required amount + gas payment (from tests)
 
@@ -243,26 +243,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(index != 0);
         index--;
 
-        IComputingJob job = activeJobs[index];
+        IComputingJob job = cognitiveJobs[index];
         require(address(job) == msg.sender);
 
-        // @todo Kill the job contract
-
-//        for (uint no = 0; no < job.activeWorkersCount(); no++) {
-//            if (job.didWorkerCompute(no) == true) {
-//                job.activeWorkers(no).increaseReputation();
-//            }
-//        }
-
-        // @fixme set "Idle" state to the worker
-
-        //todo add removed job to completed job array
-        // Remove cognitive job contract from the storage
-        delete jobAddresses[address(job)];
-        IComputingJob movedJob = activeJobs[index] = activeJobs[activeJobs.length - 1];
-        jobAddresses[movedJob] = index + 1;
-        //todo delete job from array (not only change length)
-        activeJobs.length--;
+        // @fixme set "Idle" state to the worker (check in stateMachine lib)
 
         // After finish, try to start new CognitiveJob from a queue of activeJobs
         _checkJobQueue();
@@ -288,7 +272,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
 //        uint limitQueueRequests = 10;
 
-        for (uint256 k = 0; (k < cognitiveJobQueue.queueDepth()) || (k < 10); k++) { // todo check limit for queue requests with tests
+        for (uint256 k = 0; (k < cognitiveJobQueue.queueDepth()) || (k < 10); k++) { // todo check limit (10) for queue requests with tests
 
             // Count remaining gas
             uint initialGas = gasleft();
@@ -366,8 +350,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         assert(o_cognitiveJob.currentState() == o_cognitiveJob.Uninitialized());
 
         // Save new contract to the storage
-        activeJobs.push(o_cognitiveJob);
-        jobAddresses[o_cognitiveJob] = uint16(activeJobs.length);
+        cognitiveJobs.push(o_cognitiveJob);
+        jobAddresses[o_cognitiveJob] = uint16(cognitiveJobs.length);
 
         o_cognitiveJob.initialize();
     }
