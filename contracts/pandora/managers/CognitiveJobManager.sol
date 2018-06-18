@@ -2,7 +2,7 @@ pragma solidity ^0.4.23;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../../lifecycle/Initializable.sol";
-import "../lottery/RoundRobinLottery.sol";
+import "../lottery/RandomEngine.sol";
 import "./ICognitiveJobManager.sol";
 import "./WorkerNodeManager.sol";
 import "../../jobs/IComputingJob.sol";
@@ -118,7 +118,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Initializing worker lottery engine
         // In Pyrrha we use round robin algorithm to give our whitelisted nodes equal and consequential chances
-        workerLotteryEngine = new RoundRobinLottery();
+        workerLotteryEngine = new RandomEngine();
     }
 
     /*******************************************************************************************************************

@@ -6,7 +6,7 @@ import "../entities/IDataEntity.sol";
 import "./factories/CognitiveJobFactory.sol";
 import "./factories/WorkerNodeFactory.sol";
 import "./managers/CognitiveJobManager.sol";
-import "./lottery/RoundRobinLottery.sol";
+import "./lottery/RandomEngine.sol";
 
 import "./IPandora.sol";
 
