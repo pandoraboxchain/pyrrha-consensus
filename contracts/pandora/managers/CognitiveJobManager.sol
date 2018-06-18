@@ -245,13 +245,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(address(job) == msg.sender);
 
         // @todo Kill the job contract
-
-        for (uint no = 0; no < job.activeWorkersCount(); no++) {
-            if (job.didWorkerCompute(no) == true) {
-                job.activeWorkers(no).increaseReputation();
-            }
-        }
-
         // @fixme set "Idle" state to the worker
 
         //todo add removed job to completed job array
@@ -266,8 +259,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         _checkJobQueue();
 
         // Increase reputation of workers involved to computation
-        for (i = 0; i <= job.activeWorkers.length; i++) {
-            reputation.increaseReputation(address(i));
+        for (uint256 i = 0; i <= job.activeWorkersCount(); i++) {
+            reputation.incrReputation(address(i), job.complexity());
         }
         //todo: user have to able to withdraw remaining funds if worker is idle
     }

@@ -20,7 +20,7 @@ contract CognitiveJobFactory is Ownable {
     external
     returns (CognitiveJob o_cognitiveJob) {
         // Creating job
-        o_cognitiveJob = new CognitiveJob(IPandora(owner), _kernel, _dataset, _workersPool);
+        o_cognitiveJob = new CognitiveJob(IPandora(owner), _kernel, _dataset, _workersPool, 5); //fixme remove 5
 
 //        // Checking that it was created correctly
 //        assert(o_cognitiveJob != CognitiveJob(0));
