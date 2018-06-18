@@ -165,7 +165,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
     function createCognitiveJob(
         IKernel _kernel, /// Pre-initialized kernel data entity contract
-        IDataset _dataset /// Pre-initialized dataset entity contract
+        IDataset _dataset, /// Pre-initialized dataset entity contract
+        uint256 _complexity
     )
     external
     payable
@@ -197,7 +198,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         uint8 batchesCount = _dataset.batchesCount();
         if (estimatedSize < uint256(batchesCount)) {
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            cognitiveJobQueue.put(_kernel, _dataset, msg.value, msg.sender);
+            cognitiveJobQueue.put(_kernel, _dataset, msg.value, msg.sender, _complexity);
             emit CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
             return (o_cognitiveJob, o_resultCode);
         }
@@ -217,7 +218,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Running lottery to select worker node to be assigned cognitive job contract
         IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, _dataset.batchesCount());
 
-        o_cognitiveJob = _initCognitiveJob(_kernel, _dataset, assignedWorkers);
+        o_cognitiveJob = _initCognitiveJob(_kernel, _dataset, assignedWorkers, _complexity);
         o_resultCode = RESULT_CODE_JOB_CREATED;
 
         //  Hold payment from client
@@ -309,7 +310,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.dataset.batchesCount());
 
-            IComputingJob createdCognitiveJob = _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers);
+            IComputingJob createdCognitiveJob = _initCognitiveJob(queuedJob.kernel, queuedJob.dataset, assignedWorkers, queuedJob.complexity);
 
             emit CognitiveJobCreated(createdCognitiveJob, RESULT_CODE_JOB_CREATED);
 
@@ -332,7 +333,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
                         /// from the the `cognitiveJobQueue` `QueuedJob` structure)
         IDataset _dataset, /// Pre-initialized dataset entity contract (taken from `createCognitiveJob` arguments or
                           /// from the the `cognitiveJobQueue` `QueuedJob` structure)
-        IWorkerNode[] _assignedWorkers /// Array of workers assigned for the job by the lottery engine
+        IWorkerNode[] _assignedWorkers, /// Array of workers assigned for the job by the lottery engine
+        uint256 _complexity
     )
     private
     onlyInitialized
@@ -340,7 +342,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IComputingJob o_cognitiveJob /// Created cognitive job (function may fail only due to the bugs, so there is no
                                      /// reason for returning status code)
     ) {
-        o_cognitiveJob = cognitiveJobFactory.create(_kernel, _dataset, _assignedWorkers);
+        o_cognitiveJob = cognitiveJobFactory.create(_kernel, _dataset, _assignedWorkers, _complexity);
 
         // Ensuring that contract was successfully created
         assert(o_cognitiveJob != address(0));

@@ -14,13 +14,14 @@ contract CognitiveJobFactory is Ownable {
     function create(
         IKernel _kernel,
         IDataset _dataset,
-        IWorkerNode[] _workersPool
+        IWorkerNode[] _workersPool,
+        uint256 _complexity
     )
     onlyOwner
     external
     returns (CognitiveJob o_cognitiveJob) {
         // Creating job
-        o_cognitiveJob = new CognitiveJob(IPandora(owner), _kernel, _dataset, _workersPool, 5); //fixme remove 5
+        o_cognitiveJob = new CognitiveJob(IPandora(owner), _kernel, _dataset, _workersPool, _complexity);
 
 //        // Checking that it was created correctly
 //        assert(o_cognitiveJob != CognitiveJob(0));
