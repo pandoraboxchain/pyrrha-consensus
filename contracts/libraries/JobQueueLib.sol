@@ -84,6 +84,7 @@ library JobQueueLib {
         Queue storage _queue
     )
     private
+    view
     returns(QueuedJob, uint value) {
         return (_queue.jobArray[_queue.cursorPosition], _queue.deposits[_queue.cursorPosition]);
     }
@@ -94,7 +95,7 @@ library JobQueueLib {
     )
     private {
         _queue.cursorPosition++; // move cursor to next element
-        delete _queue.jobArray[_queue.cursorPosition - 1]; // delete element from array
+        delete _queue.jobArray[_queue.cursorPosition - 1]; // delete element from arrays
         delete _queue.deposits[_queue.cursorPosition - 1];
     }
 }

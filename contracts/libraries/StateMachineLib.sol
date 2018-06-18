@@ -12,6 +12,7 @@ library StateMachineLib {
         StateMachine storage _machine,
         uint8 _newState
     )
+    view
     internal {
         // Should not happen
         assert(_machine.currentState != 0xFF);
@@ -69,13 +70,12 @@ library StateMachineLib {
     view
     internal {
         bool properState = false;
-        var _requiredStates = [_requiredState1, _requiredState2];
-        for (uint no = 0; no < _requiredStates.length; no++) {
-            if (_requiredStates[no] == _machine.currentState) {
-                properState = true;
-                break;
-            }
-        }
+	    if (_requiredState1 == _machine.currentState) {
+		    properState = true;
+	    }
+	    if (_requiredState2 == _machine.currentState) {
+		    properState = true;
+	    }
         require(properState == true);
     }
 

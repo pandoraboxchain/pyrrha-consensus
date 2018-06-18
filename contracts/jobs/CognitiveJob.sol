@@ -46,8 +46,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         IDataset _dataset,
         IWorkerNode[] _workersPool,
         uint256 _complexity,
-        uint256 jobType,
-        bytes32 description
+        uint256 _jobType,
+        bytes32 _description
     )
     public {
         batches = _dataset.batchesCount();
@@ -62,6 +62,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         dataset = _dataset;
         workersPool = _workersPool;
         complexity = _complexity;
+	    jobType = _jobType;
+	    description = _description;
         _initStateMachine();
     }
 

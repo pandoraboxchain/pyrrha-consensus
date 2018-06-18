@@ -23,7 +23,7 @@ contract PandoraMarket is IMarket {
     event KernelRemoved(IKernel kernel);
     event DatasetRemoved(IDataset dataset);
 
-    constructor() {
+    constructor() public {
     }
 
     function kernelsCount()
