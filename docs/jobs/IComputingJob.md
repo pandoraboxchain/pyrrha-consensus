@@ -55,6 +55,17 @@ Params:
 
 
 --- 
+### OwnershipRenounced(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+
+--- 
 ### OwnershipTransferred(address,address)
 
 
@@ -96,15 +107,12 @@ Params:
 
 
 ## Methods
-### commitProgress(uint8)
+### renounceOwnership()
 
 
 **Execution cost**: No bound available
 
 
-Params:
-
-1. **percent** *of type `uint8`*
 
 
 --- 
@@ -228,19 +236,13 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### owner()
+### destroy()
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
 
-
-Returns:
-
-
-1. **output_0** *of type `address`*
 
 --- 
 ### activeWorkersCount()
@@ -291,19 +293,16 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### progress()
+### dataValidationResponse(uint8)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
+Params:
 
+1. **response** *of type `uint8`*
 
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### complexity()
@@ -334,6 +333,18 @@ Returns:
 
 
 1. **output_0** *of type `uint256`*
+
+--- 
+### commitProgress(uint8)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **percent** *of type `uint8`*
+
 
 --- 
 ### completeWork(bytes)
@@ -396,18 +407,6 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### dataValidationResponse(uint8)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **response** *of type `uint8`*
-
-
---- 
 ### dataset()
 
 
@@ -436,15 +435,6 @@ Returns:
 
 
 1. **output_0** *of type `address`*
-
---- 
-### destroy()
-
-
-**Execution cost**: No bound available
-
-
-
 
 --- 
 ### destroyAndSend(address)
@@ -513,6 +503,21 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
+### owner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
 ### pandora()
 
 
@@ -526,6 +531,21 @@ Returns:
 
 
 1. **output_0** *of type `address`*
+
+--- 
+### progress()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### reportOfflineWorker(address)
@@ -550,7 +570,7 @@ Params:
 
 Params:
 
-1. **newOwner** *of type `address`*
+1. **_newOwner** *of type `address`*
 
 
 --- 

@@ -1,11 +1,11 @@
 # WorkerNodeFactory
 
 
-**Execution cost**: less than 22014 gas
+**Execution cost**: less than 21730 gas
 
-**Deployment cost**: less than 1640200 gas
+**Deployment cost**: less than 1381600 gas
 
-**Combined cost**: less than 1662214 gas
+**Combined cost**: less than 1403330 gas
 
 ## Constructor
 
@@ -13,6 +13,17 @@
 
 
 ## Events
+### OwnershipRenounced(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+
+--- 
 ### OwnershipTransferred(address,address)
 
 
@@ -58,7 +69,7 @@ Returns:
 ### owner()
 
 
-**Execution cost**: less than 537 gas
+**Execution cost**: less than 559 gas
 
 **Attributes**: constant
 
@@ -70,17 +81,28 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
+### renounceOwnership()
+>
+> Allows the current owner to relinquish control of the contract.
+
+
+**Execution cost**: less than 22072 gas
+
+
+
+
+--- 
 ### transferOwnership(address)
 >
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22775 gas
+**Execution cost**: less than 22826 gas
 
 
 Params:
 
-1. **newOwner** *of type `address`*
+1. **_newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 

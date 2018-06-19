@@ -1,11 +1,11 @@
 # Reputation
 
 
-**Execution cost**: less than 20512 gas
+**Execution cost**: less than 20542 gas
 
-**Deployment cost**: less than 149400 gas
+**Deployment cost**: less than 182600 gas
 
-**Combined cost**: less than 169912 gas
+**Combined cost**: less than 203142 gas
 
 ## Constructor
 
@@ -13,6 +13,17 @@
 
 
 ## Events
+### OwnershipRenounced(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+
+--- 
 ### OwnershipTransferred(address,address)
 
 
@@ -29,7 +40,7 @@ Params:
 ### decrReputation(address,uint256)
 
 
-**Execution cost**: less than 21355 gas
+**Execution cost**: less than 21377 gas
 
 
 Params:
@@ -42,7 +53,7 @@ Params:
 ### incrReputation(address,uint256)
 
 
-**Execution cost**: less than 1026 gas
+**Execution cost**: less than 21321 gas
 
 
 Params:
@@ -55,7 +66,7 @@ Params:
 ### owner()
 
 
-**Execution cost**: less than 559 gas
+**Execution cost**: less than 581 gas
 
 **Attributes**: constant
 
@@ -67,17 +78,28 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
+### renounceOwnership()
+>
+> Allows the current owner to relinquish control of the contract.
+
+
+**Execution cost**: less than 22094 gas
+
+
+
+
+--- 
 ### transferOwnership(address)
 >
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22797 gas
+**Execution cost**: less than 22848 gas
 
 
 Params:
 
-1. **newOwner** *of type `address`*
+1. **_newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 

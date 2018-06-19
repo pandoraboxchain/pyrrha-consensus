@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 236200 gas
+**Deployment cost**: less than 258400 gas
 
 **Combined cost**: No bound available
 
@@ -15,13 +15,23 @@ Params:
 
 1. **_ipfsAddress** *of type `bytes`*
 2. **_dataDim** *of type `uint256`*
-3. **_samplesCount** *of type `uint256`*
-4. **_batchesCount** *of type `uint8`*
-5. **_initialPrice** *of type `uint256`*
-6. **_metadata** *of type `bytes32`*
-7. **_description** *of type `bytes32`*
+3. **_batchesCount** *of type `uint8`*
+4. **_initialPrice** *of type `uint256`*
+5. **_metadata** *of type `bytes32`*
+6. **_description** *of type `bytes32`*
 
 ## Events
+### OwnershipRenounced(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+
+--- 
 ### OwnershipTransferred(address,address)
 
 
@@ -74,21 +84,6 @@ Returns:
 1. **output_0** *of type `bytes32`*
 
 --- 
-### description()
-
-
-**Execution cost**: less than 428 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `bytes32`*
-
---- 
 ### ipfsAddress()
 
 
@@ -104,10 +99,25 @@ Returns:
 1. **output_0** *of type `bytes`*
 
 --- 
+### description()
+
+
+**Execution cost**: less than 450 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bytes32`*
+
+--- 
 ### batchesCount()
 
 
-**Execution cost**: less than 487 gas
+**Execution cost**: less than 498 gas
 
 **Attributes**: constant
 
@@ -164,19 +174,15 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### samplesCount()
+### renounceOwnership()
+>
+> Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 450 gas
-
-**Attributes**: constant
+**Execution cost**: less than 22116 gas
 
 
 
-Returns:
-
-
-1. **output_0** *of type `uint256`*
 
 --- 
 ### transferOwnership(address)
@@ -184,12 +190,12 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22951 gas
+**Execution cost**: less than 22968 gas
 
 
 Params:
 
-1. **newOwner** *of type `address`*
+1. **_newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 

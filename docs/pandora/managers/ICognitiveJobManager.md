@@ -21,7 +21,22 @@ Params:
 
 
 ## Methods
-### activeJobs(uint256)
+### cognitiveJobFactory()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### cognitiveJobs(uint256)
 
 
 **Execution cost**: No bound available
@@ -39,7 +54,7 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### activeJobsCount()
+### cognitiveJobsCount()
 
 
 **Execution cost**: No bound available
@@ -54,22 +69,7 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
-### cognitiveJobFactory()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### createCognitiveJob(address,address)
+### createCognitiveJob(address,address,uint256,bytes32)
 
 
 **Execution cost**: No bound available
@@ -81,6 +81,8 @@ Params:
 
 1. **kernel** *of type `address`*
 2. **dataset** *of type `address`*
+3. **comlexity** *of type `uint256`*
+4. **description** *of type `bytes32`*
 
 Returns:
 

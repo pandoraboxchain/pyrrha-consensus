@@ -4,11 +4,11 @@
 > Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
-**Execution cost**: less than 61575 gas
+**Execution cost**: less than 61606 gas
 
-**Deployment cost**: less than 502800 gas
+**Deployment cost**: less than 535200 gas
 
-**Combined cost**: less than 564375 gas
+**Combined cost**: less than 596806 gas
 
 ## Constructor
 
@@ -19,6 +19,17 @@ Params:
 1. **_nodeFactory** *of type `address`*
 
 ## Events
+### OwnershipRenounced(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+
+--- 
 ### OwnershipTransferred(address,address)
 
 
@@ -54,19 +65,26 @@ Params:
 
 
 ## Methods
-### initialize()
+### blacklistWorkerOwner(address)
+>
+>Removes address from the whitelist of owners allowed to create WorkerNodes contracts
+>
+> Can be called only by the owner of Pandora contract
 
 
-**Execution cost**: less than 20571 gas
+**Execution cost**: less than 21095 gas
 
 
+Params:
+
+1. **_workerOwner** *of type `address`*
 
 
 --- 
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 895 gas
+**Execution cost**: less than 917 gas
 
 **Attributes**: constant
 
@@ -101,12 +119,12 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23069 gas
+**Execution cost**: less than 23120 gas
 
 
 Params:
 
-1. **newOwner** *of type `address`*
+1. **_newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 
@@ -140,19 +158,14 @@ Params:
 
 
 --- 
-### blacklistWorkerOwner(address)
+### renounceOwnership()
 >
->Removes address from the whitelist of owners allowed to create WorkerNodes contracts
->
-> Can be called only by the owner of Pandora contract
+> Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 21073 gas
+**Execution cost**: less than 22286 gas
 
 
-Params:
-
-1. **_workerOwner** *of type `address`*
 
 
 --- 
@@ -169,6 +182,15 @@ Params:
 Params:
 
 1. **_workerOwner** *of type `address`*
+
+
+--- 
+### initialize()
+
+
+**Execution cost**: less than 20593 gas
+
+
 
 
 --- 
@@ -190,7 +212,7 @@ Returns:
 ### owner()
 
 
-**Execution cost**: less than 809 gas
+**Execution cost**: less than 831 gas
 
 **Attributes**: constant
 
@@ -205,7 +227,7 @@ Returns:
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 864 gas
+**Execution cost**: less than 886 gas
 
 **Attributes**: constant
 

@@ -69,22 +69,21 @@ Params:
 
 
 ## Methods
-### jobAddresses(address)
+### decreaseApproval(address,uint256)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
-
 
 Params:
 
-1. **param_0** *of type `address`*
+1. **_spender** *of type `address`*
+2. **_subtractedValue** *of type `uint256`*
 
 Returns:
 
 
-1. **output_0** *of type `uint16`*
+1. **output_0** *of type `bool`*
 
 --- 
 ### name()
@@ -120,7 +119,7 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### createCognitiveJob(address,address)
+### createCognitiveJob(address,address,uint256,bytes32)
 
 
 **Execution cost**: No bound available
@@ -132,6 +131,8 @@ Params:
 
 1. **kernel** *of type `address`*
 2. **dataset** *of type `address`*
+3. **comlexity** *of type `uint256`*
+4. **description** *of type `bytes32`*
 
 Returns:
 
@@ -185,7 +186,7 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### activeJobs(uint256)
+### cognitiveJobs(uint256)
 
 
 **Execution cost**: No bound available
@@ -201,18 +202,6 @@ Returns:
 
 
 1. **output_0** *of type `address`*
-
---- 
-### destroyWorkerNode(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **node** *of type `address`*
-
 
 --- 
 ### INITIAL_SUPPLY()
@@ -260,7 +249,7 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### activeJobsCount()
+### jobAddresses(address)
 
 
 **Execution cost**: No bound available
@@ -268,11 +257,26 @@ Returns:
 **Attributes**: constant
 
 
+Params:
+
+1. **param_0** *of type `address`*
 
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `uint16`*
+
+--- 
+### destroyWorkerNode(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **node** *of type `address`*
+
 
 --- 
 ### approve(address,uint256)
@@ -292,6 +296,24 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
+### balanceOf(address)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_owner** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
 ### createWorkerNode()
 
 
@@ -305,24 +327,7 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### decreaseApproval(address,uint256)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_spender** *of type `address`*
-2. **_subtractedValue** *of type `uint256`*
-
-Returns:
-
-
-1. **output_0** *of type `bool`*
-
---- 
-### balanceOf(address)
+### cognitiveJobsCount()
 
 
 **Execution cost**: No bound available
@@ -330,9 +335,6 @@ Returns:
 **Attributes**: constant
 
 
-Params:
-
-1. **_owner** *of type `address`*
 
 Returns:
 
