@@ -154,8 +154,6 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     returns (
         IWorkerNode /// Address of the created worker node
     ) {
-        address nodeOwner = msg.sender;
-
         // Worker node can be created only be external transactions, not by internal inter-contract messages
         require(msg.sender == tx.origin);
 
@@ -165,7 +163,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
         // @todo Check the stake and bind it
 
         // Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
-        IWorkerNode workerNode = workerNodeFactory.create(nodeOwner);
+        IWorkerNode workerNode = workerNodeFactory.create(msg.sender);
         // We do not check the created `workerNode` since all checks are done by the factory class
         workerNodes.push(workerNode);
         // Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)

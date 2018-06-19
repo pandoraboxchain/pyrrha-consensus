@@ -78,6 +78,9 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// @dev Valid (non-zero) only for active states (see `activeStates` modified for the list of such states)
     IComputingJob public activeJob;
 
+	/// @notice Progress of completing current active job batch, should be updated by node itself
+	uint256 public jobProgress;
+
     event WorkerDestroyed();
 
     /// ### Constructor and destructor
@@ -123,9 +126,12 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         _;
     }
 
+    /// ### External and public functions
+
     function destroy()
-    external
-    onlyPandora {
+        external
+        onlyPandora
+    {
         /// Call event before doing the actual contract suicide
         emit WorkerDestroyed();
 
@@ -133,17 +139,20 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         selfdestruct(owner);
     }
 
-    /// ### External and public functions
-
-    function alive(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function alive() external
+        onlyOwner
         requireState(Offline)
         transitionToState(Idle)
     {
         // Nothing to do here
     }
+
+	function reportProgress(uint8 _percent) external
+		onlyOwner
+	{
+		jobProgress = _percent;
+		activeJob.commitProgress(_percent);
+	}
 
     /// @notice Do not call
     /// @dev Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under
@@ -160,11 +169,10 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         transitionToState(Assigned)
     {
         activeJob = _job;
+	    jobProgress = 0;
     }
 
-    function cancelJob(
-        // No arguments
-    ) external // Can"t be called internally
+    function cancelJob() external
         onlyActiveCognitiveJob
         requireActiveStates
         transitionToState(Idle)
@@ -172,10 +180,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         activeJob = IComputingJob(0);
     }
 
-    function acceptAssignment(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function acceptAssignment() external
+        onlyOwner
         requireState(Assigned)
         transitionToState(ReadyForDataValidation)
     {
@@ -183,10 +189,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         activeJob.gatheringWorkersResponse(true);
     }
 
-    function declineAssignment(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function declineAssignment() external
+        onlyOwner
         requireState(Assigned)
         transitionToState(Idle)
     {
@@ -194,20 +198,16 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         activeJob.gatheringWorkersResponse(false);
     }
 
-    function processToDataValidation(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function processToDataValidation() external
+        onlyOwner
         requireState(ReadyForDataValidation)
         transitionToState(ValidatingData)
     {
         // All actual work is done by function modifiers
     }
 
-    function acceptValidData(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function acceptValidData() external
+        onlyOwner
         requireState(ValidatingData)
         transitionToState(ReadyForComputing)
     {
@@ -215,10 +215,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Accept);
     }
 
-    function declineValidData(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function declineValidData() external
+        onlyOwner
         requireState(ValidatingData)
         transitionToState(Idle)
     {
@@ -226,10 +224,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Decline);
     }
 
-    function reportInvalidData(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function reportInvalidData() external
+        onlyOwner
         requireState(ValidatingData)
         transitionToState(Idle)
     {
@@ -237,10 +233,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Invalid);
     }
 
-    function processToCognition(
-        // No arguments
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    function processToCognition() external
+        onlyOwner
         requireState(ReadyForComputing)
         transitionToState(Computing)
     {
@@ -249,8 +243,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
 
     function provideResults(
         bytes _ipfsAddress
-    ) external // Can"t be called internally
-        /* @fixme onlyOwner */
+    ) external
+        onlyOwner
         requireState(Computing)
         transitionToState(Idle)
     {
@@ -259,9 +253,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     }
 
     /// @notice Withdraws full balance to the owner account. Can be called only by the owner of the contract.
-    function withdrawBalance(
-        // No arguments
-    ) external // Can"t be called internally
+    function withdrawBalance() external
         onlyOwner // Can be called only by the owner
         requireStates2(Idle, Offline)
     {

@@ -23,13 +23,10 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     bytes32 public description;
     IWorkerNode[] public activeWorkers;
     IWorkerNode[] public workersPool;
+    bytes[] public ipfsResults;
 
     uint256[] internal responseTimestamps;
     bool[] internal responseFlags;
-
-    //TODO implement progress report
-    uint8 public progress = 0;
-    bytes[] public ipfsResults;
 
     event WorkersUpdated();
     event WorkersNotFound();
@@ -251,11 +248,13 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _processWorkerResponse(_response == DataValidationResponse.Accept, IWorkerNode.Penalties.DeclinesJob, Cognition);
     }
 
-    function commitProgress(uint8 percent)
+    function commitProgress(uint8 _percent)
     onlyActiveWorkers
     external {
-        /// @todo Implement tracking progress of cognitive work
-        //CognitionProgressed(percent);
+        uint256 workerIndex;
+        (,workerIndex) = _getWorkerFromSender();
+        responseTimestamps[workerIndex] = block.timestamp;
+        CognitionProgressed(_percent);
     }
 
     function completeWork(bytes _ipfsResults)
