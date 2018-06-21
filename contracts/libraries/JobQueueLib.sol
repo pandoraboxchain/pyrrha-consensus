@@ -15,19 +15,20 @@ library JobQueueLib {
     }
 
     struct QueuedJob {
-        IKernel kernel;
-        IDataset dataset;
+        IKernel kernel; //todo change to address
+        IDataset dataset; //todo change to address
         address client;
         uint256 complexity;
         bytes32 description;
     }
 
+    event DebugEvent(uint value);
     /// @dev Returns depth of queue
     function queueDepth(
         Queue storage _queue
     )
     internal
-    view
+    constant
     returns(uint depth) {
         depth = _queue.jobArray.length - _queue.cursorPosition;
     }
@@ -53,7 +54,7 @@ library JobQueueLib {
     /// @notice Unsafe function -  should check queue depth before call this method with queueDepth()
     /// Should be called BEFORE call requestJob(),
     /// @dev Compare number of batches in first element with number of idle workers
-    function compareFirstElementToIdleWorkers(
+    function checkElementBatches(
         Queue storage _queue,
         uint256 numberIdleWorkers
     )
@@ -96,4 +97,5 @@ library JobQueueLib {
         delete _queue.jobArray[_queue.cursorPosition - 1]; // delete element from arrays
         delete _queue.deposits[_queue.cursorPosition - 1];
     }
+    //todo define event AddedToQueue(id) as well as in CognitiveJobManager
 }

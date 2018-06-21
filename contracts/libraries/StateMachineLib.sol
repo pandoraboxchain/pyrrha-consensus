@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 
 library StateMachineLib {
+
     struct StateMachine {
         bool initialized;
         uint8 currentState;
@@ -86,5 +87,4 @@ library StateMachineLib {
         _machine.currentState = 1;
         _machine.initialized = true;
     }
-
 }

@@ -254,7 +254,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
         responseTimestamps[workerIndex] = block.timestamp;
-        CognitionProgressed(_percent);
+        emit CognitionProgressed(_percent);
     }
 
     function completeWork(bytes _ipfsResults)

@@ -14,6 +14,7 @@ contract('Pandora', accounts => {
     let pandoraAddress;
     let pandoraAddress1;
     let pandoraAddress2;
+
     let workerNode;
     let workerNode1;
     let workerNode2;
@@ -26,7 +27,7 @@ contract('Pandora', accounts => {
     const workerOwner2 = accounts[4];
     const client = accounts[5];
 
-    before('setup', async () => {
+    before('setup test cognitive job manager', async () => {
 
         pandora = await Pandora.deployed();
 
@@ -45,23 +46,24 @@ contract('Pandora', accounts => {
         });
     });
 
-    it('should not create cognitive contract from outside of Pandora', async () => {
+    it.skip('should not create cognitive contract from outside of Pandora', async () => {
 
         const numberOfBatches = 2;
-        const testDataset = await Dataset.new(datasetIpfsAddress, 1, 0, numberOfBatches, 0);
-        const testKernel = await Kernel.new(kernelIpfsAddress, 1, 0, 0);
+        const testDataset = await Dataset.new(datasetIpfsAddress, 1, numberOfBatches, 0, "m-a", "d-n");
+        const testKernel = await Kernel.new(kernelIpfsAddress, 1, 2, 3, "m-a", "d-n");
         
-        assertRevert(CognitiveJob.new(pandora.address, testDataset.address, testKernel.address, [workerNode.address]));
+        // assertRevert(CognitiveJob.new(
+        //     pandora.address, testDataset.address, testKernel.address, [workerNode.address, 0], 1, "d-n"));
     });
 
     it('Should not create job if # of idle workers < number of batches and put it to queue', async () => {
         
-        const numberOfBatches = 2;
-        const testDataset = await Dataset.new(datasetIpfsAddress, 1, 0, numberOfBatches, 0);
-        const testKernel = await Kernel.new(kernelIpfsAddress, 1, 0, 0);
+        const batchesCount = 2;
+        const testDataset = await Dataset.new(datasetIpfsAddress, 1, batchesCount, 10, "m-a", "d-n");
+        const testKernel = await Kernel.new(kernelIpfsAddress, 1, 2, 3, "m-a", "d-n");
         const estimatedCode = 0;
 
-        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address);
+        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)});
 
         const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
         const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
@@ -71,7 +73,7 @@ contract('Pandora', accounts => {
         // console.log(logSuccess, 'success');
         // console.log(logEntries, 'entries');
 
-        const activeJobsCount = await pandora.activeJobsCount();
+        const activeJobsCount = await pandora.cognitiveJobsCount();
 
         assert.equal(activeJobsCount.toNumber(), 0, 'activeJobsCount = 0');
         assert.equal(result.logs[0].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_ADD_TO_QUEUE');
@@ -89,11 +91,11 @@ contract('Pandora', accounts => {
     it('Should create job if number of idle workers >= number of batches in dataset', async () => {
 
         const numberOfBatches = 1;
-        const testDataset = await Dataset.new(datasetIpfsAddress, 1, 0, numberOfBatches, 0);
-        const testKernel = await Kernel.new(kernelIpfsAddress, 1, 0, 0);
+        const testDataset = await Dataset.new(datasetIpfsAddress, 1, numberOfBatches, 10, "m-a", "d-n");
+        const testKernel = await Kernel.new(kernelIpfsAddress, 1, 2, 3, "m-a", "d-n");
         const estimatedCode = 1;
 
-        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address);
+        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)});
 
         const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
         const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
@@ -107,7 +109,7 @@ contract('Pandora', accounts => {
 
         const workerState = await workerInstance.currentState.call();
 
-        const activeJobsCount = await pandora.activeJobsCount();
+        const activeJobsCount = await pandora.cognitiveJobsCount();
 
         assert.equal(activeJobsCount.toNumber(), 1, 'activeJobsCount = 1');
         assert.equal(workerState.toNumber(), 3, `worker state should be "assigned" (3)`);

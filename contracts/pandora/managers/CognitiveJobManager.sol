@@ -178,7 +178,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     ) {
 
         // Restriction for batches count came from potential high gas usage in JobQueue processing
-        // todo check max restriction with tests
+        // todo check batches limit with tests
         require(_dataset.batchesCount() <= 10);
 
         // Dimensions of the input data and neural network input layer must be equal
@@ -188,6 +188,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(cognitiveJobs.length < 2 ^ 16 - 1);
 
         // @todo check payment corresponds to required amount + gas payment (from tests)
+        require(msg.value > 10 finney);
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
@@ -206,15 +207,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Initializing in-memory array for idle node list and populating it with data
         IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
-//        uint actualSize = idleWorkers.length;
-
-//        // Something really wrong happened with EVM if this assert fails
-//        if (actualSize != estimatedSize) {
-//            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-//            cognitiveJobQueue.put(kernel, dataset, msg.value, msg.sender);
-//            CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
-//            return (o_cognitiveJob, o_resultCode);
-//        }
 
         // Running lottery to select worker node to be assigned cognitive job contract
         IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, _dataset.batchesCount());
@@ -228,7 +220,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         emit CognitiveJobCreated(o_cognitiveJob, o_resultCode);
     }
 
-    //todo should be called after providing full resulta of entire job
+    //todo should be called after providing full result of entire job
 
     /// @notice Can"t be called by the user, for internal use only
     /// @dev Function must be called only by the master node running cognitive job. It completes the job, updates
@@ -270,9 +262,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         JobQueueLib.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
 
-//        uint limitQueueRequests = 10;
+        uint256 limitQueueReq = cognitiveJobQueue.queueDepth();
+        limitQueueReq = limitQueueReq > 10 ? 10 : limitQueueReq; // todo check limit (10) for queue requests with tests
 
-        for (uint256 k = 0; (k < cognitiveJobQueue.queueDepth()) || (k < 10); k++) { // todo check limit (10) for queue requests with tests
+        for (uint256 k = 0; k < limitQueueReq; k++) {
 
             // Count remaining gas
             uint initialGas = gasleft();
@@ -293,36 +286,60 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
 
             // Check number of batches with number of idle workers
-            if (!cognitiveJobQueue.compareFirstElementToIdleWorkers(actualSize)) {
+            if (!cognitiveJobQueue.checkElementBatches(actualSize)) {
                 break;
             }
 
+            uint value1 = cognitiveJobQueue.queueDepth();
             uint256 value; // Value from queuedJob deposit
             (queuedJob, value) = cognitiveJobQueue.requestJob();
 
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.dataset.batchesCount());
 
-            IComputingJob createdCognitiveJob = _initCognitiveJob(
-                queuedJob.kernel,
-                queuedJob.dataset,
-                assignedWorkers,
-                queuedJob.complexity,
-                queuedJob.description
-            );
+            IComputingJob createdCognitiveJob = _initQueuedJob(queuedJob, assignedWorkers);
 
             emit CognitiveJobCreated(createdCognitiveJob, RESULT_CODE_JOB_CREATED);
 
             // Count used funds for queue
-            uint weiUsedForQueuedJob = (initialGas - gasleft()) * tx.gasprice;
+            uint weiUsed = (initialGas - gasleft()) * tx.gasprice;
+
+//            emit DebugEvent(tx.gasprice);
+//            emit DebugEvent(initialGas);
+//            emit DebugEvent(gasleft());
+//            emit DebugEvent(weiUsed);
+//            emit DebugEvent(this.balance);
+//            emit DebugEvent(deposits[queuedJob.client]);
 
             // Gas refund to node
-            tx.origin.transfer(weiUsedForQueuedJob);
+            tx.origin.transfer(weiUsed);
 
             // Withdraw from client"s deposits
-            deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsedForQueuedJob - value);
+            deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsed);
+
+            //todo return ramaining funds to client (value - weiUsed) here as well as in createCognitiveJob() if job not put in queue
         }
     }
+
+    function _initQueuedJob(JobQueueLib.QueuedJob queuedJob, IWorkerNode[] assignedWorkers)
+    private
+    onlyInitialized
+    returns (
+        IComputingJob job
+    ) {
+        job = _initCognitiveJob(
+            queuedJob.kernel,
+            queuedJob.dataset,
+            assignedWorkers,
+            queuedJob.complexity,
+            queuedJob.description
+        );
+    }
+
+    event DebugEvent(uint value);
+    event DebugEvent1(address addr);
+    event DebugEvent2(IWorkerNode[] nodes);
+    event DebugEvent3(bytes32 descr);
 
     /// @notice Can"t be called by the user or other contract: for private use only
     /// @dev Creates cognitive job contract, saves it to storage and fires global event to notify selected worker node.
@@ -343,7 +360,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
                                      /// reason for returning status code)
     ) {
         o_cognitiveJob = cognitiveJobFactory.create(_kernel, _dataset, _assignedWorkers, _complexity, _description);
-
+//
         // Ensuring that contract was successfully created
         assert(o_cognitiveJob != address(0));
         // Hint: trying to figure out was the contract body actually created and initialized with proper values
@@ -368,11 +385,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IWorkerNode[] assignedWorkers /// Resulting sublist of the selected WorkerNodes
     ) {
         assignedWorkers = new IWorkerNode[](_numberWorkersRequired);
-        uint256[] memory randomNumbers = getRandomArray(
-            assignedWorkers.length,
-            uint256(_idleWorkers.length));
+        uint no = workerLotteryEngine.getRandom(assignedWorkers.length);
         for (uint i = 0; i < assignedWorkers.length; i++) {
-            assignedWorkers[i] = _idleWorkers[randomNumbers[i]];
+            assignedWorkers[i] = _idleWorkers[no];
+            no = (no == assignedWorkers.length - 1) ? 0 : no + 1;
         }
     }
 
@@ -414,16 +430,5 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
         }
         return idleWorkers;
-    }
-
-    function getRandomArray(
-        uint _arrayLength,
-        uint256 _numbersRange)
-    public
-    returns (uint256[] o_result) {
-        o_result = new uint256[](_arrayLength);
-        for (uint i = 0; i < o_result.length; i++) {
-            o_result[i] = workerLotteryEngine.getRandom(_numbersRange);
-        }
     }
 }

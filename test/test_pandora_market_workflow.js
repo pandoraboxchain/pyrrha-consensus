@@ -14,11 +14,11 @@ contract('PandoraMarket', accounts => {
     let newDatasetAddress;
     let newKernelAddress;
 
-    before('setup', async () => {
+    before('setup test pandora market', async () => {
 
         market = await PandoraMarket.deployed();        
-        testDataset = await Dataset.new(datasetIpfsAddress, 1, 0, numberOfBatches, 0);
-        testKernel = await Kernel.new(kernelIpfsAddress, 1, 0, 0);
+        testDataset = await Dataset.new(datasetIpfsAddress, 1, numberOfBatches, 0, "m-a", "d-n");
+        testKernel = await Kernel.new(kernelIpfsAddress, 1, 0, 0, "m-a", "d-n");
     });
 
     it('New Kernel should be added to PandoraMarket', async () => {
