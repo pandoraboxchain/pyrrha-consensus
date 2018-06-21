@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1658600 gas
+**Deployment cost**: less than 1628800 gas
 
 **Combined cost**: No bound available
 
@@ -21,7 +21,18 @@ Params:
 3. **_reputation** *of type `address`*
 
 ## Events
-### CognitiveJobCreateFailed(address,uint256)
+### DebugEvent3(bytes32)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **descr** *of type `bytes32`*
+
+--- 
+### CognitiveJobCreated(address,uint256)
 
 
 **Execution cost**: No bound available
@@ -33,7 +44,7 @@ Params:
 2. **resultCode** *of type `uint256`*
 
 --- 
-### CognitiveJobCreated(address,uint256)
+### CognitiveJobCreateFailed(address,uint256)
 
 
 **Execution cost**: No bound available
@@ -54,6 +65,39 @@ Params:
 Params:
 
 1. **cognitiveJob** *of type `address`*
+
+--- 
+### DebugEvent(uint256)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **value** *of type `uint256`*
+
+--- 
+### DebugEvent1(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **addr** *of type `address`*
+
+--- 
+### DebugEvent2(address[])
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **nodes** *of type `address[]`*
 
 --- 
 ### OwnershipRenounced(address)
@@ -194,21 +238,22 @@ Returns:
 
 
 --- 
-### getRandomArray(uint256,uint256)
+### cognitiveJobs(uint256)
 
 
-**Execution cost**: No bound available
+**Execution cost**: less than 1318 gas
+
+**Attributes**: constant
 
 
 Params:
 
-1. **_arrayLength** *of type `uint256`*
-2. **_numbersRange** *of type `uint256`*
+1. **param_0** *of type `uint256`*
 
 Returns:
 
 
-1. **o_result** *of type `uint256[]`*
+1. **output_0** *of type `address`*
 
 --- 
 ### RESULT_CODE_JOB_CREATED()
@@ -234,24 +279,6 @@ Returns:
 **Attributes**: constant
 
 
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### cognitiveJobs(uint256)
-
-
-**Execution cost**: less than 1318 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
 
 Returns:
 
@@ -350,7 +377,7 @@ Returns:
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 1137 gas
+**Execution cost**: less than 1115 gas
 
 **Attributes**: constant
 
@@ -363,6 +390,23 @@ Returns:
 
 
 1. **output_0** *of type `uint16`*
+
+--- 
+### transferOwnership(address)
+>
+> Allows the current owner to transfer control of the contract to a newOwner.
+
+
+**Execution cost**: less than 23285 gas
+
+
+Params:
+
+1. **_newOwner** *of type `address`*
+
+    > The address to transfer ownership to.
+
+
 
 --- 
 ### owner()
@@ -378,23 +422,6 @@ Returns:
 
 
 1. **output_0** *of type `address`*
-
---- 
-### transferOwnership(address)
->
-> Allows the current owner to transfer control of the contract to a newOwner.
-
-
-**Execution cost**: less than 23307 gas
-
-
-Params:
-
-1. **_newOwner** *of type `address`*
-
-    > The address to transfer ownership to.
-
-
 
 --- 
 ### penaltizeWorkerNode(address,uint8)
@@ -440,7 +467,7 @@ Params:
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1106 gas
+**Execution cost**: less than 1084 gas
 
 **Attributes**: constant
 

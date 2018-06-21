@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1758000 gas
+**Deployment cost**: less than 1780000 gas
 
 **Combined cost**: No bound available
 
@@ -138,7 +138,7 @@ Params:
 
 Params:
 
-1. **percent** *of type `uint8`*
+1. **_percent** *of type `uint8`*
 
 
 --- 

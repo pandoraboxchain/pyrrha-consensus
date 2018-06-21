@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 921000 gas
+**Deployment cost**: less than 1012800 gas
 
 **Combined cost**: No bound available
 
@@ -66,7 +66,7 @@ Params:
 ### Offline()
 
 
-**Execution cost**: less than 523 gas
+**Execution cost**: less than 545 gas
 
 **Attributes**: constant
 
@@ -159,7 +159,7 @@ Returns:
 ### Assigned()
 
 
-**Execution cost**: less than 809 gas
+**Execution cost**: less than 853 gas
 
 **Attributes**: constant
 
@@ -174,7 +174,7 @@ Returns:
 ### InsufficientStake()
 
 
-**Execution cost**: less than 787 gas
+**Execution cost**: less than 831 gas
 
 **Attributes**: constant
 
@@ -184,6 +184,21 @@ Returns:
 
 
 1. **output_0** *of type `uint8`*
+
+--- 
+### jobProgress()
+
+
+**Execution cost**: less than 582 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
 
 --- 
 ### acceptValidData()
@@ -207,7 +222,7 @@ Returns:
 ### Destroyed()
 
 
-**Execution cost**: less than 743 gas
+**Execution cost**: less than 787 gas
 
 **Attributes**: constant
 
@@ -222,7 +237,7 @@ Returns:
 ### ValidatingData()
 
 
-**Execution cost**: less than 457 gas
+**Execution cost**: less than 479 gas
 
 **Attributes**: constant
 
@@ -235,8 +250,6 @@ Returns:
 
 --- 
 ### alive()
->
->### External and public functions
 
 
 **Execution cost**: No bound available
@@ -248,7 +261,7 @@ Returns:
 ### ReadyForDataValidation()
 
 
-**Execution cost**: less than 721 gas
+**Execution cost**: less than 765 gas
 
 **Attributes**: constant
 
@@ -280,9 +293,11 @@ Returns:
 
 --- 
 ### destroy()
+>
+>### External and public functions
 
 
-**Execution cost**: less than 32114 gas
+**Execution cost**: less than 32136 gas
 
 
 
@@ -307,7 +322,7 @@ Params:
 ### owner()
 
 
-**Execution cost**: less than 933 gas
+**Execution cost**: less than 955 gas
 
 **Attributes**: constant
 
@@ -322,7 +337,7 @@ Returns:
 ### activeJob()
 
 
-**Execution cost**: less than 955 gas
+**Execution cost**: less than 977 gas
 
 **Attributes**: constant
 
@@ -337,7 +352,7 @@ Returns:
 ### UnderPenalty()
 
 
-**Execution cost**: less than 633 gas
+**Execution cost**: less than 655 gas
 
 **Attributes**: constant
 
@@ -352,7 +367,7 @@ Returns:
 ### Idle()
 
 
-**Execution cost**: less than 655 gas
+**Execution cost**: less than 677 gas
 
 **Attributes**: constant
 
@@ -408,7 +423,7 @@ Params:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22314 gas
+**Execution cost**: less than 22336 gas
 
 
 
@@ -423,12 +438,24 @@ Params:
 
 
 --- 
+### reportProgress(uint8)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_percent** *of type `uint8`*
+
+
+--- 
 ### transferOwnership(address)
 >
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23398 gas
+**Execution cost**: less than 23442 gas
 
 
 Params:
