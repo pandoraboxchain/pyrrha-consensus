@@ -71,12 +71,12 @@ library StateMachineLib {
     view
     internal {
         bool properState = false;
-	    if (_requiredState1 == _machine.currentState) {
-		    properState = true;
-	    }
-	    if (_requiredState2 == _machine.currentState) {
-		    properState = true;
-	    }
+        if (_requiredState1 == _machine.currentState) {
+            properState = true;
+        }
+        if (_requiredState2 == _machine.currentState) {
+            properState = true;
+        }
         require(properState == true);
     }
 

@@ -290,7 +290,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
                 break;
             }
 
-            uint value1 = cognitiveJobQueue.queueDepth();
+            // uint value1 = cognitiveJobQueue.queueDepth();
             uint256 value; // Value from queuedJob deposit
             (queuedJob, value) = cognitiveJobQueue.requestJob();
 
