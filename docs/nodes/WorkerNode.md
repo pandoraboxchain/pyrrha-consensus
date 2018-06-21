@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1209000 gas
+**Deployment cost**: less than 921000 gas
 
 **Combined cost**: No bound available
 
@@ -19,6 +19,17 @@ Params:
 1. **_pandora** *of type `address`*
 
 ## Events
+### OwnershipRenounced(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+
+--- 
 ### OwnershipTransferred(address,address)
 
 
@@ -52,13 +63,19 @@ Params:
 
 
 ## Methods
-### destroy()
+### Offline()
 
 
-**Execution cost**: less than 32136 gas
+**Execution cost**: less than 523 gas
+
+**Attributes**: constant
 
 
 
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### processToCognition()
@@ -142,7 +159,7 @@ Returns:
 ### Assigned()
 
 
-**Execution cost**: less than 919 gas
+**Execution cost**: less than 809 gas
 
 **Attributes**: constant
 
@@ -157,7 +174,7 @@ Returns:
 ### InsufficientStake()
 
 
-**Execution cost**: less than 897 gas
+**Execution cost**: less than 787 gas
 
 **Attributes**: constant
 
@@ -167,24 +184,6 @@ Returns:
 
 
 1. **output_0** *of type `uint8`*
-
---- 
-### maxPenalty()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
-### increaseReputation()
-
-
-**Execution cost**: less than 21622 gas
-
-
-
 
 --- 
 ### acceptValidData()
@@ -205,10 +204,25 @@ Returns:
 
 
 --- 
+### Destroyed()
+
+
+**Execution cost**: less than 743 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
 ### ValidatingData()
 
 
-**Execution cost**: less than 479 gas
+**Execution cost**: less than 457 gas
 
 **Attributes**: constant
 
@@ -231,25 +245,10 @@ Returns:
 
 
 --- 
-### Destroyed()
+### ReadyForDataValidation()
 
 
-**Execution cost**: less than 831 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
-### Offline()
-
-
-**Execution cost**: less than 545 gas
+**Execution cost**: less than 721 gas
 
 **Attributes**: constant
 
@@ -280,6 +279,15 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### destroy()
+
+
+**Execution cost**: less than 32114 gas
+
+
+
+
+--- 
 ### assignJob(address)
 >
 >Do not call
@@ -299,7 +307,7 @@ Params:
 ### owner()
 
 
-**Execution cost**: less than 955 gas
+**Execution cost**: less than 933 gas
 
 **Attributes**: constant
 
@@ -314,7 +322,7 @@ Returns:
 ### activeJob()
 
 
-**Execution cost**: less than 977 gas
+**Execution cost**: less than 955 gas
 
 **Attributes**: constant
 
@@ -329,7 +337,7 @@ Returns:
 ### UnderPenalty()
 
 
-**Execution cost**: less than 655 gas
+**Execution cost**: less than 633 gas
 
 **Attributes**: constant
 
@@ -341,32 +349,10 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### deathPenalty()
->
->For internal use by main Pandora contract
->
-> Zeroes reputation and destroys node
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
-### decreaseReputation()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
 ### Idle()
 
 
-**Execution cost**: less than 721 gas
+**Execution cost**: less than 655 gas
 
 **Attributes**: constant
 
@@ -396,21 +382,6 @@ Returns:
 
 
 --- 
-### ReadyForDataValidation()
-
-
-**Execution cost**: less than 809 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
 ### processToDataValidation()
 
 
@@ -432,31 +403,18 @@ Params:
 
 
 --- 
+### renounceOwnership()
+>
+> Allows the current owner to relinquish control of the contract.
+
+
+**Execution cost**: less than 22314 gas
+
+
+
+
+--- 
 ### reportInvalidData()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
-### reputation()
-
-
-**Execution cost**: less than 978 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### resetReputation()
 
 
 **Execution cost**: No bound available
@@ -470,12 +428,12 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23479 gas
+**Execution cost**: less than 23398 gas
 
 
 Params:
 
-1. **newOwner** *of type `address`*
+1. **_newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 

@@ -9,6 +9,17 @@
 
 
 ## Events
+### OwnershipRenounced(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+
+--- 
 ### OwnershipTransferred(address,address)
 
 
@@ -42,13 +53,19 @@ Params:
 
 
 ## Methods
-### destroy()
+### Offline()
 
 
 **Execution cost**: No bound available
 
+**Attributes**: constant
 
 
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### processToCognition()
@@ -159,24 +176,6 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### maxPenalty()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
-### increaseReputation()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
 ### acceptValidData()
 
 
@@ -193,6 +192,21 @@ Returns:
 
 
 
+
+--- 
+### Destroyed()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### ValidatingData()
@@ -219,22 +233,7 @@ Returns:
 
 
 --- 
-### Destroyed()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
-### Offline()
+### ReadyForDataValidation()
 
 
 **Execution cost**: No bound available
@@ -262,6 +261,15 @@ Returns:
 
 
 1. **output_0** *of type `uint8`*
+
+--- 
+### destroy()
+
+
+**Execution cost**: No bound available
+
+
+
 
 --- 
 ### assignJob(address)
@@ -321,24 +329,6 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### deathPenalty()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
-### decreaseReputation()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
 ### Idle()
 
 
@@ -372,21 +362,6 @@ Returns:
 
 
 --- 
-### ReadyForDataValidation()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
 ### processToDataValidation()
 
 
@@ -408,31 +383,16 @@ Params:
 
 
 --- 
+### renounceOwnership()
+
+
+**Execution cost**: No bound available
+
+
+
+
+--- 
 ### reportInvalidData()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
-### reputation()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### resetReputation()
 
 
 **Execution cost**: No bound available
@@ -449,7 +409,7 @@ Returns:
 
 Params:
 
-1. **newOwner** *of type `address`*
+1. **_newOwner** *of type `address`*
 
 
 --- 
