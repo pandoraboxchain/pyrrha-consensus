@@ -39,6 +39,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// is used to ensure uniqueness of the factories and the fact that their code source is coming from the same
     /// address which have deployed the main Pandora contract. In particular, because of this Pandora is defined as an
     /// `Ownable` contract and a special `initialize` function and `properlyInitialized` member variable is added.
+    //todo create interface
     CognitiveJobFactory public cognitiveJobFactory;
 
     /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
@@ -67,10 +68,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     uint8 constant public RESULT_CODE_JOB_CREATED = 1;
 
     /// ### Private and internal variables
-
-    /// @dev Limit for the amount of lottery cycles before reporting failure to start cognitive job.
-    /// Used in `createCognitiveJob`
-    uint8 constant private MAX_WORKER_LOTTERY_TRIES = 10;
 
     /// @dev Contract implementing lottery interface for workers selection. Only internal usage
     /// by `createCognitiveJob` function
@@ -187,7 +184,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // The created job must fit into uint16 size
         require(cognitiveJobs.length < 2 ^ 16 - 1);
 
-        // @todo check payment corresponds to required amount + gas payment (from tests)
+        // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
         require(msg.value > 10 finney);
 
         // Counting number of available worker nodes (in Idle state)
@@ -200,7 +197,14 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         uint8 batchesCount = _dataset.batchesCount();
         if (estimatedSize < uint256(batchesCount)) {
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            cognitiveJobQueue.put(_kernel, _dataset, msg.value, msg.sender, _complexity, _description);
+            cognitiveJobQueue.put(
+                    address(_kernel),
+                    address(_dataset),
+                    msg.sender,
+                    msg.value,
+                    batchesCount,
+                    _complexity,
+                    _description);
             emit CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
             return (o_cognitiveJob, o_resultCode);
         }
@@ -295,7 +299,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             (queuedJob, value) = cognitiveJobQueue.requestJob();
 
             // Running lottery to select worker node to be assigned cognitive job contract
-            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.dataset.batchesCount());
+            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.batches);
 
             IComputingJob createdCognitiveJob = _initQueuedJob(queuedJob, assignedWorkers);
 
@@ -314,10 +318,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // Gas refund to node
             tx.origin.transfer(weiUsed);
 
-            // Withdraw from client"s deposits
-            deposits[queuedJob.client] = deposits[queuedJob.client].sub(weiUsed);
+            // Withdraw from client's deposit
+            deposits[queuedJob.customer] = deposits[queuedJob.customer].sub(weiUsed);
 
-            //todo return ramaining funds to client (value - weiUsed) here as well as in createCognitiveJob() if job not put in queue
+            //todo return remaining funds to client (value - weiUsed) here as well as in createCognitiveJob() if job not put in queue
         }
     }
 
@@ -328,8 +332,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IComputingJob job
     ) {
         job = _initCognitiveJob(
-            queuedJob.kernel,
-            queuedJob.dataset,
+            IKernel(queuedJob.kernel),
+            IDataset(queuedJob.dataset),
             assignedWorkers,
             queuedJob.complexity,
             queuedJob.description

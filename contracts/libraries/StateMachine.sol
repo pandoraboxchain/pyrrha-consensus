@@ -6,9 +6,6 @@ import {StateMachineLib as SM} from "../libraries/StateMachineLib.sol";
 
 contract StateMachine is IStateMachine, OnlyOnce {
 
-    //todo sedescribe jobstates as anum
-
-
     // todo exp branch replace statemachine lib with modifiers for each state -- and check for gas
 
     /**
