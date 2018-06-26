@@ -55,7 +55,7 @@ contract('Pandora', accounts => {
         const testKernel = await Kernel.new(kernelIpfsAddress, 784, 669706, 48, "CIFAR_10,HENDWRITTEN,DIGITS", "CIFAR10,digits,mode");
         const estimatedCode = 0;
 
-        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 669706 , "1hendwriten digits train", {value: web3.toWei(0.5)});
+        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 669706, "1hendwriten digits train", {value: web3.toWei(0.5)});
 
         assert.equal(result.logs[0].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_ADD_TO_QUEUE');
 
@@ -153,7 +153,7 @@ contract('Pandora', accounts => {
         const completeResult = await workerInstance0.provideResults('0x01', {from: workerOwner0});
         // console.log(completeResult)
 
-        assert(false)
+        // assert(false)
         // todo to pass test with next lines refactor of cognitive job finishing required
 
         // console.log(workerState.toNumber(), 'worker #0 state');
@@ -178,5 +178,54 @@ contract('Pandora', accounts => {
         assert.notEqual(activeJob2, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node 2');
 
         // console.log(workerState2.toNumber(), 'worker #2 state');
+
+        //completing job from queue
+
+        await workerInstance1.acceptAssignment({
+            from: workerOwner1
+        });
+
+        await workerInstance1.processToDataValidation({
+            from: workerOwner1
+        });
+
+        await workerInstance1.acceptValidData({
+            from: workerOwner1
+        });
+
+
+        await workerInstance1.processToCognition({
+            from: workerOwner1
+        });
+
+        workerState = await workerInstance1.currentState.call();
+        // console.log(workerState.toNumber(), 'worker #0 state');
+        assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
+
+        await workerInstance1.provideResults('0x01', {from: workerOwner1});
+        // console.log(completeResult)
+
+        await workerInstance2.acceptAssignment({
+            from: workerOwner2
+        });
+
+        await workerInstance2.processToDataValidation({
+            from: workerOwner2
+        });
+
+        await workerInstance2.acceptValidData({
+            from: workerOwner2
+        });
+
+        await workerInstance2.processToCognition({
+            from: workerOwner2
+        });
+
+        workerState = await workerInstance2.currentState.call();
+        console.log(workerState.toNumber(), 'worker #1 state');
+        assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
+
+        await workerInstance2.provideResults('0x01', {from: workerOwner2});
+        // console.log(completeResult)
     });
 });
