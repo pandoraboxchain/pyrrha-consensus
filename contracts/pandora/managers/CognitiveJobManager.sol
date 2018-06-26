@@ -305,6 +305,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             emit CognitiveJobCreated(createdCognitiveJob, RESULT_CODE_JOB_CREATED);
 
             // Count used funds for queue
+            //todo set limit for gasprice
             uint weiUsed = (57000 + initialGas - gasleft()) * tx.gasprice; //57k of gas used for transfers and storage writing
 
 //            emit DebugEvent(tx.gasprice);

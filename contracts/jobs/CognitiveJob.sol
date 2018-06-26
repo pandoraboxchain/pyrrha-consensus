@@ -25,8 +25,9 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     IWorkerNode[] public workersPool;
     bytes[] public ipfsResults;
 
-    uint256[] internal responseTimestamps;
-    bool[] internal responseFlags;
+    uint256[] private responseTimestamps;
+    bool[] private responseFlags;
+    bool[] private completionFlags;
 
     event WorkersUpdated();
     event WorkersNotFound();
@@ -77,9 +78,18 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function isAllWorkersReady() returns(bool ready) {
         ready = true;
-        for (uint256 no = 0; no < responseFlags.length; no++) {
-            if (responseFlags[no] != true) {
+        for (uint256 i = 0; i < responseFlags.length; i++) {
+            if (responseFlags[i] != true) {
                 ready = false;
+            }
+        }
+    }
+
+    function isAllWorkersCompleted() returns(bool completed) {
+        completed = true;
+        for (uint256 i = 0; i < completionFlags.length; i++) {
+            if (completionFlags[i] != true) {
+                completed = false;
             }
         }
     }
@@ -197,13 +207,14 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function initialize()
     external
-// onlyPandora //removed for job queue proper work - TODO research and test consequences of removing modifier
+// onlyPandora
     requireState(Uninitialized)
     {
         // Select initial worker
         activeWorkers = new IWorkerNode[](batches);
         responseTimestamps = new uint[](batches);
         responseFlags = new bool[](batches);
+        completionFlags = new bool[](batches);
         ipfsResults = new bytes[](batches);
         for (uint8 batch = 0; batch < batches; batch++) {
             responseFlags[batch] = false; // no response is given yet
@@ -270,9 +281,10 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         (,workerIndex) = _getWorkerFromSender();
         ipfsResults[workerIndex] = _ipfsResults;
         responseFlags[workerIndex] = true;
+        completionFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
         _trackOfflineWorkers();
-        if (isAllWorkersReady()) {
+        if (isAllWorkersCompleted()) {
             _transitionToState(Completed);
         }
     }
