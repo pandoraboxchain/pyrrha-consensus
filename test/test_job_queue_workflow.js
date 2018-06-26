@@ -67,16 +67,17 @@ contract('Pandora', accounts => {
         assert.isOk(logFailure, 'should be fired failed event');
         assert.isNotOk(logSuccess, 'should not be fired successful creation event');
 
-        // console.log('Create cognitive job #2 for computing with 1 worker');
-
+        // Create cognitive job #2 for computing with 1 worker
         const numberOfBatches2 = 1;
         const testDataset2 = await Dataset.new(datasetIpfsAddress, 1, numberOfBatches2, 0, "m-a", "d-n");
         const testKernel2 = await Kernel.new(kernelIpfsAddress, 1, 0, 0, "m-a", "d-n");
         const estimatedCode2 = 1;
 
+        console.log(2)
         const result2 = await pandora.createCognitiveJob(testKernel2.address, testDataset2.address, 100, "d-n", {value: web3.toWei(0.5)});
         let activeJob = await workerInstance0.activeJob.call();
         let workerState = await workerInstance0.currentState.call();
+        console.log(2)
 
         assert.equal(workerState.toNumber(), 3, `worker state should be "assigned" (3)`);
         assert.notEqual(activeJob, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node');
@@ -84,6 +85,7 @@ contract('Pandora', accounts => {
 
         // Setup 2 additional worker nodes, so they could take queued job after any current job being finished;
 
+        console.log(2)
         //#2
         await pandora.whitelistWorkerOwner(workerOwner1);
         workerNode1 = await pandora.createWorkerNode({

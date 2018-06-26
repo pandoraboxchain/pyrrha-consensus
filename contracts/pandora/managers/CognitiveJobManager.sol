@@ -159,7 +159,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         return(job == _job);
     }
 
-
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
     function createCognitiveJob(
@@ -178,7 +177,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Restriction for batches count came from potential high gas usage in JobQueue processing
         // todo check batches limit with tests
-        require(_dataset.batchesCount() <= 10);
+        uint8 batchesCount = _dataset.batchesCount();
+        require(batchesCount <= 10);
 
         // Dimensions of the input data and neural network input layer must be equal
         require(_kernel.dataDim() == _dataset.dataDim());
@@ -187,16 +187,14 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(cognitiveJobs.length < 2 ^ 16 - 1);
 
         // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
-        require(msg.value == REQUIRED_DEPOSIT);
+        require(msg.value >= REQUIRED_DEPOSIT);
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
 
         uint256 estimatedSize = _countIdleWorkers();
-
         // Put task in queue if number of idle workers less than number of batches in dataset
-        uint8 batchesCount = _dataset.batchesCount();
         if (estimatedSize < uint256(batchesCount)) {
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             cognitiveJobQueue.put(
@@ -215,12 +213,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
 
         // Running lottery to select worker node to be assigned cognitive job contract
-        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, _dataset.batchesCount());
+        IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, batchesCount);
 
         o_cognitiveJob = _initCognitiveJob(_kernel, _dataset, assignedWorkers, _complexity, _description);
         o_resultCode = RESULT_CODE_JOB_CREATED;
 
-        //  Hold payment from client
+        //  Hold payment from customer
         deposits[msg.sender] = deposits[msg.sender].add(msg.value);
 
         emit CognitiveJobCreated(o_cognitiveJob, o_resultCode);
