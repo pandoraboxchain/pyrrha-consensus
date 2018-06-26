@@ -51,19 +51,19 @@ contract('Pandora', accounts => {
         // console.log('Create cognitive job #1 with 2 batches to put it in queue');
 
         const numberOfBatches = 2;
-        const testDataset = await Dataset.new(datasetIpfsAddress, 1, numberOfBatches, 0, "m-a", "d-n");
-        const testKernel = await Kernel.new(kernelIpfsAddress, 1, 0, 0, "m-a", "d-n");
+        const testDataset = await Dataset.new(datasetIpfsAddress, 784, numberOfBatches, 48, "CIFAR_10,HENDWRITTEN,DIGITS", "CIFAR10,digits");
+        const testKernel = await Kernel.new(kernelIpfsAddress, 784, 669706, 48, "CIFAR_10,HENDWRITTEN,DIGITS", "CIFAR10,digits,mode");
         const estimatedCode = 0;
 
-        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)});
+        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 669706 , "1hendwriten digits train", {value: web3.toWei(0.5)});
 
-        // assert.equal(result.logs[0].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_ADD_TO_QUEUE');
+        assert.equal(result.logs[0].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_ADD_TO_QUEUE');
 
-        // const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
-        // const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
+        const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
+        const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
 
-        // assert.isOk(logFailure, 'should be fired failed event');
-        // assert.isNotOk(logSuccess, 'should not be fired successful creation event');
+        assert.isOk(logFailure, 'should be fired failed event');
+        assert.isNotOk(logSuccess, 'should not be fired successful creation event');
 
         // console.log('Create cognitive job #2 for computing with 1 worker');
 
@@ -138,8 +138,8 @@ contract('Pandora', accounts => {
         // console.log(workerState.toNumber(), 'worker #0 state');
         assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
 
-        activeJob = await workerInstance0.activeJob.call();
-        // console.log(activeJob, 'activeJob #0');
+        // activeJob = await workerInstance0.activeJob.call();
+        // // console.log(activeJob, 'activeJob #0');
 
         const activeJobInstance = await CognitiveJob.at(activeJob);
         let results = await activeJobInstance.ipfsResultsCount.call()
@@ -153,6 +153,7 @@ contract('Pandora', accounts => {
         const completeResult = await workerInstance0.provideResults('0x01', {from: workerOwner0});
         // console.log(completeResult)
 
+        assert(false)
         // todo to pass test with next lines refactor of cognitive job finishing required
 
         // console.log(workerState.toNumber(), 'worker #0 state');

@@ -67,6 +67,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @notice Status code returned by `createCognitiveJob()` method when CognitiveJob was created successfully
     uint8 constant public RESULT_CODE_JOB_CREATED = 1;
 
+    uint256 constant public REQUIRED_DEPOSIT = 500 finney;
+
     /// ### Private and internal variables
 
     /// @dev Contract implementing lottery interface for workers selection. Only internal usage
@@ -185,7 +187,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(cognitiveJobs.length < 2 ^ 16 - 1);
 
         // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
-        require(msg.value > 10 finney);
+        require(msg.value == REQUIRED_DEPOSIT);
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
@@ -252,7 +254,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         for (uint256 i = 0; i <= job.activeWorkersCount(); i++) {
             reputation.incrReputation(address(i), reputationReward);
         }
-        //todo: user have to able to withdraw remaining funds if worker is idle
     }
 
     /// @notice Private function which checks queue of jobs and create new jobs
@@ -306,22 +307,25 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             emit CognitiveJobCreated(createdCognitiveJob, RESULT_CODE_JOB_CREATED);
 
             // Count used funds for queue
-            uint weiUsed = (initialGas - gasleft()) * tx.gasprice;
+            uint weiUsed = (57000 + initialGas - gasleft()) * tx.gasprice; //57k of gas used for transfers and storage writing
 
 //            emit DebugEvent(tx.gasprice);
 //            emit DebugEvent(initialGas);
 //            emit DebugEvent(gasleft());
+//            emit DebugEvent(REQUIRED_DEPOSIT);
 //            emit DebugEvent(weiUsed);
 //            emit DebugEvent(this.balance);
-//            emit DebugEvent(deposits[queuedJob.client]);
+//            emit DebugEvent(deposits[queuedJob.customer]);
+//            emit DebugEvent(value - weiUsed);
+
+	        //Withdraw from customer's deposit
+            deposits[queuedJob.customer] = deposits[queuedJob.customer].sub(value);
 
             // Gas refund to node
             tx.origin.transfer(weiUsed);
-
-            // Withdraw from client's deposit
-            deposits[queuedJob.customer] = deposits[queuedJob.customer].sub(weiUsed);
-
-            //todo return remaining funds to client (value - weiUsed) here as well as in createCognitiveJob() if job not put in queue
+//
+	        // Return remaining deposit to customer
+			queuedJob.customer.transfer(value - weiUsed);
         }
     }
 
