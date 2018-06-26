@@ -4,6 +4,8 @@ const Kernel = artifacts.require('Kernel');
 const WorkerNode = artifacts.require('WorkerNode');
 const CognitiveJob = artifacts.require('CognitiveJob');
 
+const assertRevert = require('./helpers/assertRevert');
+
 contract('Pandora', accounts => {
 
     let datasetIpfsAddress = 'QmSFdikKbHCBnTRMgxcakjLQD5E6Nbmoo69YbQPM9ACXJj';
@@ -153,11 +155,6 @@ contract('Pandora', accounts => {
         const completeResult = await workerInstance0.provideResults('0x01', {from: workerOwner0});
         // console.log(completeResult)
 
-        // assert(false)
-        // todo to pass test with next lines refactor of cognitive job finishing required
-
-        // console.log(workerState.toNumber(), 'worker #0 state');
-
         const jobState = await CognitiveJob.at(activeJob).currentState.call();
         // console.log(jobState.toNumber(), 'activeJob #0 state');
         assert.equal(jobState.toNumber(), 7, `Cognitive job (#1) state should be "Completed" (7)`);
@@ -181,22 +178,20 @@ contract('Pandora', accounts => {
 
         //completing job from queue
 
-        await workerInstance1.acceptAssignment({
-            from: workerOwner1
-        });
+        await workerInstance1.acceptAssignment({from: workerOwner1});
 
-        await workerInstance1.processToDataValidation({
-            from: workerOwner1
-        });
+        assertRevert(workerInstance2.processToDataValidation({from: workerOwner2}))
 
-        await workerInstance1.acceptValidData({
-            from: workerOwner1
-        });
+        await workerInstance2.acceptAssignment({from: workerOwner2});
 
+        await workerInstance1.processToDataValidation({from: workerOwner1});
+        await workerInstance2.processToDataValidation({from: workerOwner2});
 
-        await workerInstance1.processToCognition({
-            from: workerOwner1
-        });
+        await workerInstance1.acceptValidData({from: workerOwner1});
+        await workerInstance2.acceptValidData({from: workerOwner2});
+
+        await workerInstance1.processToCognition({from: workerOwner1});
+        await workerInstance2.processToCognition({from: workerOwner2});
 
         workerState = await workerInstance1.currentState.call();
         // console.log(workerState.toNumber(), 'worker #0 state');
@@ -205,21 +200,6 @@ contract('Pandora', accounts => {
         await workerInstance1.provideResults('0x01', {from: workerOwner1});
         // console.log(completeResult)
 
-        await workerInstance2.acceptAssignment({
-            from: workerOwner2
-        });
-
-        await workerInstance2.processToDataValidation({
-            from: workerOwner2
-        });
-
-        await workerInstance2.acceptValidData({
-            from: workerOwner2
-        });
-
-        await workerInstance2.processToCognition({
-            from: workerOwner2
-        });
 
         workerState = await workerInstance2.currentState.call();
         console.log(workerState.toNumber(), 'worker #1 state');

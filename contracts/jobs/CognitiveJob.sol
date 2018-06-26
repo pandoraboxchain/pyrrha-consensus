@@ -75,13 +75,13 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _;
     }
 
-    modifier checkReadiness() {
+    function isAllWorkersReady() returns(bool ready) {
+        ready = true;
         for (uint256 no = 0; no < responseFlags.length; no++) {
             if (responseFlags[no] != true) {
-                return;
+                ready = false;
             }
         }
-        _;
     }
 
     function _getWorkerIndex(IWorkerNode _worker) private view returns (uint256) {
@@ -163,15 +163,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
-    function _transitionToState(uint8 _newState) private transitionToState(_newState) {
-        // All actual work is performed by function modifier transitionToState
-    }
-
-    function _transitionIfReady(uint8 _newState) private checkReadiness transitionToState(_newState) {
-        for (uint256 no = 0; no < responseTimestamps.length; no++) {
-            responseFlags[no] = false;  // no response or update is given yet
-            responseTimestamps[no] = block.timestamp;
-        }
+    function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {
+        transitionToState(_newState);
     }
 
     function _processWorkerResponse(bool _acceptanceFlag, IWorkerNode.Penalties _penaltyForDecline, uint8 _nextState) private {
@@ -187,7 +180,18 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             responseFlags[workerIndex] = true;
             responseTimestamps[workerIndex] = block.timestamp;
             _trackOfflineWorkers();
-            _transitionIfReady(_nextState);
+            if (isAllWorkersReady()) {
+                updateResponses();
+                _transitionToState(_nextState);
+            }
+        }
+    }
+
+    ///@dev Reset all response flags after gathering and cognition start
+    function updateResponses() private {
+        for (uint256 i = 0; i < activeWorkers.length; i++) {
+            responseTimestamps[i] = block.timestamp;
+            responseFlags[i] = false;
         }
     }
 
@@ -195,7 +199,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     external
 // onlyPandora //removed for job queue proper work - TODO research and test consequences of removing modifier
     requireState(Uninitialized)
-    transitionToState(GatheringWorkers) {
+    {
         // Select initial worker
         activeWorkers = new IWorkerNode[](batches);
         responseTimestamps = new uint[](batches);
@@ -211,6 +215,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             workersPool.push(workersPool[pool]);
         }
 
+        _transitionToState(GatheringWorkers);
         emit WorkersUpdated();
     }
 
@@ -238,6 +243,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function dataValidationResponse(DataValidationResponse _response)
     onlyActiveWorkers
+    requireState(DataValidation)
     external {
         /// @todo implement full (data arbitration alorithm)[https://github.com/pandoraboxchain/techspecs/wiki/Data-inconsistency-arbitration]
         if (_response == DataValidationResponse.Invalid) {
@@ -258,6 +264,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function completeWork(bytes _ipfsResults)
     onlyActiveWorkers
+    requireState(Cognition)
     external {
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
@@ -265,7 +272,9 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         responseFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
         _trackOfflineWorkers();
-        _transitionIfReady(Completed);
+        if (isAllWorkersReady()) {
+            _transitionToState(Completed);
+        }
     }
 
     function activeWorkersCount()
@@ -278,10 +287,12 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     function didWorkerCompute(
         uint no
     )
+    requireState(Cognition) //worker could compute only in Cognition job state
     view
     external
-    returns(bool) {
-        return responseFlags[no] == true;
+    returns(bool)
+    {
+        return responseFlags[no];
     }
 
     /**

@@ -19,6 +19,11 @@ contract StateMachine is IStateMachine, OnlyOnce {
 
     event StateChanged(uint8 oldState, uint8 newState);
 
+    modifier requireAllowedTransition(uint8 _newState) {
+        stateMachine.isTransitionAllowed(_newState);
+        _;
+    }
+
     /// @notice Returns current state of the contract state machine
     /// @dev Shortcut to receive current state from external contracts
     function currentState() public view returns (
@@ -27,34 +32,32 @@ contract StateMachine is IStateMachine, OnlyOnce {
         return stateMachine.currentState;
     }
 
-    /// @dev State transition function from StateMachineLib put into modifier form.
-    /// **Important:** state transition happens _after_ the main code of the calling function.
-    modifier transitionToState(
+    /// @dev State transition function
+    function transitionToState(
         uint8 _newState /// New state to transition into
     ) {
         uint8 oldState = stateMachine.currentState;
-        stateMachine.transitionToState(_newState);
-        _;
         stateMachine.currentState = _newState;
         emit StateChanged(oldState, stateMachine.currentState);
         _fireStateEvent();
     }
 
-    /// @dev State transition function from StateMachineLib put into modifier form.
-    /// **Important:** state transition happens _before_ the main code of the calling function, and _after_ the
-    /// execution contract is returned to the original state.
-    modifier transitionThroughState(
-        uint8 _transitionState /// Intermediary state to transition through
-    ) {
-        uint8 initialState = stateMachine.currentState;
-        stateMachine.transitionThroughState(_transitionState);
-        emit StateChanged(initialState, stateMachine.currentState);
-        _fireStateEvent();
-        _;
-        stateMachine.currentState = initialState;
-        emit StateChanged(_transitionState, stateMachine.currentState);
-        _fireStateEvent();
-    }
+//
+//    /// @dev State transition function from StateMachineLib put into modifier form.
+//    /// **Important:** state transition happens _before_ the main code of the calling function, and _after_ the
+//    /// execution contract is returned to the original state.
+//    modifier transitionThroughState(
+//        uint8 _transitionState /// Intermediary state to transition through
+//    ) {
+//        uint8 initialState = stateMachine.currentState;
+//        stateMachine.transitionThroughState(_transitionState);
+//        emit StateChanged(initialState, stateMachine.currentState);
+//        _fireStateEvent();
+//        _;
+//        stateMachine.currentState = initialState;
+//        emit StateChanged(_transitionState, stateMachine.currentState);
+//        _fireStateEvent();
+//    }
 
     /// @dev Modifier requiring contract to be present in certain state; otherwise the exception is generated and the
     /// function does not execute
