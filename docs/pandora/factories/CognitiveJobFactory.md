@@ -1,11 +1,11 @@
 # CognitiveJobFactory
 
 
-**Execution cost**: less than 22704 gas
+**Execution cost**: less than 22793 gas
 
-**Deployment cost**: less than 2254200 gas
+**Deployment cost**: less than 2335800 gas
 
-**Combined cost**: less than 2276904 gas
+**Combined cost**: less than 2358593 gas
 
 ## Constructor
 

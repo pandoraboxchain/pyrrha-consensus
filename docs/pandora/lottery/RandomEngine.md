@@ -1,11 +1,11 @@
 # RandomEngine
 
 
-**Execution cost**: less than 87 gas
+**Execution cost**: less than 20104 gas
 
-**Deployment cost**: less than 35800 gas
+**Deployment cost**: less than 49400 gas
 
-**Combined cost**: less than 35887 gas
+**Combined cost**: less than 69504 gas
 
 ## Constructor
 
@@ -18,7 +18,7 @@
 ### getRandom(uint256)
 
 
-**Execution cost**: less than 291 gas
+**Execution cost**: less than 40829 gas
 
 
 Params:
