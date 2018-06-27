@@ -102,7 +102,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// of worker nodes contracts
     constructor(
         ICognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
-        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
+        IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
         Reputation _reputation
     )
     public
