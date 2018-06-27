@@ -50,7 +50,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     IComputingJob[] public cognitiveJobs;
 
     /// @dev Contract, that store rep. values for each address
-    Reputation reputation;
+    IReputation reputation;
 
     /// @dev Returns total count of active jobs
     function cognitiveJobsCount() onlyInitialized view public returns (uint256) {
@@ -103,7 +103,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     constructor(
         ICognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
         IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        Reputation _reputation
+        IReputation _reputation
     )
     public
     WorkerNodeManager(_nodeFactory) {

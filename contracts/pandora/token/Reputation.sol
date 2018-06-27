@@ -1,8 +1,8 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./IReputation.sol";
 
-contract Reputation is Ownable {
+contract Reputation is IReputation {
 
     mapping(address => uint256) public values;
 

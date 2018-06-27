@@ -3,10 +3,10 @@ pragma solidity ^0.4.23;
 import "../../entities/IDataEntity.sol";
 import "../../nodes/IWorkerNode.sol";
 import "../../jobs/IComputingJob.sol";
-import "../factories/CognitiveJobFactory.sol";
+import "../factories/ICognitiveJobFactory.sol";
 
 contract ICognitiveJobManager {
-    CognitiveJobFactory public cognitiveJobFactory;
+    ICognitiveJobFactory public cognitiveJobFactory;
 
     IComputingJob[] public cognitiveJobs;
     mapping(address => uint16) public jobAddresses;
