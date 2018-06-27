@@ -12,7 +12,6 @@ contract IWorkerNodeFactory is Ownable{
     function create(
         address _nodeOwner /// Worker node owner. Contract ownership will be transferred to this owner upon creation
     )
-    onlyOwner
     external
     returns (
         WorkerNode o_workerNode /// Worker node created by the factory

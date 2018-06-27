@@ -15,7 +15,6 @@ contract ICognitiveJobFactory is Ownable {
         uint256 _complexity,
         bytes32 _description
     )
-    onlyOwner
     external
     returns (CognitiveJob o_cognitiveJob);
 }
