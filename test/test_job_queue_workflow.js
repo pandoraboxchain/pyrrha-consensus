@@ -193,9 +193,9 @@ contract('Pandora', accounts => {
         await workerInstance1.acceptValidData({from: workerOwner1});
         await workerInstance2.acceptValidData({from: workerOwner2});
 
-        //all workers validated data, switched to Cognition state
-        // jobState = await CognitiveJob.at(activeJob2).currentState.call();
-        // assert.equal(jobState.toNumber(), 5, `Cognitive job state should be "Cognition" (5)`);
+        // all workers have validated data, switched to Cognition state
+        jobState = await CognitiveJob.at(activeJob2).currentState.call();
+        assert.equal(jobState.toNumber(), 5, `Cognitive job state should be "Cognition" (5)`);
 
         await workerInstance1.processToCognition({from: workerOwner1});
         await workerInstance2.processToCognition({from: workerOwner2});

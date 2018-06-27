@@ -220,9 +220,9 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             validationFlags[workerIndex] = true;
             responseTimestamps[workerIndex] = block.timestamp;
             _trackOfflineWorkers();
-            if (isAllWorkersAccepted()) {
+            if (isAllWorkersValidated()) {
                 updateResponses();
-                _transitionToState(PartialResult);
+                _transitionToState(Cognition);
             }
         }
     }
@@ -310,7 +310,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
         ipfsResults[workerIndex] = _ipfsResults;
-        acceptionFlags[workerIndex] = true;
         completionFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
         _trackOfflineWorkers();

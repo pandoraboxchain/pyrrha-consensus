@@ -59,7 +59,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     }
 
     // Deposits from clients used as payment for work
-    mapping(address => uint256) deposits;
+    mapping(address => uint256) public deposits;
 
     /// @notice Status code returned by `createCognitiveJob()` method when no Idle WorkerNodes were available
     /// and job was not created but was put into the job queue to be processed lately
@@ -307,6 +307,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // Count used funds for queue
             //todo set limit for gasprice
             uint weiUsed = (57000 + initialGas - gasleft()) * tx.gasprice; //57k of gas used for transfers and storage writing
+            if (weiUsed > value) {
+                weiUsed = value;
+            }
 
 //            emit DebugEvent(tx.gasprice);
 //            emit DebugEvent(initialGas);
@@ -324,7 +327,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             tx.origin.transfer(weiUsed);
 //
 	        // Return remaining deposit to customer
-			queuedJob.customer.transfer(value - weiUsed);
+            if (value - weiUsed != 0) {
+			    queuedJob.customer.transfer(value - weiUsed);
+            }
         }
     }
 
