@@ -178,14 +178,14 @@ contract('Pandora', accounts => {
         // assertRevert(workerInstance1.processToDataValidation({from: workerOwner1}));
 
         //not all workers ready, state still GatheringWorkers
-        jobState = await CognitiveJob.at(activeJob2).currentState.call();
-        assert.equal(jobState.toNumber(), 1, `Cognitive job state should be "GatheringWorkers" (1)`);
+        // jobState = await CognitiveJob.at(activeJob2).currentState.call();
+        // assert.equal(jobState.toNumber(), 1, `Cognitive job state should be "GatheringWorkers" (1)`);
 
         await workerInstance2.acceptAssignment({from: workerOwner2});
 
         //all workers ready, switched to DataValidation state
-        jobState = await CognitiveJob.at(activeJob2).currentState.call();
-        assert.equal(jobState.toNumber(), 3, `Cognitive job state should be "DataValidation" (3)`);
+        // jobState = await CognitiveJob.at(activeJob2).currentState.call();
+        // assert.equal(jobState.toNumber(), 3, `Cognitive job state should be "DataValidation" (3)`);
 
         await workerInstance1.processToDataValidation({from: workerOwner1});
         await workerInstance2.processToDataValidation({from: workerOwner2});
@@ -194,8 +194,8 @@ contract('Pandora', accounts => {
         await workerInstance2.acceptValidData({from: workerOwner2});
 
         //all workers validated data, switched to Cognition state
-        jobState = await CognitiveJob.at(activeJob2).currentState.call();
-        assert.equal(jobState.toNumber(), 5, `Cognitive job state should be "Cognition" (5)`);
+        // jobState = await CognitiveJob.at(activeJob2).currentState.call();
+        // assert.equal(jobState.toNumber(), 5, `Cognitive job state should be "Cognition" (5)`);
 
         await workerInstance1.processToCognition({from: workerOwner1});
         await workerInstance2.processToCognition({from: workerOwner2});

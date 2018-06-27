@@ -26,7 +26,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     bytes[] public ipfsResults;
 
     uint256[] private responseTimestamps;
-    bool[] private responseFlags;
+    bool[] private acceptionFlags;
+    bool[] private validationFlags;
     bool[] private completionFlags;
 
     event WorkersUpdated();
@@ -76,11 +77,20 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _;
     }
 
-    function isAllWorkersReady() returns(bool ready) {
-        ready = true;
-        for (uint256 i = 0; i < responseFlags.length; i++) {
-            if (responseFlags[i] != true) {
-                ready = false;
+    function isAllWorkersAccepted() returns(bool accepted) {
+        accepted = true;
+        for (uint256 i = 0; i < acceptionFlags.length; i++) {
+            if (acceptionFlags[i] != true) {
+                accepted = false;
+            }
+        }
+    }
+
+    function isAllWorkersValidated() returns(bool validated) {
+        validated = true;
+        for (uint256 i = 0; i < validationFlags.length; i++) {
+            if (validationFlags[i] != true) {
+                validated = false;
             }
         }
     }
@@ -126,7 +136,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             workersPool.length = workersPool.length - 1;
         } while (replacementWorker.currentState() != replacementWorker.Idle());
 
-        responseFlags[workerIndex] = false; // no response is given from the new worker yet
+        acceptionFlags[workerIndex] = false; // no response is given from the new worker yet
         responseTimestamps[workerIndex] = block.timestamp;
         activeWorkers[workerIndex] = replacementWorker;
         replacementWorker.assignJob(this);
@@ -149,7 +159,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         workersPool.length = 0;
         activeWorkers.length = 0;
         ipfsResults.length = 0;
-        responseFlags.length = 0;
+        acceptionFlags.length = 0;
         responseTimestamps.length = 0;
     }
 
@@ -177,22 +187,42 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         transitionToState(_newState);
     }
 
-    function _processWorkerResponse(bool _acceptanceFlag, IWorkerNode.Penalties _penaltyForDecline, uint8 _nextState) private {
+    function _processAcceptanceResponse(bool _flag) private {
         IWorkerNode reportingWorker;
         uint256 workerIndex;
         (reportingWorker, workerIndex) = _getWorkerFromSender();
         require(reportingWorker != IWorkerNode(0));
 
-        if (_acceptanceFlag == false) {
+        if (_flag == false) {
             _replaceWorker(workerIndex);
-            pandora.penaltizeWorkerNode(reportingWorker, _penaltyForDecline);
+            pandora.penaltizeWorkerNode(reportingWorker, IWorkerNode.Penalties.OfflineWhileGathering);
         } else {
-            responseFlags[workerIndex] = true;
+            acceptionFlags[workerIndex] = true;
             responseTimestamps[workerIndex] = block.timestamp;
             _trackOfflineWorkers();
-            if (isAllWorkersReady()) {
+            if (isAllWorkersAccepted()) {
                 updateResponses();
-                _transitionToState(_nextState);
+                _transitionToState(DataValidation);
+            }
+        }
+    }
+
+    function _processValidationResponse(bool _flag) private {
+        IWorkerNode reportingWorker;
+        uint256 workerIndex;
+        (reportingWorker, workerIndex) = _getWorkerFromSender();
+        require(reportingWorker != IWorkerNode(0));
+
+        if (_flag == false) {
+            _replaceWorker(workerIndex);
+            pandora.penaltizeWorkerNode(reportingWorker, IWorkerNode.Penalties.DeclinesJob);
+        } else {
+            validationFlags[workerIndex] = true;
+            responseTimestamps[workerIndex] = block.timestamp;
+            _trackOfflineWorkers();
+            if (isAllWorkersAccepted()) {
+                updateResponses();
+                _transitionToState(PartialResult);
             }
         }
     }
@@ -201,7 +231,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     function updateResponses() private {
         for (uint256 i = 0; i < activeWorkers.length; i++) {
             responseTimestamps[i] = block.timestamp;
-            responseFlags[i] = false;
         }
     }
 
@@ -213,11 +242,12 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         // Select initial worker
         activeWorkers = new IWorkerNode[](batches);
         responseTimestamps = new uint[](batches);
-        responseFlags = new bool[](batches);
+        acceptionFlags = new bool[](batches);
+        validationFlags = new bool[](batches);
         completionFlags = new bool[](batches);
         ipfsResults = new bytes[](batches);
         for (uint8 batch = 0; batch < batches; batch++) {
-            responseFlags[batch] = false; // no response is given yet
+            acceptionFlags[batch] = false; // no response is given yet
             responseTimestamps[batch] = block.timestamp;
             activeWorkers[batch] = workersPool[batch];
             activeWorkers[batch].assignJob(this);
@@ -245,23 +275,23 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _trackOfflineWorkers();
     }
 
-    function gatheringWorkersResponse(bool _acceptanceFlag)
+    function gatheringWorkersResponse(bool _flag)
     onlyActiveWorkers
-    requireState(GatheringWorkers)
+//    requireState(GatheringWorkers)
     external {
-        _processWorkerResponse(_acceptanceFlag, IWorkerNode.Penalties.OfflineWhileGathering, DataValidation);
+        _processAcceptanceResponse(_flag);
     }
 
     function dataValidationResponse(DataValidationResponse _response)
     onlyActiveWorkers
-    requireState(DataValidation)
+//    requireState(DataValidation)
     external {
         /// @todo implement full (data arbitration alorithm)[https://github.com/pandoraboxchain/techspecs/wiki/Data-inconsistency-arbitration]
         if (_response == DataValidationResponse.Invalid) {
             _transitionToState(InvalidData);
             return;
         }
-        _processWorkerResponse(_response == DataValidationResponse.Accept, IWorkerNode.Penalties.DeclinesJob, Cognition);
+        _processValidationResponse(_response == DataValidationResponse.Accept);
     }
 
     function commitProgress(uint8 _percent)
@@ -275,12 +305,12 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function completeWork(bytes _ipfsResults)
     onlyActiveWorkers
-    requireState(Cognition)
+//    requireState(Cognition)
     external {
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
         ipfsResults[workerIndex] = _ipfsResults;
-        responseFlags[workerIndex] = true;
+        acceptionFlags[workerIndex] = true;
         completionFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
         _trackOfflineWorkers();
@@ -304,7 +334,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     external
     returns(bool)
     {
-        return responseFlags[no];
+        return acceptionFlags[no];
     }
 
     /**

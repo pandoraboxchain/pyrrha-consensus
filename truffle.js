@@ -36,7 +36,7 @@ module.exports = {
             gas: highGas
         },
         pandora_rinkeby: {
-            host: 'pandora.network',
+            host:  'http://rinkeby.pandora.network',
             port: 8545,
             network_id: '*'
         }
