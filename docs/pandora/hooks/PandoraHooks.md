@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 2202600 gas
+**Deployment cost**: less than 2171200 gas
 
 **Combined cost**: No bound available
 
@@ -18,7 +18,7 @@ Params:
 3. **_reputation** *of type `address`*
 
 ## Events
-### Approval(address,address,uint256)
+### WorkerNodeCreated(address)
 
 
 **Execution cost**: No bound available
@@ -26,21 +26,7 @@ Params:
 
 Params:
 
-1. **owner** *of type `address`*
-2. **spender** *of type `address`*
-3. **value** *of type `uint256`*
-
---- 
-### CognitiveJobCreateFailed(address,uint256)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **cognitiveJob** *of type `address`*
-2. **resultCode** *of type `uint256`*
+1. **workerNode** *of type `address`*
 
 --- 
 ### CognitiveJobCreated(address,uint256)
@@ -55,6 +41,19 @@ Params:
 2. **resultCode** *of type `uint256`*
 
 --- 
+### Approval(address,address,uint256)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **owner** *of type `address`*
+2. **spender** *of type `address`*
+3. **value** *of type `uint256`*
+
+--- 
 ### CognitiveJobCreated(address)
 
 
@@ -64,6 +63,62 @@ Params:
 Params:
 
 1. **cognitiveJob** *of type `address`*
+
+--- 
+### CognitiveJobCreateFailed(address,uint256)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **cognitiveJob** *of type `address`*
+2. **resultCode** *of type `uint256`*
+
+--- 
+### DebugEvent(uint256)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **value** *of type `uint256`*
+
+--- 
+### DebugEvent1(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **addr** *of type `address`*
+
+--- 
+### DebugEvent2(address[])
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **nodes** *of type `address[]`*
+
+--- 
+### DebugEvent3(bytes32)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **descr** *of type `bytes32`*
 
 --- 
 ### OwnershipRenounced(address)
@@ -102,17 +157,6 @@ Params:
 3. **value** *of type `uint256`*
 
 --- 
-### WorkerNodeCreated(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **workerNode** *of type `address`*
-
---- 
 ### WorkerNodeDestroyed(address)
 
 
@@ -125,28 +169,22 @@ Params:
 
 
 ## Methods
-### balanceOf(address)
->
-> Gets the balance of the specified address.
+### workerNodeOwners(address)
 
 
-**Execution cost**: less than 1112 gas
+**Execution cost**: less than 1024 gas
 
 **Attributes**: constant
 
 
 Params:
 
-1. **_owner** *of type `address`*
-
-    > The address to query the the balance of.
-
+1. **param_0** *of type `address`*
 
 Returns:
 
-> An uint256 representing the amount owned by the passed address.
 
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `bool`*
 
 --- 
 ### name()
@@ -212,21 +250,32 @@ Returns:
 2. **o_resultCode** *of type `uint8`*
 
 --- 
-### getRandomArray(uint256,uint256)
+### allowance(address,address)
+>
+> Function to check the amount of tokens that an owner allowed to a spender.
 
 
-**Execution cost**: No bound available
+**Execution cost**: less than 1519 gas
+
+**Attributes**: constant
 
 
 Params:
 
-1. **_arrayLength** *of type `uint256`*
-2. **_numbersRange** *of type `uint256`*
+1. **_owner** *of type `address`*
+
+    > address The address which owns the funds.
+
+2. **_spender** *of type `address`*
+
+    > address The address which will spend the funds.
+
 
 Returns:
 
+> A uint256 specifying the amount of tokens still available for the spender.
 
-1. **o_result** *of type `uint256[]`*
+1. **output_0** *of type `uint256`*
 
 --- 
 ### initialized()
@@ -255,34 +304,6 @@ Returns:
 
 
 
-
---- 
-### allowance(address,address)
->
-> Function to check the amount of tokens that an owner allowed to a spender.
-
-
-**Execution cost**: less than 1519 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **_owner** *of type `address`*
-
-    > address The address which owns the funds.
-
-2. **_spender** *of type `address`*
-
-    > address The address which will spend the funds.
-
-
-Returns:
-
-> A uint256 specifying the amount of tokens still available for the spender.
-
-1. **output_0** *of type `uint256`*
 
 --- 
 ### increaseApproval(address,uint256)
@@ -326,6 +347,20 @@ Returns:
 
 
 1. **output_0** *of type `address`*
+
+--- 
+### destroyWorkerNode(address)
+>
+>Removes worker from the workers list and destroys it. Can be called only by the worker node owner and only for the idle workers
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_workerNode** *of type `address`*
+
 
 --- 
 ### RESULT_CODE_JOB_CREATED()
@@ -406,18 +441,21 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### destroyWorkerNode(address)
+### cognitiveJobsCount()
 >
->Removes worker from the workers list and destroys it. Can be called only by the worker node owner and only for the idle workers
+> Returns total count of active jobs
 
 
-**Execution cost**: No bound available
+**Execution cost**: less than 1328 gas
+
+**Attributes**: constant
 
 
-Params:
 
-1. **_workerNode** *of type `address`*
+Returns:
 
+
+1. **output_0** *of type `uint256`*
 
 --- 
 ### jobAddresses(address)
@@ -438,21 +476,19 @@ Returns:
 1. **output_0** *of type `uint16`*
 
 --- 
-### cognitiveJobsCount()
+### createWorkerNode()
 >
-> Returns total count of active jobs
+>Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
 
 
-**Execution cost**: less than 1328 gas
-
-**Attributes**: constant
+**Execution cost**: No bound available
 
 
 
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `address`*
 
 --- 
 ### decreaseApproval(address,uint256)
@@ -480,21 +516,6 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### createWorkerNode()
->
->Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
-
-
-**Execution cost**: No bound available
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
 ### approve(address,uint256)
 >
 > Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.   * Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
@@ -518,6 +539,30 @@ Returns:
 
 
 1. **output_0** *of type `bool`*
+
+--- 
+### balanceOf(address)
+>
+> Gets the balance of the specified address.
+
+
+**Execution cost**: less than 1112 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_owner** *of type `address`*
+
+    > The address to query the the balance of.
+
+
+Returns:
+
+> An uint256 representing the amount owned by the passed address.
+
+1. **output_0** *of type `uint256`*
 
 --- 
 ### RESULT_CODE_ADD_TO_QUEUE()
@@ -579,33 +624,22 @@ Params:
 
 
 --- 
-### transferFrom(address,address,uint256)
->
-> Transfer tokens from one address to another
+### workerNodes(uint256)
 
 
-**Execution cost**: No bound available
+**Execution cost**: less than 1076 gas
+
+**Attributes**: constant
 
 
 Params:
 
-1. **_from** *of type `address`*
-
-    > address The address which you want to send tokens from
-
-2. **_to** *of type `address`*
-
-    > address The address which you want to transfer to
-
-3. **_value** *of type `uint256`*
-
-    > uint256 the amount of tokens to be transferred
-
+1. **param_0** *of type `uint256`*
 
 Returns:
 
 
-1. **output_0** *of type `bool`*
+1. **output_0** *of type `address`*
 
 --- 
 ### renounceOwnership()
@@ -647,21 +681,6 @@ Params:
 
 
 --- 
-### totalSupply()
-
-
-**Execution cost**: less than 601 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
 ### symbol()
 
 
@@ -675,6 +694,21 @@ Returns:
 
 
 1. **output_0** *of type `string`*
+
+--- 
+### totalSupply()
+
+
+**Execution cost**: less than 601 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
 
 --- 
 ### transfer(address,uint256)
@@ -702,12 +736,41 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
+### transferFrom(address,address,uint256)
+>
+> Transfer tokens from one address to another
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_from** *of type `address`*
+
+    > address The address which you want to send tokens from
+
+2. **_to** *of type `address`*
+
+    > address The address which you want to transfer to
+
+3. **_value** *of type `uint256`*
+
+    > uint256 the amount of tokens to be transferred
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### transferOwnership(address)
 >
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23637 gas
+**Execution cost**: less than 23615 gas
 
 
 Params:
@@ -753,7 +816,7 @@ Params:
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 1467 gas
+**Execution cost**: less than 1445 gas
 
 **Attributes**: constant
 
@@ -771,47 +834,11 @@ Returns:
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1436 gas
+**Execution cost**: less than 1414 gas
 
 **Attributes**: constant
 
 
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### workerNodeOwners(address)
-
-
-**Execution cost**: less than 1024 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `bool`*
-
---- 
-### workerNodes(uint256)
-
-
-**Execution cost**: less than 1076 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
 
 Returns:
 
