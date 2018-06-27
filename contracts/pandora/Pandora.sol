@@ -3,7 +3,7 @@ pragma solidity ^0.4.23;
 import "../lifecycle/OnlyOnce.sol";
 import "../nodes/IWorkerNode.sol";
 import "../entities/IDataEntity.sol";
-import "./factories/CognitiveJobFactory.sol";
+import "./factories/ICognitiveJobFactory.sol";
 import "./factories/WorkerNodeFactory.sol";
 import "./managers/CognitiveJobManager.sol";
 import "./lottery/RandomEngine.sol";
@@ -48,7 +48,7 @@ contract Pandora is IPandora, OnlyOnce, CognitiveJobManager {
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
     constructor(
-        CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
+        ICognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
         WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
         Reputation _reputation
     ) public
