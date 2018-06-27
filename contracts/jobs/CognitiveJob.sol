@@ -77,7 +77,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _;
     }
 
-    function isAllWorkersAccepted() returns(bool accepted) {
+    function isAllWorkersAccepted() private returns (bool accepted) {
         accepted = true;
         for (uint256 i = 0; i < acceptionFlags.length; i++) {
             if (acceptionFlags[i] != true) {
@@ -86,7 +86,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
-    function isAllWorkersValidated() returns(bool validated) {
+    function isAllWorkersValidated() private returns (bool validated) {
         validated = true;
         for (uint256 i = 0; i < validationFlags.length; i++) {
             if (validationFlags[i] != true) {
@@ -95,7 +95,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
-    function isAllWorkersCompleted() returns(bool completed) {
+    function isAllWorkersCompleted() private returns (bool completed) {
         completed = true;
         for (uint256 i = 0; i < completionFlags.length; i++) {
             if (completionFlags[i] != true) {

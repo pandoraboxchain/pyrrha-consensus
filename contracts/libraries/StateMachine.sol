@@ -35,7 +35,7 @@ contract StateMachine is IStateMachine, OnlyOnce {
     /// @dev State transition function
     function transitionToState(
         uint8 _newState /// New state to transition into
-    ) {
+    ) public {
         uint8 oldState = stateMachine.currentState;
         stateMachine.currentState = _newState;
         emit StateChanged(oldState, stateMachine.currentState);

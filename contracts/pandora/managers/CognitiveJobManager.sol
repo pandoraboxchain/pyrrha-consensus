@@ -198,13 +198,13 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         if (estimatedSize < uint256(batchesCount)) {
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             cognitiveJobQueue.put(
-                    address(_kernel),
-                    address(_dataset),
-                    msg.sender,
-                    msg.value,
-                    batchesCount,
-                    _complexity,
-                    _description);
+                address(_kernel),
+                address(_dataset),
+                msg.sender,
+                msg.value,
+                batchesCount,
+                _complexity,
+                _description);
             emit CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
             return (o_cognitiveJob, o_resultCode);
         }
@@ -325,10 +325,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
             // Gas refund to node
             tx.origin.transfer(weiUsed);
-//
-	        // Return remaining deposit to customer
+            
+            // Return remaining deposit to customer
             if (value - weiUsed != 0) {
-			    queuedJob.customer.transfer(value - weiUsed);
+                queuedJob.customer.transfer(value - weiUsed);
             }
         }
     }

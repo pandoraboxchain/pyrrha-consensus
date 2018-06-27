@@ -79,7 +79,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     IComputingJob public activeJob;
 
 	/// @notice Progress of completing current active job batch, should be updated by node itself
-	uint256 public jobProgress;
+    uint256 public jobProgress;
 
     event WorkerDestroyed();
 
@@ -146,12 +146,12 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         _transitionToState(Idle);
     }
 
-	function reportProgress(uint8 _percent) external
-		onlyOwner
-	{
-		jobProgress = _percent;
-		activeJob.commitProgress(_percent);
-	}
+    function reportProgress(uint8 _percent) external
+        onlyOwner
+    {
+        jobProgress = _percent;
+        activeJob.commitProgress(_percent);
+    }
 
     /// @notice Do not call
     /// @dev Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under
@@ -166,7 +166,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(Idle)
     {
         activeJob = _job;
-	    jobProgress = 0;
+        jobProgress = 0;
         _transitionToState(Assigned);
     }
 
