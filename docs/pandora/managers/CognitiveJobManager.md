@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1595800 gas
+**Deployment cost**: less than 1605600 gas
 
 **Combined cost**: No bound available
 
@@ -180,7 +180,7 @@ Returns:
 ### deposits(address)
 
 
-**Execution cost**: less than 1122 gas
+**Execution cost**: less than 1144 gas
 
 **Attributes**: constant
 
@@ -389,28 +389,25 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### jobAddresses(address)
+### reputation()
 
 
-**Execution cost**: less than 785 gas
+**Execution cost**: less than 1062 gas
 
 **Attributes**: constant
 
 
-Params:
-
-1. **param_0** *of type `address`*
 
 Returns:
 
 
-1. **output_0** *of type `uint16`*
+1. **output_0** *of type `address`*
 
 --- 
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 1159 gas
+**Execution cost**: less than 1181 gas
 
 **Attributes**: constant
 
@@ -465,6 +462,24 @@ Params:
 
 
 --- 
+### jobAddresses(address)
+
+
+**Execution cost**: less than 785 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `uint16`*
+
+--- 
 ### owner()
 
 
@@ -485,7 +500,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23307 gas
+**Execution cost**: less than 23329 gas
 
 
 Params:
@@ -500,7 +515,7 @@ Params:
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1106 gas
+**Execution cost**: less than 1128 gas
 
 **Attributes**: constant
 

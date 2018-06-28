@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 2120400 gas
+**Deployment cost**: less than 2130000 gas
 
 **Combined cost**: No bound available
 
@@ -172,28 +172,15 @@ Params:
 
 
 ## Methods
-### balanceOf(address)
+### renounceOwnership()
 >
-> Gets the balance of the specified address.
+> Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 1090 gas
-
-**Attributes**: constant
+**Execution cost**: less than 22578 gas
 
 
-Params:
 
-1. **_owner** *of type `address`*
-
-    > The address to query the the balance of.
-
-
-Returns:
-
-> An uint256 representing the amount owned by the passed address.
-
-1. **output_0** *of type `uint256`*
 
 --- 
 ### name()
@@ -236,7 +223,7 @@ Returns:
 ### deposits(address)
 
 
-**Execution cost**: less than 1408 gas
+**Execution cost**: less than 1430 gas
 
 **Attributes**: constant
 
@@ -310,7 +297,7 @@ Returns:
 > Function to check the amount of tokens that an owner allowed to a spender.
 
 
-**Execution cost**: less than 1497 gas
+**Execution cost**: less than 1519 gas
 
 **Attributes**: constant
 
@@ -525,6 +512,30 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
+### balanceOf(address)
+>
+> Gets the balance of the specified address.
+
+
+**Execution cost**: less than 1090 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_owner** *of type `address`*
+
+    > The address to query the the balance of.
+
+
+Returns:
+
+> An uint256 representing the amount owned by the passed address.
+
+1. **output_0** *of type `uint256`*
+
+--- 
 ### approve(address,uint256)
 >
 > Approve the passed address to spend the specified amount of tokens on behalf of msg.sender.   * Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
@@ -548,21 +559,6 @@ Returns:
 
 
 1. **output_0** *of type `bool`*
-
---- 
-### createWorkerNode()
->
->Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
-
-
-**Execution cost**: No bound available
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
 
 --- 
 ### blacklistWorkerOwner(address)
@@ -609,6 +605,115 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### createWorkerNode()
+>
+>Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
+
+
+**Execution cost**: No bound available
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### reputation()
+
+
+**Execution cost**: less than 1304 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### owner()
+
+
+**Execution cost**: less than 1150 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### workerNodes(uint256)
+
+
+**Execution cost**: less than 1076 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `uint256`*
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### workerAddresses(address)
+
+
+**Execution cost**: less than 1467 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `uint16`*
+
+--- 
+### penaltizeWorkerNode(address,uint8)
+
+
+**Execution cost**: less than 877 gas
+
+
+Params:
+
+1. **_guiltyWorker** *of type `address`*
+2. **_reason** *of type `uint8`*
+
+
+--- 
+### version()
+
+
+**Execution cost**: less than 555 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bytes32`*
+
+--- 
 ### transferFrom(address,address,uint256)
 >
 > Transfer tokens from one address to another
@@ -638,21 +743,10 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### renounceOwnership()
->
-> Allows the current owner to relinquish control of the contract.
+### symbol()
 
 
-**Execution cost**: less than 22578 gas
-
-
-
-
---- 
-### owner()
-
-
-**Execution cost**: less than 1150 gas
+**Execution cost**: No bound available
 
 **Attributes**: constant
 
@@ -661,35 +755,7 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `address`*
-
---- 
-### penaltizeWorkerNode(address,uint8)
-
-
-**Execution cost**: less than 877 gas
-
-
-Params:
-
-1. **_guiltyWorker** *of type `address`*
-2. **_reason** *of type `uint8`*
-
-
---- 
-### totalSupply()
-
-
-**Execution cost**: less than 601 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `string`*
 
 --- 
 ### transfer(address,uint256)
@@ -717,42 +783,10 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### symbol()
+### totalSupply()
 
 
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `string`*
-
---- 
-### transferOwnership(address)
->
-> Allows the current owner to transfer control of the contract to a newOwner.
-
-
-**Execution cost**: less than 23593 gas
-
-
-Params:
-
-1. **_newOwner** *of type `address`*
-
-    > The address to transfer ownership to.
-
-
-
---- 
-### version()
-
-
-**Execution cost**: less than 555 gas
+**Execution cost**: less than 601 gas
 
 **Attributes**: constant
 
@@ -761,7 +795,7 @@ Params:
 Returns:
 
 
-1. **output_0** *of type `bytes32`*
+1. **output_0** *of type `uint256`*
 
 --- 
 ### whitelistWorkerOwner(address)
@@ -780,28 +814,27 @@ Params:
 
 
 --- 
-### workerAddresses(address)
+### transferOwnership(address)
+>
+> Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 1445 gas
-
-**Attributes**: constant
+**Execution cost**: less than 23615 gas
 
 
 Params:
 
-1. **param_0** *of type `address`*
+1. **_newOwner** *of type `address`*
 
-Returns:
+    > The address to transfer ownership to.
 
 
-1. **output_0** *of type `uint16`*
 
 --- 
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1392 gas
+**Execution cost**: less than 1414 gas
 
 **Attributes**: constant
 
@@ -829,24 +862,6 @@ Returns:
 
 
 1. **output_0** *of type `bool`*
-
---- 
-### workerNodes(uint256)
-
-
-**Execution cost**: less than 1076 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
 
 --- 
 ### workerNodesCount()
