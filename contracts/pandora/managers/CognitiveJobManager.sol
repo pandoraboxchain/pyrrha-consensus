@@ -51,7 +51,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     IComputingJob[] public cognitiveJobs;
 
     /// @dev Contract, that store rep. values for each address
-    Reputation reputation;
+    Reputation public reputation;
 
     /// @dev Returns total count of active jobs
     function cognitiveJobsCount() onlyInitialized view public returns (uint256) {

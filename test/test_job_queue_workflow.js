@@ -219,5 +219,7 @@ contract('Pandora', accounts => {
 
         //now we have 3 idle workers, trying to create one more job with 2 batches dataset
         await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)});
+
+
     });
 });
