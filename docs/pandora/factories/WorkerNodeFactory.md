@@ -1,11 +1,11 @@
 # WorkerNodeFactory
 
 
-**Execution cost**: less than 21833 gas
+**Execution cost**: less than 21743 gas
 
-**Deployment cost**: less than 1473400 gas
+**Deployment cost**: less than 1393200 gas
 
-**Combined cost**: less than 1495233 gas
+**Combined cost**: less than 1414943 gas
 
 ## Constructor
 

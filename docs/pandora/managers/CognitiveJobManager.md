@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1625800 gas
+**Deployment cost**: less than 1595800 gas
 
 **Combined cost**: No bound available
 
@@ -146,19 +146,12 @@ Params:
 
 
 ## Methods
-### blacklistWorkerOwner(address)
->
->Removes address from the whitelist of owners allowed to create WorkerNodes contracts
->
-> Can be called only by the owner of Pandora contract
+### initialize()
 
 
-**Execution cost**: less than 21194 gas
+**Execution cost**: less than 20703 gas
 
 
-Params:
-
-1. **_workerOwner** *of type `address`*
 
 
 --- 
@@ -184,30 +177,22 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### createCognitiveJob(address,address,uint256,bytes32)
->
->Creates and returns new cognitive job contract and starts actual cognitive work instantly
->
-> Core function creating new cognitive job contract and returning it back to the caller
+### deposits(address)
 
 
-**Execution cost**: No bound available
+**Execution cost**: less than 1122 gas
 
-**Attributes**: payable
+**Attributes**: constant
 
 
 Params:
 
-1. **_kernel** *of type `address`*
-2. **_dataset** *of type `address`*
-3. **_complexity** *of type `uint256`*
-4. **_description** *of type `bytes32`*
+1. **param_0** *of type `address`*
 
 Returns:
 
 
-1. **o_cognitiveJob** *of type `address`*
-2. **o_resultCode** *of type `uint8`*
+1. **output_0** *of type `uint256`*
 
 --- 
 ### initialized()
@@ -238,22 +223,30 @@ Returns:
 
 
 --- 
-### cognitiveJobs(uint256)
+### createCognitiveJob(address,address,uint256,bytes32)
+>
+>Creates and returns new cognitive job contract and starts actual cognitive work instantly
+>
+> Core function creating new cognitive job contract and returning it back to the caller
 
 
-**Execution cost**: less than 1318 gas
+**Execution cost**: No bound available
 
-**Attributes**: constant
+**Attributes**: payable
 
 
 Params:
 
-1. **param_0** *of type `uint256`*
+1. **_kernel** *of type `address`*
+2. **_dataset** *of type `address`*
+3. **_complexity** *of type `uint256`*
+4. **_description** *of type `bytes32`*
 
 Returns:
 
 
-1. **output_0** *of type `address`*
+1. **o_cognitiveJob** *of type `address`*
+2. **o_resultCode** *of type `uint8`*
 
 --- 
 ### RESULT_CODE_JOB_CREATED()
@@ -279,6 +272,39 @@ Returns:
 **Attributes**: constant
 
 
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### REQUIRED_DEPOSIT()
+
+
+**Execution cost**: less than 687 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### cognitiveJobs(uint256)
+
+
+**Execution cost**: less than 1318 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `uint256`*
 
 Returns:
 
@@ -317,6 +343,22 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
+### blacklistWorkerOwner(address)
+>
+>Removes address from the whitelist of owners allowed to create WorkerNodes contracts
+>
+> Can be called only by the owner of Pandora contract
+
+
+**Execution cost**: less than 21194 gas
+
+
+Params:
+
+1. **_workerOwner** *of type `address`*
+
+
+--- 
 ### createWorkerNode()
 >
 >Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
@@ -347,15 +389,6 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### initialize()
-
-
-**Execution cost**: less than 20703 gas
-
-
-
-
---- 
 ### jobAddresses(address)
 
 
@@ -377,7 +410,7 @@ Returns:
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 1115 gas
+**Execution cost**: less than 1159 gas
 
 **Attributes**: constant
 
@@ -390,51 +423,6 @@ Returns:
 
 
 1. **output_0** *of type `uint16`*
-
---- 
-### transferOwnership(address)
->
-> Allows the current owner to transfer control of the contract to a newOwner.
-
-
-**Execution cost**: less than 23285 gas
-
-
-Params:
-
-1. **_newOwner** *of type `address`*
-
-    > The address to transfer ownership to.
-
-
-
---- 
-### owner()
-
-
-**Execution cost**: less than 952 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### penaltizeWorkerNode(address,uint8)
-
-
-**Execution cost**: less than 723 gas
-
-
-Params:
-
-1. **_guiltyWorker** *of type `address`*
-2. **_reason** *of type `uint8`*
-
 
 --- 
 ### renounceOwnership()
@@ -464,10 +452,55 @@ Params:
 
 
 --- 
+### penaltizeWorkerNode(address,uint8)
+
+
+**Execution cost**: less than 723 gas
+
+
+Params:
+
+1. **_guiltyWorker** *of type `address`*
+2. **_reason** *of type `uint8`*
+
+
+--- 
+### owner()
+
+
+**Execution cost**: less than 952 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### transferOwnership(address)
+>
+> Allows the current owner to transfer control of the contract to a newOwner.
+
+
+**Execution cost**: less than 23307 gas
+
+
+Params:
+
+1. **_newOwner** *of type `address`*
+
+    > The address to transfer ownership to.
+
+
+
+--- 
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1084 gas
+**Execution cost**: less than 1106 gas
 
 **Attributes**: constant
 
