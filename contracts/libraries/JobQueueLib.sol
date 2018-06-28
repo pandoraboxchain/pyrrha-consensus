@@ -1,9 +1,5 @@
 pragma solidity ^0.4.23;
 
-import "../jobs/IComputingJob.sol";
-import "../entities/IKernel.sol";
-import "../entities/IDataset.sol";
-
 library JobQueueLib {
 
     // implementation with "unlimited" array
@@ -15,9 +11,10 @@ library JobQueueLib {
     }
 
     struct QueuedJob {
-        IKernel kernel; //todo change to address
-        IDataset dataset; //todo change to address
-        address client;
+        address kernel;
+        address dataset;
+        address customer;
+        uint256 batches;
         uint256 complexity;
         bytes32 description;
     }
@@ -36,17 +33,18 @@ library JobQueueLib {
     /// @dev Inserts the specified element at the tail of the queue
     function put(
         Queue storage _queue,
-        IKernel _kernel,
-        IDataset _dataset,
+        address _kernel,
+        address _dataset,
+        address _customer,
         uint256 _value,
-        address _client,
+        uint256 _batches,
         uint256 _complexity,
         bytes32 _description
     )
     internal
     returns(uint) {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _client, _complexity, _description));
+        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _customer, _batches, _complexity, _description));
         _queue.deposits.push(_value);
         return queueDepth(_queue);
     }
@@ -63,7 +61,7 @@ library JobQueueLib {
     returns(bool) {
         QueuedJob memory firstElement;
         (firstElement,) = peek(_queue);
-        return firstElement.dataset.batchesCount() <= numberIdleWorkers;
+        return firstElement.batches <= numberIdleWorkers;
     }
 
     /// @notice Unsafe function - should check queue depth before call this method with queueDepth()

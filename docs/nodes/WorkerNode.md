@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1012800 gas
+**Deployment cost**: less than 932600 gas
 
 **Combined cost**: No bound available
 
@@ -159,7 +159,7 @@ Returns:
 ### Assigned()
 
 
-**Execution cost**: less than 853 gas
+**Execution cost**: less than 875 gas
 
 **Attributes**: constant
 
@@ -174,7 +174,7 @@ Returns:
 ### InsufficientStake()
 
 
-**Execution cost**: less than 831 gas
+**Execution cost**: less than 853 gas
 
 **Attributes**: constant
 
@@ -222,7 +222,7 @@ Returns:
 ### Destroyed()
 
 
-**Execution cost**: less than 787 gas
+**Execution cost**: less than 809 gas
 
 **Attributes**: constant
 
@@ -261,7 +261,7 @@ Returns:
 ### ReadyForDataValidation()
 
 
-**Execution cost**: less than 765 gas
+**Execution cost**: less than 787 gas
 
 **Attributes**: constant
 
@@ -364,10 +364,19 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### declineAssignment()
+
+
+**Execution cost**: No bound available
+
+
+
+
+--- 
 ### Idle()
 
 
-**Execution cost**: less than 677 gas
+**Execution cost**: less than 699 gas
 
 **Attributes**: constant
 
@@ -380,15 +389,6 @@ Returns:
 
 --- 
 ### cancelJob()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
-### declineAssignment()
 
 
 **Execution cost**: No bound available
@@ -455,7 +455,7 @@ Params:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23442 gas
+**Execution cost**: less than 23464 gas
 
 
 Params:
@@ -464,6 +464,20 @@ Params:
 
     > The address to transfer ownership to.
 
+
+
+--- 
+### transitionToState(uint8)
+>
+> State transition function
+
+
+**Execution cost**: less than 22287 gas
+
+
+Params:
+
+1. **_newState** *of type `uint8`*
 
 
 --- 

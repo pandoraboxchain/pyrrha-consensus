@@ -25,8 +25,10 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     IWorkerNode[] public workersPool;
     bytes[] public ipfsResults;
 
-    uint256[] internal responseTimestamps;
-    bool[] internal responseFlags;
+    uint256[] private responseTimestamps;
+    bool[] private acceptionFlags;
+    bool[] private validationFlags;
+    bool[] private completionFlags;
 
     event WorkersUpdated();
     event WorkersNotFound();
@@ -75,13 +77,31 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _;
     }
 
-    modifier checkReadiness() {
-        for (uint256 no = 0; no < responseFlags.length; no++) {
-            if (responseFlags[no] != true) {
-                return;
+    function isAllWorkersAccepted() private returns (bool accepted) {
+        accepted = true;
+        for (uint256 i = 0; i < acceptionFlags.length; i++) {
+            if (acceptionFlags[i] != true) {
+                accepted = false;
             }
         }
-        _;
+    }
+
+    function isAllWorkersValidated() private returns (bool validated) {
+        validated = true;
+        for (uint256 i = 0; i < validationFlags.length; i++) {
+            if (validationFlags[i] != true) {
+                validated = false;
+            }
+        }
+    }
+
+    function isAllWorkersCompleted() private returns (bool completed) {
+        completed = true;
+        for (uint256 i = 0; i < completionFlags.length; i++) {
+            if (completionFlags[i] != true) {
+                completed = false;
+            }
+        }
     }
 
     function _getWorkerIndex(IWorkerNode _worker) private view returns (uint256) {
@@ -116,7 +136,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             workersPool.length = workersPool.length - 1;
         } while (replacementWorker.currentState() != replacementWorker.Idle());
 
-        responseFlags[workerIndex] = false; // no response is given from the new worker yet
+        acceptionFlags[workerIndex] = false; // no response is given from the new worker yet
         responseTimestamps[workerIndex] = block.timestamp;
         activeWorkers[workerIndex] = replacementWorker;
         replacementWorker.assignJob(this);
@@ -139,7 +159,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         workersPool.length = 0;
         activeWorkers.length = 0;
         ipfsResults.length = 0;
-        responseFlags.length = 0;
+        acceptionFlags.length = 0;
         responseTimestamps.length = 0;
     }
 
@@ -163,47 +183,71 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
-    function _transitionToState(uint8 _newState) private transitionToState(_newState) {
-        // All actual work is performed by function modifier transitionToState
+    function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {
+        transitionToState(_newState);
     }
 
-
-    function _transitionIfReady(uint8 _newState) private checkReadiness transitionToState(_newState) {
-        for (uint256 no = 0; no < responseTimestamps.length; no++) {
-            responseFlags[no] = false;  // no response or update is given yet
-            responseTimestamps[no] = block.timestamp;
-        }
-    }
-
-    function _processWorkerResponse(bool _acceptanceFlag, IWorkerNode.Penalties _penaltyForDecline, uint8 _nextState) private {
+    function _processAcceptanceResponse(bool _flag) private {
         IWorkerNode reportingWorker;
         uint256 workerIndex;
         (reportingWorker, workerIndex) = _getWorkerFromSender();
         require(reportingWorker != IWorkerNode(0));
 
-        if (_acceptanceFlag == false) {
+        if (_flag == false) {
             _replaceWorker(workerIndex);
-            pandora.penaltizeWorkerNode(reportingWorker, _penaltyForDecline);
+            pandora.penaltizeWorkerNode(reportingWorker, IWorkerNode.Penalties.OfflineWhileGathering);
         } else {
-            responseFlags[workerIndex] = true;
+            acceptionFlags[workerIndex] = true;
             responseTimestamps[workerIndex] = block.timestamp;
             _trackOfflineWorkers();
-            _transitionIfReady(_nextState);
+            if (isAllWorkersAccepted()) {
+                updateResponses();
+                _transitionToState(DataValidation);
+            }
+        }
+    }
+
+    function _processValidationResponse(bool _flag) private {
+        IWorkerNode reportingWorker;
+        uint256 workerIndex;
+        (reportingWorker, workerIndex) = _getWorkerFromSender();
+        require(reportingWorker != IWorkerNode(0));
+
+        if (_flag == false) {
+            _replaceWorker(workerIndex);
+            pandora.penaltizeWorkerNode(reportingWorker, IWorkerNode.Penalties.DeclinesJob);
+        } else {
+            validationFlags[workerIndex] = true;
+            responseTimestamps[workerIndex] = block.timestamp;
+            _trackOfflineWorkers();
+            if (isAllWorkersValidated()) {
+                updateResponses();
+                _transitionToState(Cognition);
+            }
+        }
+    }
+
+    ///@dev Reset all response flags after gathering and cognition start
+    function updateResponses() private {
+        for (uint256 i = 0; i < activeWorkers.length; i++) {
+            responseTimestamps[i] = block.timestamp;
         }
     }
 
     function initialize()
     external
-// onlyPandora //removed for job queue proper work - TODO research and test consequences of removing modifier
+// onlyPandora
     requireState(Uninitialized)
-    transitionToState(GatheringWorkers) {
+    {
         // Select initial worker
         activeWorkers = new IWorkerNode[](batches);
         responseTimestamps = new uint[](batches);
-        responseFlags = new bool[](batches);
+        acceptionFlags = new bool[](batches);
+        validationFlags = new bool[](batches);
+        completionFlags = new bool[](batches);
         ipfsResults = new bytes[](batches);
         for (uint8 batch = 0; batch < batches; batch++) {
-            responseFlags[batch] = false; // no response is given yet
+            acceptionFlags[batch] = false; // no response is given yet
             responseTimestamps[batch] = block.timestamp;
             activeWorkers[batch] = workersPool[batch];
             activeWorkers[batch].assignJob(this);
@@ -212,6 +256,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             workersPool.push(workersPool[pool]);
         }
 
+        _transitionToState(GatheringWorkers);
         emit WorkersUpdated();
     }
 
@@ -230,22 +275,23 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _trackOfflineWorkers();
     }
 
-    function gatheringWorkersResponse(bool _acceptanceFlag)
+    function gatheringWorkersResponse(bool _flag)
     onlyActiveWorkers
-    requireState(GatheringWorkers)
+//    requireState(GatheringWorkers)
     external {
-        _processWorkerResponse(_acceptanceFlag, IWorkerNode.Penalties.OfflineWhileGathering, DataValidation);
+        _processAcceptanceResponse(_flag);
     }
 
     function dataValidationResponse(DataValidationResponse _response)
     onlyActiveWorkers
+//    requireState(DataValidation)
     external {
         /// @todo implement full (data arbitration alorithm)[https://github.com/pandoraboxchain/techspecs/wiki/Data-inconsistency-arbitration]
         if (_response == DataValidationResponse.Invalid) {
             _transitionToState(InvalidData);
             return;
         }
-        _processWorkerResponse(_response == DataValidationResponse.Accept, IWorkerNode.Penalties.DeclinesJob, Cognition);
+        _processValidationResponse(_response == DataValidationResponse.Accept);
     }
 
     function commitProgress(uint8 _percent)
@@ -259,14 +305,17 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function completeWork(bytes _ipfsResults)
     onlyActiveWorkers
+//    requireState(Cognition)
     external {
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
         ipfsResults[workerIndex] = _ipfsResults;
-        responseFlags[workerIndex] = true;
+        completionFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
         _trackOfflineWorkers();
-        _transitionIfReady(Completed);
+        if (isAllWorkersCompleted()) {
+            _transitionToState(Completed);
+        }
     }
 
     function activeWorkersCount()
@@ -279,10 +328,12 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     function didWorkerCompute(
         uint no
     )
+    requireState(Cognition) //worker could compute only in Cognition job state
     view
     external
-    returns(bool) {
-        return responseFlags[no] == true;
+    returns(bool)
+    {
+        return acceptionFlags[no];
     }
 
     /**
@@ -312,8 +363,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         // Going into initial state (Uninitialized)
         stateMachine.currentState = Uninitialized;
     }
-
-    event Flag(uint number);
 
     function _fireStateEvent() internal {
         if (currentState() == InsufficientWorkers) {

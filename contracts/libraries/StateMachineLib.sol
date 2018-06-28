@@ -9,7 +9,7 @@ library StateMachineLib {
         mapping(uint8 => uint8[]) transitionTable;
     }
 
-    function transitionToState(
+    function isTransitionAllowed(
         StateMachine storage _machine,
         uint8 _newState
     )
@@ -30,38 +30,36 @@ library StateMachineLib {
         require(transitionAllowed == true);
     }
 
-    function transitionThroughState(
-        StateMachine storage _machine,
-        uint8 _transitionState
-    )
-    internal {
-        // Should not happen
-        assert(_machine.currentState != 0xFF);
-
-        // Checking if the state transitions are allowed
-
-        bool firstTransitionAllowed = false;
-        uint8[] storage allowedStates = _machine.transitionTable[uint8(_machine.currentState)];
-        for (uint no = 0; no < allowedStates.length; no++) {
-            if (allowedStates[no] == _transitionState) {
-                firstTransitionAllowed = true;
-                break;
-            }
-        }
-        require(firstTransitionAllowed == true);
-
-        bool secondTransitionAllowed = false;
-        allowedStates = _machine.transitionTable[uint8(_transitionState)];
-        for (no = 0; no < allowedStates.length; no++) {
-            if (allowedStates[no] == _machine.currentState) {
-                secondTransitionAllowed = true;
-                break;
-            }
-        }
-        require(secondTransitionAllowed == true);
-
-        _machine.currentState = _transitionState;
-    }
+//    function isTransitionThroughStateAllowed(
+//        StateMachine storage _machine,
+//        uint8 _transitionState
+//    )
+//    internal {
+//        // Should not happen
+//        assert(_machine.currentState != 0xFF);
+//
+//        // Checking if the state transitions are allowed
+//
+//        bool firstTransitionAllowed = false;
+//        uint8[] storage allowedStates = _machine.transitionTable[uint8(_machine.currentState)];
+//        for (uint no = 0; no < allowedStates.length; no++) {
+//            if (allowedStates[no] == _transitionState) {
+//                firstTransitionAllowed = true;
+//                break;
+//            }
+//        }
+//        require(firstTransitionAllowed == true);
+//
+//        bool secondTransitionAllowed = false;
+//        allowedStates = _machine.transitionTable[uint8(_transitionState)];
+//        for (no = 0; no < allowedStates.length; no++) {
+//            if (allowedStates[no] == _machine.currentState) {
+//                secondTransitionAllowed = true;
+//                break;
+//            }
+//        }
+//        require(secondTransitionAllowed == true);
+//    }
 
     function requireStates2(
         StateMachine storage _machine,

@@ -32,7 +32,7 @@ contract Pandora is IPandora, OnlyOnce, CognitiveJobManager {
 
     /// ### Public variables
 
-    bytes32 public constant version = "0.4.0";
+    bytes32 public constant version = "0.4.3";
 
 
     /*******************************************************************************************************************

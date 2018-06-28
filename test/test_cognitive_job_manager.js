@@ -88,39 +88,62 @@ contract('Pandora', accounts => {
         assert.equal(isActiveJob, false, 'job is not in the jobAddresses list');
     });
 
-    it('Should create job if number of idle workers >= number of batches in dataset', async () => {
+    it('Should create job if number of idle workers >= number of batches in dataset and complete them', async () => {
 
         const numberOfBatches = 1;
         const testDataset = await Dataset.new(datasetIpfsAddress, 1, numberOfBatches, 10, "m-a", "d-n");
         const testKernel = await Kernel.new(kernelIpfsAddress, 1, 2, 3, "m-a", "d-n");
         const estimatedCode = 1;
 
-        const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)});
+        //lets create 30 jobs and finish them
+        for (let i = 0; i < 30; i++) {
+            console.log(i)
 
-        const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
-        const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
-        const logEntries = result.logs.length;
+            const result = await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)});
 
-        // console.log(logFailure, 'failure');
-        // console.log(logSuccess, 'success');
-        // console.log(logEntries, 'entries');
+            const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
+            const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
+            let logEntries = result.logs.length;
 
-        const activeJob = await workerInstance.activeJob.call();
+            let activeJob = await workerInstance.activeJob.call();
 
-        const workerState = await workerInstance.currentState.call();
+            let workerState = await workerInstance.currentState.call();
 
-        const activeJobsCount = await pandora.cognitiveJobsCount();
+            const activeJobsCount = await pandora.cognitiveJobsCount();
 
-        assert.equal(activeJobsCount.toNumber(), 1, 'activeJobsCount = 1');
-        assert.equal(workerState.toNumber(), 3, `worker state should be "assigned" (3)`);
-        assert.notEqual(activeJob, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node');
-        assert.equal(result.logs[1].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_JOB_CREATED');
-        assert.equal(logEntries, 2, 'should be fired only 2 events');
-        assert.isNotOk(logFailure, 'should not be fired failed event');
-        assert.isOk(logSuccess, 'should be fired successful creation event');
+            assert.equal(activeJobsCount.toNumber(), i + 1, 'activeJobsCount = 1');
+            assert.equal(workerState.toNumber(), 3, `worker state should be "assigned" (3)`);
+            assert.notEqual(activeJob, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node');
+            assert.equal(result.logs[1].args.resultCode, estimatedCode, 'result code in event should match RESULT_CODE_JOB_CREATED');
+            assert.equal(logEntries, 2, 'should be fired only 2 events');
+            assert.isNotOk(logFailure, 'should not be fired failed event');
+            assert.isOk(logSuccess, 'should be fired successful creation event');
+
+            activeJob = await workerInstance.activeJob.call();
+
+            workerState = await workerInstance.currentState.call();
+
+            await workerInstance.acceptAssignment({from: workerOwner});
+            await workerInstance.processToDataValidation({from: workerOwner});
+            await workerInstance.acceptValidData({from: workerOwner});
+            await workerInstance.processToCognition({from: workerOwner});
+
+            workerState = await workerInstance.currentState.call();
+            assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
+
+            const completeResult = await workerInstance.provideResults('0x0', {from: workerOwner});
+
+            logEntries = completeResult.logs.length;
+
+            workerState = await workerInstance.currentState.call();
+
+            const jobState = await CognitiveJob.at(activeJob).currentState.call();
+            assert.equal(jobState.toNumber(), 7, `Cognitive job state should be "Completed" (7)`);
+        }
     });
 
-    it('Congitive job should be successfully completed after computation', async () => {
+    //replaced with 30 iter test ^
+    it.skip('Congitive job should be successfully completed after computation', async () => {
 
         //preparing to finish job on worker node #1
 

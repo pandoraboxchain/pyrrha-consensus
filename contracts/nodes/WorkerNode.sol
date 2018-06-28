@@ -142,9 +142,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     function alive() external
         onlyOwner
         requireState(Offline)
-        transitionToState(Idle)
     {
-        // Nothing to do here
+        _transitionToState(Idle);
     }
 
     function reportProgress(uint8 _percent) external
@@ -165,80 +164,77 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyCognitiveJob
         /// @dev Job can be assigned only to Idle workers
         requireState(Idle)
-        /// @dev Successful completion must transition worker to an `Assigned` stage
-        transitionToState(Assigned)
     {
         activeJob = _job;
         jobProgress = 0;
+        _transitionToState(Assigned);
     }
 
     function cancelJob() external
         onlyActiveCognitiveJob
         requireActiveStates
-        transitionToState(Idle)
     {
         activeJob = IComputingJob(0);
+        _transitionToState(Idle);
     }
 
     function acceptAssignment() external
         onlyOwner
         requireState(Assigned)
-        transitionToState(ReadyForDataValidation)
     {
         require(activeJob != IComputingJob(0));
         activeJob.gatheringWorkersResponse(true);
+        _transitionToState(ReadyForDataValidation);
     }
 
     function declineAssignment() external
         onlyOwner
         requireState(Assigned)
-        transitionToState(Idle)
     {
         require(activeJob != IComputingJob(0));
         activeJob.gatheringWorkersResponse(false);
+        _transitionToState(Idle);
     }
 
     function processToDataValidation() external
         onlyOwner
         requireState(ReadyForDataValidation)
-        transitionToState(ValidatingData)
     {
-        // All actual work is done by function modifiers
+        _transitionToState(ValidatingData);
     }
 
     function acceptValidData() external
         onlyOwner
         requireState(ValidatingData)
-        transitionToState(ReadyForComputing)
     {
         require(activeJob != IComputingJob(0));
         activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Accept);
+        _transitionToState(ReadyForComputing);
     }
 
     function declineValidData() external
         onlyOwner
         requireState(ValidatingData)
-        transitionToState(Idle)
     {
         require(activeJob != IComputingJob(0));
         activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Decline);
+        _transitionToState(Idle);
     }
 
     function reportInvalidData() external
         onlyOwner
         requireState(ValidatingData)
-        transitionToState(Idle)
     {
         require(activeJob != IComputingJob(0));
         activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Invalid);
+        _transitionToState(Idle);
     }
 
     function processToCognition() external
         onlyOwner
         requireState(ReadyForComputing)
-        transitionToState(Computing)
     {
-        // All actual work is done by function modifiers
+        _transitionToState(Computing);
     }
 
     function provideResults(
@@ -246,10 +242,10 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     ) external
         onlyOwner
         requireState(Computing)
-        transitionToState(Idle)
     {
         require(activeJob != IComputingJob(0));
         activeJob.completeWork(_ipfsAddress);
+        _transitionToState(Idle);
     }
 
     /// @notice Withdraws full balance to the owner account. Can be called only by the owner of the contract.
@@ -259,5 +255,9 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     {
         /// @todo Handle stakes etc
         owner.transfer(address(this).balance);
+    }
+
+    function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {
+        transitionToState(_newState);
     }
 }
