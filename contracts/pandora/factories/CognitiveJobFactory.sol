@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "./ICognitiveJobFactory.sol";
 import "../../jobs/CognitiveJob.sol";
 import "../../entities/IDataEntity.sol";
 import "../../entities/IDataset.sol";
@@ -8,7 +8,7 @@ import "../../entities/IKernel.sol";
 import "../../nodes/IWorkerNode.sol";
 import "../IPandora.sol";
 
-contract CognitiveJobFactory is Ownable {
+contract CognitiveJobFactory is ICognitiveJobFactory {
     constructor() public { }
 
     function create(

@@ -33,7 +33,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     /// is used to ensure uniqueness of the factories and the fact that their code source is coming from the same
     /// address which have deployed the main Pandora contract. In particular, because of this Pandora is defined as an
     /// `Ownable` contract and a special `initialize` function and `properlyInitialized` member variable is added.
-    WorkerNodeFactory public workerNodeFactory;
+    IWorkerNodeFactory public workerNodeFactory;
 
     /// @notice List of registered worker nodes
     /// @dev List of registered worker nodes
@@ -71,7 +71,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
     constructor(
-        WorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
+        IWorkerNodeFactory _nodeFactory /// Factory class for creating WorkerNode contracts
     ) public {
         // Must ensure that the supplied factories are already created contracts
         require(_nodeFactory != address(0));

@@ -7,7 +7,7 @@ contract PandoraHooks is Pandora {
     address[3] _workerNodeOwners;
 
     constructor(
-        CognitiveJobFactory _jobFactory,
+        ICognitiveJobFactory _jobFactory,
         WorkerNodeFactory _nodeFactory,
         Reputation _reputation
     )
