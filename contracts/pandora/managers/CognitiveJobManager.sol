@@ -51,7 +51,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     IComputingJob[] public cognitiveJobs;
 
     /// @dev Contract, that store rep. values for each address
-    Reputation reputation;
+    Reputation public reputation;
 
     /// @dev Returns total count of active jobs
     function cognitiveJobsCount() onlyInitialized view public returns (uint256) {
@@ -184,7 +184,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         require(_kernel.dataDim() == _dataset.dataDim());
 
         // The created job must fit into uint16 size
-        require(cognitiveJobs.length < 2 ^ 16 - 1);
+        require(uint256(cognitiveJobs.length) < 2 ** 16 - 1);
 
         // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
         require(msg.value >= REQUIRED_DEPOSIT);
