@@ -39,8 +39,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// is used to ensure uniqueness of the factories and the fact that their code source is coming from the same
     /// address which have deployed the main Pandora contract. In particular, because of this Pandora is defined as an
     /// `Ownable` contract and a special `initialize` function and `properlyInitialized` member variable is added.
-    //todo create interface
-    CognitiveJobFactory public cognitiveJobFactory;
+    ICognitiveJobFactory public cognitiveJobFactory;
 
     /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
     /// (owners of the corresponding cognitive job contracts). Zero values corresponds to no active job,
@@ -51,7 +50,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     IComputingJob[] public cognitiveJobs;
 
     /// @dev Contract, that store rep. values for each address
-    Reputation public reputation;
+    IReputation reputation;
 
     /// @dev Returns total count of active jobs
     function cognitiveJobsCount() onlyInitialized view public returns (uint256) {
@@ -100,9 +99,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
     constructor(
-        CognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
-        WorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        Reputation _reputation
+        ICognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
+        IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
+        IReputation _reputation
     )
     public
     WorkerNodeManager(_nodeFactory) {
@@ -325,7 +324,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
             // Gas refund to node
             tx.origin.transfer(weiUsed);
-            
+
             // Return remaining deposit to customer
             if (value - weiUsed != 0) {
                 queuedJob.customer.transfer(value - weiUsed);

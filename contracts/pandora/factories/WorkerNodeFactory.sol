@@ -1,10 +1,11 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "../../nodes/WorkerNode.sol";
 import "../IPandora.sol";
 
-contract WorkerNodeFactory is Ownable {
+import "./IWorkerNodeFactory.sol";
+
+contract WorkerNodeFactory is IWorkerNodeFactory {
     constructor() public {}
 
     event WorkerNodeOwner(address owner);
