@@ -9,34 +9,17 @@ import "./IComputingJob.sol";
 
 contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
+
     /**
      * ## Main functionality
      */
 
     uint internal constant WORKER_TIMEOUT = 30 minutes;
 
-    IPandora public pandora;
-    IKernel public kernel;
-    IDataset public dataset;
-    uint256 public batches;
-    uint256 public complexity; //todo find better name
-    bytes32 public description;
-    IWorkerNode[] public activeWorkers;
-    IWorkerNode[] public workersPool;
-    bytes[] public ipfsResults;
-
-    uint256[] private responseTimestamps;
-    bool[] private acceptionFlags;
-    bool[] private validationFlags;
-    bool[] private completionFlags;
-
-    event WorkersUpdated();
-    event WorkersNotFound();
-    event DataValidationStarted();
-    event DataValidationFailed();
-    event CognitionStarted();
-    event CognitionProgressed(uint8 precent);
-    event CognitionCompleted(bool partialResult);
+    uint256[] public responseTimestamps;
+    bool[] public acceptionFlags;
+    bool[] public validationFlags;
+    bool[] public completionFlags;
 
     constructor(
         IPandora _pandora,
@@ -303,10 +286,14 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         emit CognitionProgressed(_percent);
     }
 
+    ///@notice every worker call this function, with their work results
+    ///Job is considered finalized, when every worker complete it. The last one, who submits results should check the
+    ///Pandora job queue, in case it doesn't do this - it couldn't switch to idle state.
     function completeWork(bytes _ipfsResults)
     onlyActiveWorkers
 //    requireState(Cognition)
-    external {
+    external
+    returns(bool isFinalized){
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
         ipfsResults[workerIndex] = _ipfsResults;
@@ -315,6 +302,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _trackOfflineWorkers();
         if (isAllWorkersCompleted()) {
             _transitionToState(Completed);
+            isFinalized = true;
+            finalizedWorker = IWorkerNode(msg.sender);
         }
     }
 
@@ -334,6 +323,14 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     returns(bool)
     {
         return acceptionFlags[no];
+    }
+
+    function unlockFinalizedWorker()
+    onlyPandora
+    external
+    {
+        finalizedWorker.unlockFinalizedState();
+        finalizedWorker = IWorkerNode(0);
     }
 
     /**
@@ -384,4 +381,12 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
             pandora.finishCognitiveJob();
         }
     }
+
+    event WorkersUpdated();
+    event WorkersNotFound();
+    event DataValidationStarted();
+    event DataValidationFailed();
+    event CognitionStarted();
+    event CognitionProgressed(uint8 precent);
+    event CognitionCompleted(bool partialResult);
 }

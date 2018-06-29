@@ -237,6 +237,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         _transitionToState(Computing);
     }
 
+    ///Job is considered completed, when every worker finalize. The last one, who submits results should chech the
+    ///Pandora job queue, in case it doesn't do this - it couldn't switch to idle state.
     function provideResults(
         bytes _ipfsAddress
     ) external
@@ -244,7 +246,16 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         requireState(Computing)
     {
         require(activeJob != IComputingJob(0));
-        activeJob.completeWork(_ipfsAddress);
+        bool isFinalized = activeJob.completeWork(_ipfsAddress);
+        if (!isFinalized) {
+            _transitionToState(Idle);
+        }
+    }
+
+    function unlockFinalizedState()
+    external
+    onlyActiveCognitiveJob
+    {
         _transitionToState(Idle);
     }
 

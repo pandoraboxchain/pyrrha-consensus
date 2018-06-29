@@ -27,6 +27,7 @@ contract IComputingJob is IStateMachine, Destructible {
     uint8 public constant PartialResult = 6;
     uint8 public constant Completed = 7;
 
+
     IPandora public pandora;
     IKernel public kernel;
     IDataset public dataset;
@@ -36,6 +37,7 @@ contract IComputingJob is IStateMachine, Destructible {
     bytes32 public description;
     IWorkerNode[] public activeWorkers;
     IWorkerNode[] public workersPool;
+    IWorkerNode public finalizedWorker;
 
     uint8 public progress;
     bytes[] public ipfsResults;
@@ -48,7 +50,8 @@ contract IComputingJob is IStateMachine, Destructible {
     function gatheringWorkersResponse(bool acceptanceFlag) external;
     function dataValidationResponse(DataValidationResponse response) external;
     function commitProgress(uint8 percent) external;
-    function completeWork(bytes ipfs) external;
+    function completeWork(bytes ipfs) external returns(bool isFinalized);
+    function unlockFinalizedWorker() external;
 
     event WorkersUpdated();
     event WorkersNotFound();

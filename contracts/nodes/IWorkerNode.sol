@@ -33,6 +33,7 @@ contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
     function processToCognition() external;
     function provideResults(bytes ipfs) external;
     function withdrawBalance() external;
+    function unlockFinalizedState() external;
 
     event WorkerDestroyed();
 }

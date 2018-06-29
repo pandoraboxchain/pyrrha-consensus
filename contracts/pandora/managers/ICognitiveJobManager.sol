@@ -14,11 +14,9 @@ contract ICognitiveJobManager {
     function cognitiveJobsCount() view public returns (uint256);
     function isActiveJob(IComputingJob job) view public returns (bool);
 
-    function createCognitiveJob(
-        IKernel kernel,
-        IDataset dataset,
-        uint comlexity,
-        bytes32 description) external payable returns (IComputingJob, uint8);
+    function createCognitiveJob(IKernel kernel, IDataset dataset, uint comlexity, bytes32 description)
+        external payable returns (IComputingJob, uint8);
+
     function finishCognitiveJob() external;
 
     event CognitiveJobCreated(IComputingJob cognitiveJob);
