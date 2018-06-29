@@ -188,8 +188,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
         require(msg.value >= REQUIRED_DEPOSIT);
 
-
-
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
