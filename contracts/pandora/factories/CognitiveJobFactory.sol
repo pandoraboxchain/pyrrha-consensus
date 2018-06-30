@@ -25,8 +25,8 @@ contract CognitiveJobFactory is ICognitiveJobFactory {
         o_cognitiveJob = new CognitiveJob(
             IPandora(owner), _kernel, _dataset, _workersPool, _complexity, _description);
 
-//        // Checking that it was created correctly
-//        assert(o_cognitiveJob != CognitiveJob(0));
+        // Checking that it was created correctly
+        assert(o_cognitiveJob != CognitiveJob(0));
 
         // Transferring ownership to the main Pandora contract (which owns this factory)
         o_cognitiveJob.transferOwnership(owner);

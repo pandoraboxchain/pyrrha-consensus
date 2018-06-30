@@ -56,7 +56,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         (workerNode,) = _getWorkerFromSender();
         require(workerNode != IWorkerNode(0));
         require(msg.sender == address(workerNode));
-        require(tx.origin == workerNode.owner());
         _;
     }
 
@@ -138,6 +137,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
+    //todo refactor
     function _cleanStorage() private {
         workersPool.length = 0;
         activeWorkers.length = 0;
@@ -164,10 +164,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
                 _replaceWorker(no);
             }
         }
-    }
-
-    function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {
-        transitionToState(_newState);
     }
 
     function _processAcceptanceResponse(bool _flag) private {
@@ -219,8 +215,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
 
     function initialize()
     external
-// onlyPandora
-    requireState(Uninitialized)
+    onlyPandora
     {
         // Select initial worker
         activeWorkers = new IWorkerNode[](batches);
@@ -230,7 +225,6 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         completionFlags = new bool[](batches);
         ipfsResults = new bytes[](batches);
         for (uint8 batch = 0; batch < batches; batch++) {
-            acceptionFlags[batch] = false; // no response is given yet
             responseTimestamps[batch] = block.timestamp;
             activeWorkers[batch] = workersPool[batch];
             activeWorkers[batch].assignJob(this);
@@ -262,6 +256,9 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     onlyActiveWorkers
 //    requireState(GatheringWorkers)
     external {
+        uint256 workerIndex;
+        (,workerIndex) = _getWorkerFromSender();
+        require(workerIndex != uint256(-1));
         _processAcceptanceResponse(_flag);
     }
 
@@ -278,10 +275,11 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     }
 
     function commitProgress(uint8 _percent)
-    onlyActiveWorkers
     external {
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
+        require(workerIndex != uint256(-1));
+
         responseTimestamps[workerIndex] = block.timestamp;
         emit CognitionProgressed(_percent);
     }
@@ -290,12 +288,13 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     ///Job is considered finalized, when every worker complete it. The last one, who submits results should check the
     ///Pandora job queue, in case it doesn't do this - it couldn't switch to idle state.
     function completeWork(bytes _ipfsResults)
-    onlyActiveWorkers
 //    requireState(Cognition)
     external
     returns(bool isFinalized){
         uint256 workerIndex;
         (,workerIndex) = _getWorkerFromSender();
+        require(workerIndex != uint256(-1)); //worker is active
+
         ipfsResults[workerIndex] = _ipfsResults;
         completionFlags[workerIndex] = true;
         responseTimestamps[workerIndex] = block.timestamp;
@@ -364,22 +363,25 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
     function _fireStateEvent() internal {
         if (currentState() == InsufficientWorkers) {
             emit WorkersNotFound();
-            _cleanStorage();
+            _cleanStorage(); //todo refactor
         } else if (currentState() == DataValidation) {
             emit DataValidationStarted();
         } else if (currentState() == InvalidData) {
             emit DataValidationFailed();
-            _cleanStorage();
+            _cleanStorage(); //todo refactor
         } else if (currentState() == Cognition) {
             emit CognitionStarted();
         } else if (currentState() == PartialResult) {
             emit CognitionCompleted(true);
             pandora.finishCognitiveJob();
-            //todo separate finishing in cognitiveJobManager
         } else if (currentState() == Completed) {
             emit CognitionCompleted(false);
             pandora.finishCognitiveJob();
         }
+    }
+
+    function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {
+        transitionToState(_newState);
     }
 
     event WorkersUpdated();

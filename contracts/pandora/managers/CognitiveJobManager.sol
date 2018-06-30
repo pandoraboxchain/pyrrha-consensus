@@ -360,9 +360,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// reason for returning status code)
     ) {
         o_cognitiveJob = cognitiveJobFactory.create(_kernel, _dataset, _assignedWorkers, _complexity, _description);
-        //
-        // Ensuring that contract was successfully created
-        assert(o_cognitiveJob != address(0));
+
         // Hint: trying to figure out was the contract body actually created and initialized with proper values
         assert(o_cognitiveJob.currentState() == o_cognitiveJob.Uninitialized());
 
