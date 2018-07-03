@@ -52,3 +52,4 @@ module.exports.REQUIRED_DEPOSIT = 500 * Math.pow(10, 15);
 module.exports.QUEUE_PROCEED_LIMIT = 10;
 
 module.exports.EMPTY = "0x0000000000000000000000000000000000000000";
+module.exports.BALANCE_INACCURACY = 5000;

@@ -7,10 +7,10 @@ const CognitiveJob = artifacts.require('CognitiveJob');
 const assertRevert = require('./helpers/assertRevert');
 const assertJobState = require('./helpers/assertJobState');
 const assertWorkerState = require('./helpers/assertWorkerState');
-const assersQueueDepth = require('./helpers/assersQueueDepth');
+const assertQueueDepth = require('./helpers/assertQueueDepth');
 const assertSuccessResultCode = require('./helpers/assertSuccessResultCode');
 const assertFailureResultCode = require('./helpers/assertFailureResultCode');
-
+const getGasPrice = require('./helpers/getGasPrice');
 
 const {
     createWorkerNode
@@ -39,7 +39,8 @@ const {
 
     RESULT_CODE_JOB_CREATED,
     RESULT_CODE_ADD_TO_QUEUE,
-    EMPTY
+    EMPTY,
+    BALANCE_INACCURACY
 } = require("./constants");
 
 contract('CognitiveJobManager', accounts => {
@@ -65,7 +66,7 @@ contract('CognitiveJobManager', accounts => {
     });
 
     beforeEach(async () =>{
-        assersQueueDepth(pandora, 0);
+        assertQueueDepth(pandora, 0);
     });
 
     describe("createCognitiveJob", async () => {
@@ -97,50 +98,11 @@ contract('CognitiveJobManager', accounts => {
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
 
-        it('Congitive job should be successfully completed after computation', async () => {
+        it('Cognitive job should be successfully completed after computation', async () => {
 
             await createCognitiveJob(pandora, 1);
 
             await finishActiveJob(pandora, workerInstance0, workerOwner0);
-            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        });
-
-        it(`should not create job if jobs count more than ${JOBS_COUNT_LIMIT}`, async () => {
-
-            const countForTest = 30;
-
-            let activeJobsCount = await pandora.cognitiveJobsCount();
-
-            //lets create 30 jobs and finish them
-            for (let i = 1; i <= countForTest; i++) {
-                process.stdout.write(`      * should not create job if jobs count more than ${JOBS_COUNT_LIMIT}... ${i}/${countForTest}\r`);
-
-                const result = await createCognitiveJob(pandora, 1);
-
-                const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
-                const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
-                let logEntries = result.logs.length;
-
-                let activeJob = await workerInstance0.activeJob.call();
-
-                assert.equal(
-                    await pandora.cognitiveJobsCount(),
-                    ++activeJobsCount,
-                    'Active jobs count should increase'
-                );
-
-                assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED);
-
-                assert.notEqual(activeJob, EMPTY, 'Job was not setted to  the worker node');
-
-                assertSuccessResultCode(result, RESULT_CODE_JOB_CREATED);
-
-                assert.equal(logEntries, 2, 'should be fired only 2 events');
-                assert.isNotOk(logFailure, 'should not be fired failed event');
-                assert.isOk(logSuccess, 'should be fired successful creation event');
-
-                await finishActiveJob(pandora, workerInstance0, workerOwner0);
-            }
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
 
@@ -158,18 +120,18 @@ contract('CognitiveJobManager', accounts => {
 
             await createCognitiveJob(pandora, 1);
 
-            const active_job_count_start = await pandora.cognitiveJobsCount();
+            const activeJobCountStart = await pandora.cognitiveJobsCount();
             const result = await createCognitiveJob(pandora, 2);
 
-            const active_job_count_end = await pandora.cognitiveJobsCount();
+            const activeJobCountEnd = await pandora.cognitiveJobsCount();
 
             const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
             const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
             const logEntries = result.logs.length;
 
             assert.equal(
-                active_job_count_end.toNumber(),
-                active_job_count_start.toNumber(),
+                activeJobCountEnd.toNumber(),
+                activeJobCountStart.toNumber(),
                 'Active jobs should not be increased');
 
             assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
@@ -184,7 +146,7 @@ contract('CognitiveJobManager', accounts => {
 
             await finishActiveJob(pandora, workerInstance0, workerOwner0);
 
-            assersQueueDepth(pandora, 0);
+            assertQueueDepth(pandora, 0);
 
             assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
             assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
@@ -232,15 +194,25 @@ contract('CognitiveJobManager', accounts => {
         });
 
         it("should not hold payment from customer if job not putted into the queue", async () => {
-            const deposit_before = await pandora.deposits.call(customer);
+            const depositBefore = await pandora.deposits.call(customer);
+            const balanceBefore = await web3.eth.getBalance(customer);
 
-            await createCognitiveJob(pandora, 1, {from: customer});
+            const {receipt: { gasUsed }} = await createCognitiveJob(pandora, 1, {from: customer});
 
-            await assersQueueDepth(pandora, 0);
+            const gasPrice = await getGasPrice();
 
-            const deposit_after = await pandora.deposits.call(customer);
+            await assertQueueDepth(pandora, 0);
 
-            assert.equal(deposit_before.toNumber(), deposit_after.toNumber(), 'Deposit was changed');
+            const depositAfter = await pandora.deposits.call(customer);
+            const balanceAfter = await web3.eth.getBalance(customer);
+
+            const gasFee = gasPrice.mul(gasUsed).toNumber();
+
+            const balanceDelta = balanceBefore.toNumber() - balanceAfter.toNumber() - gasFee;
+            const depositDelta = web3.fromWei(depositAfter.toNumber() - depositBefore.toNumber(), "ether");
+
+            assert.isOk(balanceDelta < BALANCE_INACCURACY, `Balance inaccuracy should less than BALANCE_INACCURACY (${BALANCE_INACCURACY})`);
+            assert.equal(depositDelta, 0, 'Deposit should not be changed');
 
             await finishActiveJob(pandora, workerInstance0, workerOwner0);
             await finishActiveJob(pandora, workerInstance1, workerOwner1);
@@ -248,24 +220,33 @@ contract('CognitiveJobManager', accounts => {
 
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
             assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
-
         });
 
         it("should hold payment from customer if job was putted into the queue", async () => {
             await createCognitiveJob(pandora, 1);
 
-            const deposit_before = await pandora.deposits.call(customer);
+            const balanceBefore = await web3.eth.getBalance(customer);
+            const depositBefore = await pandora.deposits.call(customer);
 
-            await createCognitiveJob(pandora, 2, {from: customer});
+            const {receipt: {gasUsed}} = await createCognitiveJob(pandora, 2, {from: customer});
 
-            const deposit_after = await pandora.deposits.call(customer);
+            const gasPrice = await getGasPrice();
 
-            assert.notEqual(deposit_before.toNumber(), deposit_after.toNumber(), 'Deposit was not changed');
+            const depositAfter = await pandora.deposits.call(customer);
+            const balanceAfter = await web3.eth.getBalance(customer);
+
+            const gasFee = gasPrice.mul(gasUsed).toNumber();
+
+            const balanceDelta = web3.fromWei(balanceBefore.toNumber() - balanceAfter.toNumber() - gasFee, "ether");
+            const depositDelta = web3.fromWei(depositAfter.toNumber() - depositBefore.toNumber(), "ether");
+
+            assert.notEqual(depositBefore.toNumber(), depositAfter.toNumber(), 'Deposit should be changed');
+            assert.equal(balanceDelta, balanceDelta, `Balance changes (${balanceDelta}) should be tha same as deposit changes (${depositDelta})`);
 
             await finishActiveJob(pandora, workerInstance0, workerOwner0);
             await finishActiveJob(pandora, workerInstance1, workerOwner1);
 
-            await assersQueueDepth(pandora, 0);
+            await assertQueueDepth(pandora, 0);
 
             await finishActiveJob(pandora, workerInstance0, workerOwner0);
             await finishActiveJob(pandora, workerInstance1, workerOwner1);
@@ -281,5 +262,4 @@ contract('CognitiveJobManager', accounts => {
             assert.equal(isActiveJob, false, 'Job is not in the jobAddresses list');
         });
     });
-
 });
