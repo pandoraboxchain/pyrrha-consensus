@@ -106,7 +106,7 @@ contract('CognitiveJobManager', accounts => {
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
 
-        it(`should not create job if correspond doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
+        it(`should not create job if customer doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
 
             assertRevert(createCognitiveJob(pandora, 1, {value: REQUIRED_DEPOSIT - 1000}));
 
@@ -253,6 +253,62 @@ contract('CognitiveJobManager', accounts => {
 
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
             assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
+        });
+    });
+
+    describe("finishCognitiveJob", () => {
+        it(`should proceed max ${QUEUE_PROCEED_LIMIT} job(s) from queue per request`, async () => {});
+        it(`should proceed job only if there is at least one idle worker`, async () => {});
+        it(`should proceed job only if butches count at least equal to number of idle workers`, async () => {});
+        it(`should init cognitive job from queue`, async () => {});
+        it("should debit customer max deposit value for transaction fee", async () => {
+
+            let result = await createCognitiveJob(pandora, 2);
+
+            assertSuccessResultCode(result, RESULT_CODE_JOB_CREATED);
+
+            const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
+            const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
+
+            assert.isOk(logSuccess, 'should not be fired successful creation event');
+            assert.isNotOk(logFailure, 'should be fired failed event');
+
+            assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
+            assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
+
+            result = await createCognitiveJob(pandora, 2, {from: customer});
+
+            const activeJobBefore = await workerInstance0.activeJob.call();
+            const balanceBefore = await web3.eth.getBalance(customer);
+
+            assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
+
+            const depositBefore = await pandora.deposits.call(customer);
+            assert.isOk(depositBefore >= REQUIRED_DEPOSIT, "Deposit should be setted");
+
+            await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            await finishActiveJob(pandora, workerInstance1, workerOwner1);
+
+            const activeJobAfter = await workerInstance0.activeJob.call();
+            assert.notEqual(activeJobBefore, activeJobAfter, 'Active job should be changed');
+
+            const depositAfter = await pandora.deposits.call(customer);
+            assert.equal(depositAfter, 0, "Deposit should be erased");
+
+            const balanceAfter = await web3.eth.getBalance(customer);
+
+            const balanceDelta = balanceAfter - balanceBefore;
+            assert.isOk(balanceDelta >= 0, "Balance could be increased");
+
+            assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
+            assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
+
+            await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            await finishActiveJob(pandora, workerInstance1, workerOwner1);
+
+            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+            assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
+
         });
     });
 
