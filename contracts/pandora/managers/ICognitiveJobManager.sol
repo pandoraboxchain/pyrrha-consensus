@@ -19,5 +19,7 @@ contract ICognitiveJobManager {
 
     function finishCognitiveJob() external;
 
+    function getQueueDepth() external returns (uint256);
+
     event CognitiveJobCreated(IComputingJob cognitiveJob);
 }

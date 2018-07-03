@@ -248,13 +248,22 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
     }
 
+    function getQueueDepth(
+        // No arguments
+    )
+    external
+    onlyInitialized
+    returns (uint256)
+    {
+        return cognitiveJobQueue.queueDepth();
+    }
     /// @notice Private function which checks queue of jobs and create new jobs
     /// #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address)
     /// to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
-    function _checkJobQueue(
+    function checkJobQueue(
     // No arguments
     )
-    private
+    public
     onlyInitialized {
         JobQueueLib.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
@@ -323,7 +332,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     function unlockFinalizedWorker(IComputingJob _cognitiveJob) external {
         _cognitiveJob.unlockFinalizedWorker();
-        _checkJobQueue();
+        checkJobQueue();
     }
 
     function _initQueuedJob(JobQueueLib.QueuedJob queuedJob, IWorkerNode[] assignedWorkers)
