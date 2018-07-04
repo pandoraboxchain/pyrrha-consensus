@@ -5,7 +5,6 @@ const WorkerNode = artifacts.require('WorkerNode');
 const CognitiveJob = artifacts.require('CognitiveJob');
 
 const assertRevert = require('./helpers/assertRevert');
-const assertJobState = require('./helpers/assertJobState');
 const assertWorkerState = require('./helpers/assertWorkerState');
 const assertQueueDepth = require('./helpers/assertQueueDepth');
 const assertSuccessResultCode = require('./helpers/assertSuccessResultCode');
@@ -30,10 +29,8 @@ const {
 const {
     WORKER_STATE_ASSIGNED,
     WORKER_STATE_IDLE,
-    WORKER_STATE_COMPUTING,
 
     BATCHES_COUNT_LIMIT,
-    JOBS_COUNT_LIMIT,
     REQUIRED_DEPOSIT,
     QUEUE_PROCEED_LIMIT,
 
@@ -256,11 +253,35 @@ contract('CognitiveJobManager', accounts => {
         });
     });
 
-    describe("finishCognitiveJob", () => {
+    describe("checkJobQueue", () => {
         it(`should proceed max ${QUEUE_PROCEED_LIMIT} job(s) from queue per request`, async () => {});
         it(`should proceed job only if there is at least one idle worker`, async () => {});
         it(`should proceed job only if butches count at least equal to number of idle workers`, async () => {});
-        it(`should init cognitive job from queue`, async () => {});
+        it(`should init cognitive job from queue`, async () => {
+            let result = await createCognitiveJob(pandora, 2);
+
+            assertSuccessResultCode(result, RESULT_CODE_JOB_CREATED);
+
+            result = await createCognitiveJob(pandora, 2);
+
+            assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
+
+            assertQueueDepth(pandora, 1);
+
+            await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            await finishActiveJob(pandora, workerInstance1, workerOwner1);
+
+            assertQueueDepth(pandora, 0);
+
+            assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
+            assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
+
+            await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            await finishActiveJob(pandora, workerInstance1, workerOwner1);
+
+            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+            assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
+        });
         it("should debit customer max deposit value for transaction fee", async () => {
 
             let result = await createCognitiveJob(pandora, 2);
