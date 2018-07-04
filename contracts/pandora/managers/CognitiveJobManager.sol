@@ -269,7 +269,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Iterate queue and check queue depth
 
         uint256 limitQueueReq = cognitiveJobQueue.queueDepth();
-        limitQueueReq = limitQueueReq > 10 ? 10 : limitQueueReq;
+        limitQueueReq = limitQueueReq > 1 ? 1 : limitQueueReq;
         // todo check limit (2) for queue requests with tests
 
         for (uint256 k = 0; k < limitQueueReq; k++) {

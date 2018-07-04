@@ -254,9 +254,8 @@ contract('CognitiveJobManager', accounts => {
     });
 
     describe("checkJobQueue", () => {
-        it(`should proceed max ${QUEUE_PROCEED_LIMIT} job(s) from queue per request`, async () => {});
-        it(`should proceed job only if there is at least one idle worker`, async () => {});
-        it(`should proceed job only if butches count at least equal to number of idle workers`, async () => {});
+        it.skip(`should proceed job only if there is at least one idle worker`, async () => {});
+        it.skip(`should proceed job only if butches count at least equal to number of idle workers`, async () => {});
         it(`should init cognitive job from queue`, async () => {
             let result = await createCognitiveJob(pandora, 2);
 
