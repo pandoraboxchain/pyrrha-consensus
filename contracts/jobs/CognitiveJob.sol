@@ -164,7 +164,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
-
+    //implemented
     function initialize()
     external
     onlyPandora
@@ -205,6 +205,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _trackOfflineWorkers();
     }
 
+    //implemented
     function gatheringWorkersResponse(bool _flag)
     onlyActiveWorkers
 //    requireState(GatheringWorkers)
@@ -238,6 +239,8 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         emit CognitionProgressed(_percent);
     }
 
+    //implemented
+
     ///@notice every worker call this function, with their work results
     ///Job is considered finalized, when every worker complete it. The last one, who submits results should check the
     ///Pandora job queue, in case it doesn't do this - it couldn't switch to idle state.
@@ -260,6 +263,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
+    //should be moved to manager
     function activeWorkersCount()
     view
     external
@@ -267,6 +271,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         return activeWorkers.length;
     }
 
+    //should be moved to manager
     function didWorkerCompute(
         uint no
     )
@@ -278,6 +283,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         return acceptionFlags[no];
     }
 
+    //removed
     function unlockFinalizedWorker()
     onlyPandora
     external
