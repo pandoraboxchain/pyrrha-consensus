@@ -94,7 +94,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         responseTimestamps.length = 0;
     }
 
-    //todo implement in lib!
+    //implemented
     function _trackOfflineWorkers() private requireActiveStates {
         for (uint256 no = 0; no < responseTimestamps.length; no++) {
             if (block.timestamp - responseTimestamps[no] > WORKER_TIMEOUT) {
@@ -229,6 +229,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _processValidationResponse(_response == DataValidationResponse.Accept);
     }
 
+    //implemented
     function commitProgress(uint8 _percent)
     external {
         uint256 workerIndex;
@@ -296,6 +297,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
      * ## State Machine implementation
      */
 
+    //implemented
     modifier requireActiveStates() {
         require(
             stateMachine.currentState == GatheringWorkers ||

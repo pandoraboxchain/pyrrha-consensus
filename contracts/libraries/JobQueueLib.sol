@@ -19,7 +19,6 @@ library JobQueueLib {
         bytes32 description;
     }
 
-    event DebugEvent(uint value);
     /// @dev Returns depth of queue
     function queueDepth(
         Queue storage _queue
