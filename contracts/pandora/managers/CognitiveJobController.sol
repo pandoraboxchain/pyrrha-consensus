@@ -142,13 +142,13 @@ library CognitiveJobController {
         // Transition to next state when all workers have responded
         if (_isAllWorkersResponded(_self, _jobId)) {
             if (_responseType == uint8(WorkerResponses.Assignment)) {
-                //todo switch to new state
+                _transitionToState(_self, _jobId, uint8(States.GatheringWorkers));
                 _resetAllResponses(_self, _jobId);
             } else if (_responseType == uint8(WorkerResponses.DataValidation)) {
-                //todo switch to new state
+                _transitionToState(_self, _jobId, uint8(States.Cognition));
                 _resetAllResponses(_self, _jobId);
             } else if (_responseType == uint8(WorkerResponses.Result)) {
-                //todo switch to new state
+                _transitionToState(_self, _jobId, uint8(States.Completed));
             }
         }
     }
@@ -203,7 +203,7 @@ library CognitiveJobController {
 //        return _self.jobAddresses[jobId].responseFlags[no];
 //    }
 
-    //    function reportOfflineWorker(IWorkerNode reported) payable external;
+    //    function reportOfflineWorker(IWorkerNode reported) payable external requireActiveStates;
     //todo should be implemented in workerController in upcoming version
 
     /******************************************************************************************************************
@@ -282,11 +282,23 @@ library CognitiveJobController {
         }
     }
 
+    //todo provide listener and handle guilty worker and job state in manager, so it could penaltize worker
     function _trackOfflineWorkers(
         Controller storage _self,
         bytes32 _jobId)
-    private {
-        //todo implement
+    requireActiveStates(_self, _jobId)
+    internal
+    returns (
+        bytes32 guiltyWorker,
+        uint8 jobState
+    ){
+        CognitiveJob storage job = _self.cognitiveJobs[_self.jobAddresses[_jobId]];
+        for (uint256 i = 0; i < job.responseTimestamps.length; i++) {
+            if (uint8(block.timestamp) - job.responseTimestamps[i] > 30 minutes) {
+                guiltyWorker = job.activeWorkers[i];
+                jobState = job.state;
+            }
+        }
     }
 
     /******************************************************************************************************************
