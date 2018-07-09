@@ -136,6 +136,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
+    //no need to implement
     function _processValidationResponse(bool _flag) private {
         IWorkerNode reportingWorker;
         uint256 workerIndex;
@@ -156,14 +157,14 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
-    ///@dev Reset all response flags after gathering and cognition start
+    //implemented
     function updateResponses() private {
         for (uint256 i = 0; i < activeWorkers.length; i++) {
             responseTimestamps[i] = block.timestamp;
         }
     }
 
-    //no need to implement
+
     function initialize()
     external
     onlyPandora
@@ -188,6 +189,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         emit WorkersUpdated();
     }
 
+    //todo should be implemented in workerNodeController
     /// @dev Main entry point for
     /// (Witnessing worker nodes went offline)[https://github.com/pandoraboxchain/techspecs/wiki/Witnessing-worker-nodes-going-offline]
     /// workflow

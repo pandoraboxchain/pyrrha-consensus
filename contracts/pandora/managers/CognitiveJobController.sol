@@ -1,13 +1,10 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity\contracts\ownership\Ownable.sol";
 import "openzeppelin-solidity\contracts\math\SafeMath.sol";
 
-import "./ICognitiveJobController.sol";
 import "..\..\entities\IKernel.sol";
 import "..\..\entities\IDataset.sol";
 import "..\..\nodes\IWorkerNode.sol";
-import "..\..\jobs\CognitiveJob.sol";
 
 
 // Contract implement main cognitive job functionality
@@ -17,26 +14,6 @@ library CognitiveJobController {
      * ## Storage
      */
 
-    enum DataValidationResponse {
-        Accept, Decline, Invalid
-    }
-
-    uint8 internal constant WORKER_TIMEOUT = 30 minutes;
-
-    uint8 public constant Destroyed = 0xFF;
-    // Reserved system state not participating in transition table. Since contract creation all variables are
-    // initialized to zero and contract state will be zero until it will be initialized with some definite state
-    uint8 public constant Uninitialized = 0;
-    uint8 public constant GatheringWorkers = 1;
-    uint8 public constant InsufficientWorkers = 2;
-    uint8 public constant DataValidation = 3;
-    uint8 public constant InvalidData = 4;
-    uint8 public constant Cognition = 5;
-    uint8 public constant PartialResult = 6;
-    uint8 public constant Completed = 7;
-
-    /// ### Public variables
-
     struct Controller {
         /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
         /// (owners of the corresponding cognitive job contracts). Zero values corresponds to no active job,
@@ -45,20 +22,34 @@ library CognitiveJobController {
 
         /// @dev List of all active cognitive jobs
         CognitiveJob[] cognitiveJobs;
+
+        //todo implement states and table in state machine
+//        uint8 WORKER_TIMEOUT = 30 minutes;
+//
+//        uint8 Destroyed = 0xFF;
+//        // Reserved system state not participating in transition table. Since contract creation all variables are
+//        // initialized to zero and contract state will be zero until it will be initialized with some definite state
+//        uint8  Uninitialized = 0;
+//        uint8 GatheringWorkers = 1;
+//        uint8 InsufficientWorkers = 2;
+//        uint8 DataValidation = 3;
+//        uint8 InvalidData = 4;
+//        uint8 Cognition = 5;
+//        uint8 PartialResult = 6;
+//        uint8 Completed = 7;
     }
 
     struct CognitiveJob {
         bytes32 id;
         bytes32 kernel;
         bytes32 dataset;
-        uint8 progress;
-        uint8 batches;
         uint256 complexity; //todo find better name
         bytes32 description;
         bytes32[] activeWorkers;
+        bytes[] ipfsResults;
         uint32[] responseTimestamps; // time of each worker response
         bool[] responseFlags;
-        bytes[] ipfsResults;
+        uint8 progress;
     }
 
     using SafeMath for uint;
@@ -69,20 +60,33 @@ library CognitiveJobController {
 
     /// ### Public and external
 
-    function getCongitiveJobDetails(bytes32 id)
+    function getCognitiveJobDetails(Controller _self, bytes32 _jobId)
     public
     returns (
-
-    ){
-
+        bytes32, bytes32, uint256, bytes32, bytes32[], bytes[]
+    ) {
+        CognitiveJob job = _self.cognitiveJobs[_self.jobAddresses[_jobId]];
+        return (
+            job.kernel,
+            job.dataset,
+            job.complexity,
+            job.description,
+            job.activeWorkers,
+            job.ipfsResults
+        );
     }
 
-    function getCognitiveJobInfo(bytes32 id)
+    function getCognitiveJobProgressInfo(bytes32 _jobId)
     public
     returns(
-
-    ){
-
+        uint32[], bool[], uint8
+    ) {
+        CognitiveJob job = _self.cognitiveJobs[_self.jobAddresses[_jobId]];
+        return (
+            job.responseTimestamps,
+            job.responseFlags,
+            job.progress
+        );
     }
 
     function createCognitiveJob (
@@ -91,29 +95,30 @@ library CognitiveJobController {
         bytes32 _dataset,
         bytes32[] _assignedWorkers,
         uint256 _complexity,
-        bytes32 _description,
-        uint8 _batches
+        bytes32 _description
     )
     external {
         CognitiveJob job = CognitiveJob({
             id: keccak256(_self.cognitiveJobs.length + block.number),
             kernel: _kernel,
             dataset: _dateset,
-            progress: 0,
-            batches: _batches,
             complexity: _complexity,
             description: _description,
             activeWorkers: _assignedWorkers,
-            responseTimestamps: new uint[](_batches),
-            responseFlags: new bool[](_batches),
-            ipfsResults: new bytes[](_batches)
+            ipfsResults: new bytes[](_assignedWorkers.length),
+            responseTimestamps: new uint[](_assignedWorkers.length),
+            responseFlags: new bool[](_assignedWorkers.length),
+            progress: 0
         });
-
+        //init timestamps
+        for (uint256 i = 0; job.responseTimestamps.length; i++) {
+            job.responseTimestamps[i] = block.timestamp;
+        }
         //add to register newly created job
         _self.cognitiveJobs.push(job);
-        _self.jobAddresses[job.id] = job;
+        _self.jobAddresses[job.id] = uint256(cognitiveJobs.length);
 
-        //todo switch to state
+        //todo switch to state gathering
 //        _transitionToState(GatheringWorkers);
         emit WorkersUpdated();
     }
@@ -148,7 +153,7 @@ library CognitiveJobController {
         // Transition to next state when all workers have responded
         if (isAllWorkerResponded) {
             resetAllResponses(_self, _jobId);
-            //todo switch to state
+            //todo switch to new state
         }
     }
 
@@ -162,7 +167,7 @@ library CognitiveJobController {
         // Transition to next state when all workers have responded
         if (isAllWorkersResponded(_self, _jobId)) {
             resetAllResponses(_self, _jobId);
-            //todo swich to new state
+            //todo switch to new state
         }
     }
 
@@ -180,8 +185,8 @@ library CognitiveJobController {
         trackOfflineWorkers();
     }
 
-    //should be called for refreshing responceTimestamp after actual progress change in workerNode
-    //todo implement requirement of new progeress > current progress in workerController
+    //should be called for responseTimestamp refresh after actual progress change in workerNode
+    //todo implement requirement of new progress > current progress in workerController
     function commitProgress(
         Controller storage _self,
         uint256 _jobId,
@@ -195,6 +200,7 @@ library CognitiveJobController {
     }
 
     function completeWork(bytes ipfs) external returns(bool isFinalized);
+
     function unlockFinalizedWorker() external;
 
 
@@ -237,12 +243,13 @@ library CognitiveJobController {
         _self.cognitiveJob[_jobId].responseTimestamps[_workerIndex] = block.timestamp;
     }
 
+    ///@dev Reset all response flags and update all timestamps
     function resetAllResponses(
         Controller _self,
         bytes32 _jobId)
     private {
         for (uint256 i = 0; i < _self.congitiveJob[_jobId].activeWorkers.length; i++) {
-            _self.cognitiveJob[_jobId].responseFlags[i] = _response;
+            _self.cognitiveJob[_jobId].responseFlags[i] = false;
             _self.cognitiveJob[_jobId].responseTimestamps[i] = block.timestamp;
         }
     }

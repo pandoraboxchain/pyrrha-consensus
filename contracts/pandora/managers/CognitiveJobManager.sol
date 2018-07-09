@@ -55,13 +55,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     ILotteryEngine internal workerLotteryEngine;
 
     // Queue for CognitiveJobs kept while no Idle WorkerNodes available
-    using JobQueueLib for JobQueueLib.Queue;
     /// @dev Cognitive job queue used for case when no idle workers available
+    using JobQueueLib for JobQueueLib.Queue;
     JobQueueLib.Queue internal cognitiveJobQueue;
 
     // Controller for CognitiveJobs
     using CognitiveJobController for CognitiveJobController.CognitiveJob;
-    /// @dev Cognitive job queue used for case when no idle workers available
     CognitiveJobController.CognitiveJob internal cognitiveJobQueue;
 
     using SafeMath for uint;
