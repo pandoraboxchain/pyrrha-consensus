@@ -53,9 +53,6 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     /// These are specified during initial Pandora contract deployment by the founders.
     mapping(address => bool) public workerNodeOwners;
 
-    /*******************************************************************************************************************
-     * ## Events
-     */
 
     /// @dev Event firing when there is another worker node created
     event WorkerNodeCreated(IWorkerNode workerNode);

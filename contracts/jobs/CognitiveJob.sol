@@ -14,43 +14,13 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
      * ## Main functionality
      */
 
-    uint internal constant WORKER_TIMEOUT = 30 minutes;
-
-    uint256[] public responseTimestamps;
-    bool[] public acceptionFlags;
-    bool[] public validationFlags;
-    bool[] public completionFlags;
-
-    constructor(
-        IPandora _pandora,
-        IKernel _kernel,
-        IDataset _dataset,
-        IWorkerNode[] _workersPool,
-        uint256 _complexity,
-        bytes32 _description
-    )
-    public {
-        batches = _dataset.batchesCount();
-        require(batches > 0);
-        require(_workersPool.length >= batches);
-        require(_pandora != address(0));
-        require(_kernel != address(0));
-        require(_dataset != address(0));
-
-        pandora = _pandora;
-        kernel = _kernel;
-        dataset = _dataset;
-        workersPool = _workersPool;
-        complexity = _complexity;
-        description = _description;
-        _initStateMachine();
-    }
-
+    //removed
     modifier onlyPandora() {
         require(msg.sender == address(pandora));
         _;
     }
 
+    //removed
     modifier onlyActiveWorkers() {
         IWorkerNode workerNode;
         (workerNode,) = _getWorkerFromSender();
@@ -59,33 +29,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _;
     }
 
-    function isAllWorkersAccepted() private returns (bool accepted) {
-        accepted = true;
-        for (uint256 i = 0; i < acceptionFlags.length; i++) {
-            if (acceptionFlags[i] != true) {
-                accepted = false;
-            }
-        }
-    }
-
-    function isAllWorkersValidated() private returns (bool validated) {
-        validated = true;
-        for (uint256 i = 0; i < validationFlags.length; i++) {
-            if (validationFlags[i] != true) {
-                validated = false;
-            }
-        }
-    }
-
-    function isAllWorkersCompleted() private returns (bool completed) {
-        completed = true;
-        for (uint256 i = 0; i < completionFlags.length; i++) {
-            if (completionFlags[i] != true) {
-                completed = false;
-            }
-        }
-    }
-
+    //implemented
     function _getWorkerIndex(IWorkerNode _worker) private view returns (uint256) {
         for (uint256 index = 0; index < activeWorkers.length; index++) {
             if (_worker == address(activeWorkers[index])) {
@@ -95,10 +39,12 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         return uint256(-1);
     }
 
+    //removed
     function ipfsResultsCount() public view returns (uint256 count) {
         count = ipfsResults.length;
     }
 
+    //removed
     function _getWorkerFromSender() private view returns (IWorkerNode o_workerNode, uint256 o_workerIndex) {
         o_workerIndex = _getWorkerIndex(IWorkerNode(msg.sender));
         if (o_workerIndex > activeWorkers.length) {
@@ -107,6 +53,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         o_workerNode = activeWorkers[o_workerIndex];
     }
 
+    //no need to implement so far
     function _replaceWorker(uint256 workerIndex) private requireStates2(DataValidation, Cognition) {
         IWorkerNode replacementWorker;
         do {
@@ -125,6 +72,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         emit WorkersUpdated();
     }
 
+    //no need to implement so far
     function _insufficientWorkers() private requireActiveStates {
         for (uint no = 0; no < activeWorkers.length; no++) {
             activeWorkers[no].cancelJob();
@@ -137,7 +85,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
-    //todo refactor
+    // no need to implement so far
     function _cleanStorage() private {
         workersPool.length = 0;
         activeWorkers.length = 0;
@@ -146,6 +94,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         responseTimestamps.length = 0;
     }
 
+    //todo implement in lib!
     function _trackOfflineWorkers() private requireActiveStates {
         for (uint256 no = 0; no < responseTimestamps.length; no++) {
             if (block.timestamp - responseTimestamps[no] > WORKER_TIMEOUT) {
@@ -166,6 +115,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
+    // implemented
     function _processAcceptanceResponse(bool _flag) private {
         IWorkerNode reportingWorker;
         uint256 workerIndex;
@@ -213,6 +163,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         }
     }
 
+    //no need to implement
     function initialize()
     external
     onlyPandora
@@ -262,6 +213,7 @@ contract CognitiveJob is IComputingJob, StateMachine /* final */ {
         _processAcceptanceResponse(_flag);
     }
 
+    //implemented
     function dataValidationResponse(DataValidationResponse _response)
     onlyActiveWorkers
 //    requireState(DataValidation)

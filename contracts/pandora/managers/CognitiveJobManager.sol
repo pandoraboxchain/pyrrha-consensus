@@ -8,6 +8,7 @@ import "./WorkerNodeManager.sol";
 import "../../jobs/IComputingJob.sol";
 import "../../libraries/JobQueueLib.sol";
 import "../token/Reputation.sol";
+import "./CognitiveJobController.sol";
 
 /**
  * @title Pandora Smart Contract
@@ -18,9 +19,6 @@ import "../token/Reputation.sol";
  * Main & root contract implementing the first level of Pandora Boxchain consensus
  * See section ["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
  * for more details.
- *
- * Contract token functionality is separated into a separate contract named PAN (after the name of the token)
- * and Pandora contracts just simply inherits PAN contract.
  */
 
 contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeManager {
@@ -30,24 +28,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
      */
 
     /// ### Public variables
-
-    /// @notice Reference to a factory used in creating CognitiveJob contracts
-    /// @dev Factories are used to reduce gas consumption by the main Pandora contract. Since Pandora needs to control
-    /// the code used to deploy Cognitive Jobs and Worker Nodes, it must embed all the byte code for the smart contract.
-    /// However this dramatically increases gas consumption for deploying Pandora contract itself. Thus, the
-    /// CognitiveJob smart contract is deployed by a special factory class `CognitiveJobFactory`, and a special workflow
-    /// is used to ensure uniqueness of the factories and the fact that their code source is coming from the same
-    /// address which have deployed the main Pandora contract. In particular, because of this Pandora is defined as an
-    /// `Ownable` contract and a special `initialize` function and `properlyInitialized` member variable is added.
-    ICognitiveJobFactory public cognitiveJobFactory;
-
-    /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
-    /// (owners of the corresponding cognitive job contracts). Zero values corresponds to no active job,
-    /// one – to the one with index 0 and so forth.
-    mapping(address => uint16) public jobAddresses;
-
-    /// @dev List of all active cognitive jobs
-    IComputingJob[] public cognitiveJobs;
 
     /// @dev Contract, that store rep. values for each address
     IReputation reputation;
@@ -78,6 +58,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     using JobQueueLib for JobQueueLib.Queue;
     /// @dev Cognitive job queue used for case when no idle workers available
     JobQueueLib.Queue internal cognitiveJobQueue;
+
+    // Controller for CognitiveJobs
+    using CognitiveJobController for CognitiveJobController.CognitiveJob;
+    /// @dev Cognitive job queue used for case when no idle workers available
+    CognitiveJobController.CognitiveJob internal cognitiveJobQueue;
 
     using SafeMath for uint;
 
