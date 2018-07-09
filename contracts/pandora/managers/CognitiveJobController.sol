@@ -136,6 +136,7 @@ library CognitiveJobController {
         bytes32 _workerId,
         uint8 _responseType,
         bool _response)
+    requireActiveStates(_self, _jobId)
     internal {
         _checkResponse(_self, _jobId, _workerId, _response);
         // Transition to next state when all workers have responded
@@ -159,7 +160,7 @@ library CognitiveJobController {
         bytes32 _jobId,
         bytes32 _workerId,
         uint8 _percent)
-    requireState(_self, uint8(States.Cognition))
+    requireState(_self, _jobId, uint8(States.Cognition))
     internal {
         uint256 workerIndex = _getWorkerIndex(_self, _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
@@ -173,7 +174,7 @@ library CognitiveJobController {
         bytes32 _jobId,
         bytes32 _workerId,
         bytes _ipfsResults)
-    requireState(_self, uint8(States.Cognition))
+    requireState(_self, _jobId, uint8(States.Cognition))
     internal {
         uint256 workerIndex = _getWorkerIndex(_self, _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
@@ -307,6 +308,7 @@ library CognitiveJobController {
 
     modifier requireState(
         Controller storage _self,
+        bytes32 _jobId,
         uint8 requiredState
     ) {
         require(_self.cognitiveJobs[_self.jobAddresses[_jobId]].state == requiredState);
