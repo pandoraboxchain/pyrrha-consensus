@@ -228,13 +228,13 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         bytes32 jobId
     )
     external
-    //todo check function caller
+    //todo onlyAssignedWorker
     {
         uint16 index = jobAddresses[msg.sender];
         require(index != 0);
         index--;
 
-        IComputingJob job = cognitiveJobs[index];
+        bytes32 job = cognitiveJobs[index];
         require(address(job) == msg.sender);
 
         // Increase reputation of workers involved to computation
