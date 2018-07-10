@@ -85,7 +85,7 @@ contract CognitiveJob is StateMachine /* final */ {
         }
     }
 
-    // no need to implement so far
+    // removed
     function _cleanStorage() private {
         workersPool.length = 0;
         activeWorkers.length = 0;
@@ -136,7 +136,7 @@ contract CognitiveJob is StateMachine /* final */ {
         }
     }
 
-    //no need to implement
+    //removed
     function _processValidationResponse(bool _flag) private {
         IWorkerNode reportingWorker;
         uint256 workerIndex;
@@ -264,7 +264,7 @@ contract CognitiveJob is StateMachine /* final */ {
         }
     }
 
-    //should be moved to manager
+    //removed
     function activeWorkersCount()
     view
     external
@@ -272,7 +272,7 @@ contract CognitiveJob is StateMachine /* final */ {
         return activeWorkers.length;
     }
 
-    //should be moved to manager
+    //removed
     function didWorkerCompute(
         uint no
     )
@@ -307,6 +307,7 @@ contract CognitiveJob is StateMachine /* final */ {
         _;
     }
 
+    //implemented
     function _initStateMachine() internal {
         // Creating table of possible state transitions
         mapping(uint8 => uint8[]) transitions = stateMachine.transitionTable;
@@ -322,6 +323,7 @@ contract CognitiveJob is StateMachine /* final */ {
         stateMachine.currentState = Uninitialized;
     }
 
+    //implemented
     function _fireStateEvent() internal {
         if (currentState() == InsufficientWorkers) {
             emit WorkersNotFound();
@@ -342,6 +344,7 @@ contract CognitiveJob is StateMachine /* final */ {
         }
     }
 
+    //implemented
     function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {
         transitionToState(_newState);
     }

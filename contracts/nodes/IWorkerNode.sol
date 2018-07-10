@@ -22,7 +22,7 @@ contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
 
     function destroy() external;
     function alive() external;
-    function assignJob(IComputingJob job) external;
+    function assignJob(bytes32 jobId) external;
     function cancelJob() external;
     function acceptAssignment() external;
     function declineAssignment() external;

@@ -6,9 +6,10 @@ import "../lottery/RandomEngine.sol";
 import "./ICognitiveJobManager.sol";
 import "./WorkerNodeManager.sol";
 import "../../jobs/IComputingJob.sol";
-import "../../libraries/JobQueueLib.sol";
 import "../token/Reputation.sol";
-import "./CognitiveJobController.sol";
+
+import {CognitiveJobLib as CJL} from "..\..\libraries\CognitiveJobLib.sol";
+import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
 
 /**
  * @title Pandora Smart Contract
@@ -56,12 +57,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     // Queue for CognitiveJobs kept while no Idle WorkerNodes available
     /// @dev Cognitive job queue used for case when no idle workers available
-    using JobQueueLib for JobQueueLib.Queue;
-    JobQueueLib.Queue internal cognitiveJobQueue;
+    using JQL for JQL.Queue;
+    JQL.Queue internal queue;
 
     // Controller for CognitiveJobs
-    using CognitiveJobController for CognitiveJobController.CognitiveJob;
-    CognitiveJobController.CognitiveJob internal cognitiveJobQueue;
+    using CJL for CJL.Controller;
+    CJL.Controller internal controller;
 
     using SafeMath for uint;
 
@@ -72,7 +73,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Event firing when a new cognitive job created
     event CognitiveJobCreated(bytes32 jobId);
 
-    /// @dev Event firing when a new cognitive job failed to create
+    /// @dev Event firing when a new cognitive job queued
     event CognitiveJobQueued(bytes32 jobId);
 
     /*******************************************************************************************************************
@@ -96,10 +97,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // Assign factories to storage variables
         cognitiveJobFactory = _jobFactory;
 
+        // Init reputation storage contract
         reputation = _reputation;
 
         // Initializing worker lottery engine
-        // In Pyrrha we use round robin algorithm to give our whitelisted nodes equal and consequential chances
         workerLotteryEngine = new RandomEngine();
     }
 
@@ -112,35 +113,51 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
      * ## Functions
      */
 
-    /// ### Public and external
+    /// ### Public
 
-    /// @notice Test whether the given `job` is registered as an active job by the main Pandora contract
-    /// @dev Used to test if some given job contract is a contract created by the Pandora and is listed by it as an
-    /// active contract
+    /// @notice Test whether the given `job` is registered as an active job and not completed
     function isActiveJob(
-        IComputingJob _job /// Job contract to test
+        bytes32 _jobId
     )
-    onlyInitialized
     view
     public
     returns (
-        bool /// Testing result
+        bool
     ) {
-        // Getting the index of the job from the internal list
-        uint16 index = jobAddresses[_job];
-        // Testing if the job was present in the list
-        if (index == 0) {
-            return false;
-        }
-        // We must decrease the index since they are 1-based, not 0-based (0 corresponds to "no contract" due to
-        // Solidity specificity
-        index--;
-
-        // Retrieving the job contract from the index
-        IComputingJob job = cognitiveJobs[index];
-        // Double-checking that the job at the index is the actual job being tested
-        return (job == _job);
+        return controller.jobAddresses[_jobId] != 0;
     }
+
+    function getCognitiveJobDetails(bytes32 _jobId)
+    public
+    returns (
+        address, address, uint256, bytes32, bytes32[], bytes[]
+    ) {
+        CJL.CognitiveJob memory job = controller.cognitiveJobs[_self.jobIndexes[_jobId]];
+        return (
+            job.kernel,
+            job.dataset,
+            job.complexity,
+            job.description,
+            job.activeWorkers,
+            job.ipfsResults
+        );
+    }
+
+    function getCognitiveJobProgressInfo(bytes32 _jobId)
+    public
+    returns(
+        uint32[], bool[], uint8, uint8
+    ) {
+        CJL.CognitiveJob memory job = controller.cognitiveJobs[_self.jobIndexes[_jobId]];
+        return (
+            job.responseTimestamps,
+            job.responseFlags,
+            job.progress,
+            job.state
+        );
+    }
+
+    /// ### External
 
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
@@ -152,10 +169,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     )
     external
     payable
-    onlyInitialized
     returns (
-        IComputingJob o_cognitiveJob, /// Newly created cognitive jobs (starts automatically)
-        uint8 o_resultCode /// result code of creating cognitiveJob, 0 - no available workers, 1 - job created
+        bytes32 o_jobId, /// Newly created cognitive jobs (starts automatically)
+        uint8 o_resultCode /// result code of creating job, 0 - job queued (no available workers) , 1 - job created
     ) {
 
         // Restriction for batches count came from potential high gas usage in JobQueue processing
@@ -165,9 +181,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Dimensions of the input data and neural network input layer must be equal
         require(_kernel.dataDim() == _dataset.dataDim());
-
-        // The created job must fit into uint16 size
-        require(uint256(cognitiveJobs.length) < 2 ** 16 - 1);
 
         // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
         require(msg.value >= REQUIRED_DEPOSIT);
@@ -180,7 +193,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         if (estimatedSize < uint256(batchesCount)) {
             // Put task in queue
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            cognitiveJobQueue.put(
+            queue.put(
                 address(_kernel),
                 address(_dataset),
                 msg.sender,
@@ -190,7 +203,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
                 _description);
             //  Hold payment from customer
             deposits[msg.sender] = deposits[msg.sender].add(msg.value);
-            emit CognitiveJobQueued(o_cognitiveJob);
+            emit CognitiveJobQueued(o_jobId);
         } else {
             // Job created instantly
             // Return funds to sender
@@ -201,10 +214,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, batchesCount);
 
-            o_cognitiveJob = _initCognitiveJob(_kernel, _dataset, assignedWorkers, _complexity, _description);
+            o_jobId = _initCognitiveJob(_kernel, _dataset, assignedWorkers, _complexity, _description);
             o_resultCode = RESULT_CODE_JOB_CREATED;
 
-            emit CognitiveJobCreated(o_cognitiveJob);
+            emit CognitiveJobCreated(o_jobId);
         }
     }
 
@@ -212,10 +225,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Function must be called only by the master node running cognitive job. It completes the job, updates
     /// worker node back to `Idle` state (in smart contract) and removes job contract from the list of active contracts
     function finishCognitiveJob(
-    // No arguments - cognitive job is taken from msg.sender
+        bytes32 jobId
     )
     external
-    onlyInitialized
+    //todo check function caller
     {
         uint16 index = jobAddresses[msg.sender];
         require(index != 0);
@@ -236,11 +249,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         // No arguments
     )
     external
-    onlyInitialized
     returns (uint256)
     {
-        return cognitiveJobQueue.queueDepth();
+        return queue.queueDepth();
     }
+
     /// @notice Private function which checks queue of jobs and create new jobs
     /// #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address)
     /// to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
@@ -249,10 +262,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     )
     public
     onlyInitialized {
-        JobQueueLib.QueuedJob memory queuedJob;
+        JQL.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
 
-        uint256 limitQueueReq = cognitiveJobQueue.queueDepth();
+        uint256 limitQueueReq = queue.queueDepth();
         limitQueueReq = limitQueueReq > 1 ? 1 : limitQueueReq;
         // todo check limit (2) for queue requests with tests
 
@@ -277,19 +290,31 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             }
 
             // Check number of batches with number of idle workers
-            if (!cognitiveJobQueue.checkElementBatches(actualSize)) {
+            if (!queue.checkElementBatches(actualSize)) {
                 break;
             }
 
             // uint value1 = cognitiveJobQueue.queueDepth();
             uint256 value;
             // Value from queuedJob deposit
-            (queuedJob, value) = cognitiveJobQueue.requestJob();
+            (queuedJob, value) = queue.requestJob();
 
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.batches);
 
+            // @fixme remove in upcoming version
+            // (temporarily due to worker controller absence) convert workers array to address array
+            address[] workerAddresses = address[](assignedWorkers.length);
+            for (uint256 i = 0; i < workerAddresses.length; i++) {
+                workerAddresses[i] = address(assignedWorkers[i]);
+            }
+
             IComputingJob createdCognitiveJob = _initQueuedJob(queuedJob, assignedWorkers);
+
+            //todo assign job to each worker
+            for (uint256 i = 0; i < assignedWorkers.length; i++) {
+                assignedWorkers[i].assignJob(o_jobId);
+            }
 
             emit CognitiveJobCreated(createdCognitiveJob, RESULT_CODE_JOB_CREATED);
 
@@ -314,18 +339,21 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
     }
 
-    function unlockFinalizedWorker(IComputingJob _cognitiveJob) external {
-        _cognitiveJob.unlockFinalizedWorker();
-        checkJobQueue();
+    function commitProgress(
+        bytes32 _jobId,
+        uint _percent)
+    external {
+        //todo implement check msg.sender with worker controller
+        CJL.commitProgress(_jobId, msg.sender, _percent);
     }
 
     function _initQueuedJob(JobQueueLib.QueuedJob queuedJob, IWorkerNode[] assignedWorkers)
     private
     onlyInitialized
     returns (
-        IComputingJob job
+        bytes32 jobId
     ) {
-        job = _initCognitiveJob(
+        jobId = _initCognitiveJob(
             IKernel(queuedJob.kernel),
             IDataset(queuedJob.dataset),
             assignedWorkers,
@@ -342,26 +370,34 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// from the the `cognitiveJobQueue` `QueuedJob` structure)
         IDataset _dataset, /// Pre-initialized dataset entity contract (taken from `createCognitiveJob` arguments or
     /// from the the `cognitiveJobQueue` `QueuedJob` structure)
-        IWorkerNode[] _assignedWorkers, /// Array of workers assigned for the job by the lottery engine
+        IWorkerNode[] _assignedWorkers, /// Array of workers assigned for the job by the lottery engine //todo change to address
         uint256 _complexity,
         bytes32 _description
     )
     private
     onlyInitialized
     returns (
-        IComputingJob o_cognitiveJob /// Created cognitive job (function may fail only due to the bugs, so there is no
-    /// reason for returning status code)
+        bytes32 o_jobId /// Created cognitive job ID
     ) {
-        o_cognitiveJob = cognitiveJobFactory.create(_kernel, _dataset, _assignedWorkers, _complexity, _description);
 
-        // Hint: trying to figure out was the contract body actually created and initialized with proper values
-        assert(o_cognitiveJob.currentState() == o_cognitiveJob.Uninitialized());
+        // @fixme remove in upcoming version
+        // (temporarily due to worker controller absence) convert workers array to address array
+        address[] workerAddresses = address[](assignedWorkers.length);
+        for (uint256 i = 0; i < workerAddresses.length; i++) {
+            workerAddresses[i] = address(assignedWorkers[i]);
+        }
 
-        // Save new contract to the storage
-        cognitiveJobs.push(o_cognitiveJob);
-        jobAddresses[o_cognitiveJob] = uint16(cognitiveJobs.length);
+        o_jobId = CJL.createCognitiveJob(
+            address(_kernel),
+            address(_dataset),
+            _assignedWorkers,
+            _complexity,
+            _description);
 
-        o_cognitiveJob.initialize();
+        //assign each worker to job
+        for (uint256 i = 0; i < assignedWorkers.length; i++) {
+            assignedWorkers[i].assignJob(o_jobId);
+        }
     }
 
     /// @notice Can"t be called by the user or other contract: for private use only

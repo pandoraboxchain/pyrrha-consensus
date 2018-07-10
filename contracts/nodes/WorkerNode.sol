@@ -76,7 +76,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
 
     /// @notice Active cognitive job reference. Zero when there is no active cognitive job assigned or performed
     /// @dev Valid (non-zero) only for active states (see `activeStates` modified for the list of such states)
-    IComputingJob public activeJob;
+    bytes32 public activeJob;
 
 	/// @notice Progress of completing current active job batch, should be updated by node itself
     uint256 public jobProgress;
@@ -92,9 +92,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         require(_pandora != address(0));
         pandora = _pandora;
 
-        // There should be no active cognitive job upon contract creation
-        activeJob = IComputingJob(0);
-
         // Initialize state machine (state transition table and initial state). Always must be performed at the very
         // end of contract constructor code.
         _initStateMachine();
@@ -108,23 +105,23 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         require(msg.sender == address(pandora));
         _;
     }
-
-    /// @dev Modifier for functions that can be called only by one of the active cognitive jobs performed under
-    /// main Pandora contract. It includes jobs _not_ assigned to the worker node
-    modifier onlyCognitiveJob() {
-        require(pandora != address(0));
-        IComputingJob sender = IComputingJob(msg.sender);
-        require(pandora == sender.pandora());
-        require(pandora.isActiveJob(sender));
-        _;
-    }
-
-    /// @dev Modifier for functions that can be called only by the cognitive job assigned or performed by the worker
-    /// node in one of its active states
-    modifier onlyActiveCognitiveJob() {
-        require(msg.sender == address(activeJob));
-        _;
-    }
+        //todo below modifiers removed, should be implemented in manager
+//    /// @dev Modifier for functions that can be called only by one of the active cognitive jobs performed under
+//    /// main Pandora contract. It includes jobs _not_ assigned to the worker node
+//    modifier onlyCognitiveJob() {
+//        require(pandora != address(0));
+//        IComputingJob sender = IComputingJob(msg.sender);
+//        require(pandora == sender.pandora());
+//        require(pandora.isActiveJob(sender));
+//        _;
+//    }
+//
+//    /// @dev Modifier for functions that can be called only by the cognitive job assigned or performed by the worker
+//    /// node in one of its active states
+//    modifier onlyActiveCognitiveJob() {
+//        require(msg.sender == address(activeJob));
+//        _;
+//    }
 
     /// ### External and public functions
 
@@ -150,7 +147,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyOwner
     {
         jobProgress = _percent;
-        activeJob.commitProgress(_percent);
+        pandora.commitProgress(_percent);
     }
 
     /// @notice Do not call
@@ -158,8 +155,11 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// the main Pandora contract
     function assignJob(
         /// @dev Cognitive job to be assigned
-        IComputingJob _job
-    ) external // Can"t be called internally
+        bytes32 _job
+
+    )
+    onlyPandora
+    external // Can"t be called internally
         /// @dev Must be called only by one of active cognitive jobs listed under the main Pandora contract
         onlyCognitiveJob
         /// @dev Job can be assigned only to Idle workers
