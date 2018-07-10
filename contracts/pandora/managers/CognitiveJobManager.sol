@@ -70,10 +70,10 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
      */
 
     /// @dev Event firing when a new cognitive job created
-    event CognitiveJobCreated(IComputingJob cognitiveJob, uint resultCode);
+    event CognitiveJobCreated(bytes32 jobId);
 
     /// @dev Event firing when a new cognitive job failed to create
-    event CognitiveJobCreateFailed(IComputingJob cognitiveJob, uint resultCode);
+    event CognitiveJobQueued(bytes32 jobId);
 
     /*******************************************************************************************************************
      * ## Constructor and initialization
@@ -190,7 +190,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
                 _description);
             //  Hold payment from customer
             deposits[msg.sender] = deposits[msg.sender].add(msg.value);
-            emit CognitiveJobCreateFailed(o_cognitiveJob, o_resultCode);
+            emit CognitiveJobQueued(o_cognitiveJob);
         } else {
             // Job created instantly
             // Return funds to sender
@@ -204,7 +204,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             o_cognitiveJob = _initCognitiveJob(_kernel, _dataset, assignedWorkers, _complexity, _description);
             o_resultCode = RESULT_CODE_JOB_CREATED;
 
-            emit CognitiveJobCreated(o_cognitiveJob, o_resultCode);
+            emit CognitiveJobCreated(o_cognitiveJob);
         }
     }
 

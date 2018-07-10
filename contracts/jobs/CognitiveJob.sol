@@ -7,7 +7,7 @@ import "./IComputingJob.sol";
 
  */
 
-contract CognitiveJob is IComputingJob, StateMachine /* final */ {
+contract CognitiveJob is StateMachine /* final */ {
 
 
     /**
