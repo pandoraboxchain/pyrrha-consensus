@@ -6,14 +6,15 @@ services:
   - docker
 branches:
   only:
-    - master
     - develop
-    - "/^v\\d+\\.\\d+\\.\\d+(-\\w+)?$/"
+    - "/^v[0-9]+\.[0-9]+\.[0-9]+$/"
+    - "/^v[0-9]+\.[0-9]+\.[0-9]+-staging$/"
 stages:
   - lint
   - test
   - coverage
-  - deploy
+  - deploy_staging
+  - deploy_prod
 jobs:
   include:
     - stage: lint
@@ -34,8 +35,16 @@ jobs:
         - npm run test:coverage
         - cat ./coverage/lcov.info | npx coveralls
         - set +e
-    - stage: deploy
-      if: tag IS present
+    - stage: deploy_staging
+      if: tag =~ /^v[0-9]+\.[0-9]+\.[0-9]+-staging$/
+      script:
+        - set -e
+        - npm link
+        - npx truffle migrate --network infura_rinkeby
+        - npx ghu issue -k "$GITHUB_API_TOKEN" -o pandoraboxchain -r pyrrha-webclient,pyrrha-pynode,pyrrha-boxproxy,pyrrha -t "Staging (!!!) contracts addresses update required" -b "Pandora:$(< ./build/addresses/Pandora.json), PandoraMarket:$(< ./build/addresses/PandoraMarket.json)"
+        - set +e
+    - stage: deploy_prod
+      if: tag =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       script:
         - set -e
         - npm link
