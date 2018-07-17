@@ -100,7 +100,6 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
 
     /// @dev Modifier for functions that can be called only by the main Pandora contract
     modifier onlyPandora() {
-        require(pandora != address(0));
         require(msg.sender == address(pandora));
         _;
     }
@@ -129,7 +128,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         onlyOwner
     {
         jobProgress = _percent;
-        pandora.commitProgress(_percent);
+        pandora.commitProgress(activeJob, _percent);
     }
 
     /// @notice Do not call
@@ -164,7 +163,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         requireState(Assigned)
     {
         require(activeJob != bytes32(0));
-        activeJob.gatheringWorkersResponse(true);
+        pandora.respondToJob(activeJob, 0, true); // 0 - response type AcceptAssignment
         _transitionToState(ReadyForDataValidation);
     }
 
@@ -173,7 +172,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         requireState(Assigned)
     {
         require(activeJob != bytes32(0));
-        activeJob.gatheringWorkersResponse(false);
+        pandora.respondToJob(activeJob, 0, false); // 0 - response type AcceptAssignment
         _transitionToState(Idle);
     }
 
@@ -225,7 +224,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         requireState(Computing)
     {
         require(activeJob != bytes32(0));
-        pandora.completeWork(_ipfsAddress);
+        pandora.provideResults(activeJob, _ipfsAddress);
         _transitionToState(Idle);
     }
 

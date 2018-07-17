@@ -3,9 +3,9 @@
 const path = require('path');
 const Pandora = artifacts.require('Pandora');
 const WorkerNode = artifacts.require('WorkerNode');
-const CognitiveJob = artifacts.require('CognitiveJob');
 const WorkerNodeFactory = artifacts.require('WorkerNodeFactory');
 const StateMachineLib = artifacts.require('StateMachineLib');
+const CognitiveJobLib = artifacts.require('CognitiveJobLib');
 const JobQueueLib = artifacts.require('JobQueueLib');
 const Reputation = artifacts.require('Reputation')
 const {
@@ -17,8 +17,9 @@ module.exports = (deployer, network, accounts) => {
 
     return deployer
         .then(_ => deployer.deploy(JobQueueLib))
+        .then(_ => deployer.deploy(CognitiveJobLib))
         .then(_ => deployer.deploy(StateMachineLib))
-        .then(_ => deployer.link(StateMachineLib, [WorkerNode, CognitiveJob]))
+        .then(_ => deployer.link(StateMachineLib, WorkerNode))
         .then(_ => {
             return deployer.deploy(Reputation)
         })
@@ -31,6 +32,7 @@ module.exports = (deployer, network, accounts) => {
         .then(instance => {
             wnf = instance
             deployer.link(JobQueueLib, Pandora)
+            deployer.link(CognitiveJobLib, Pandora)
             return deployer.deploy(Pandora, wnf.address, reputation.address)
         })
         .then(_ => Pandora.deployed())

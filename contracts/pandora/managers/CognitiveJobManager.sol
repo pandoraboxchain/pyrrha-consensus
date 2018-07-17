@@ -32,11 +32,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Contract, that store rep. values for each address
     IReputation reputation;
 
-    /// @dev Returns total count of active jobs
-    function cognitiveJobsCount() onlyInitialized view public returns (uint256) {
-        return cognitiveJobs.length;
-    }
-
     // Deposits from clients used as payment for work
     mapping(address => uint256) public deposits;
 
@@ -89,9 +84,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     public
     WorkerNodeManager(_nodeFactory) {
 
-        // Must ensure that the supplied factories are already created contracts
-        require(_jobFactory != address(0));
-
         // Init reputation storage contract
         reputation = _reputation;
 
@@ -110,6 +102,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     /// ### Public
 
+    /// @dev Returns total count of active jobs
+    function activeJobsCount() view public returns (uint256) {
+        return jobController.activeJobs.length;
+    }
+
     /// @notice Test whether the given `job` is registered as an active job and not completed
     function isActiveJob(
         bytes32 _jobId
@@ -126,37 +123,54 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     public
     view
     returns (
-        address, address, uint256, bytes32, bytes32[], bytes[]
+        address kernel,
+        address dataset,
+        uint256 comlexity,
+        bytes32 description,
+        address[] activeWorkers
     ) {
-        CJL.CognitiveJob[] storage jobs = isActive ?
+        CJL.CognitiveJob storage job = isActive ?
             jobController.activeJobs[jobController.jobIndexes[_jobId]]
             : jobController.completedJobs[jobController.jobIndexes[_jobId]];
-        CJL.CognitiveJob memory job = jobs[_jobId];
-        return (
-            job.kernel,
-            job.dataset,
-            job.complexity,
-            job.description,
-            job.activeWorkers,
-            job.ipfsResults
-        );
+        kernel = job.kernel;
+        dataset = job.dataset;
+        comlexity = job.complexity;
+        description = job.description;
+        activeWorkers = job.activeWorkers;
     }
 
-    function getCognitiveJobProgressInfo(bytes32 _jobId, bool isActive)
+    function getCognitiveJobResults(
+        bytes32 _jobId,
+        bool isActive, // set false if completed jobs needed
+        uint8 number
+    )
     public
+    view
     returns(
-        uint32[], bool[], uint8, uint8
+        bytes ipfsResults
     ) {
-        CJL.CognitiveJob[] storage jobs = isActive ?
+        CJL.CognitiveJob storage job = isActive ?
+        jobController.activeJobs[jobController.jobIndexes[_jobId]]
+        : jobController.completedJobs[jobController.jobIndexes[_jobId]];
+        ipfsResults = job.ipfsResults[number];
+    }
+
+    function getCognitiveJobProgressInfo(
+        bytes32 _jobId,
+        bool isActive // set false if completed jobs needed
+    )
+    public
+    view
+    returns(
+        uint32[] responseTimestamps, bool[] responseFlags, uint8 progress, uint8 state
+    ) {
+        CJL.CognitiveJob storage job = isActive ?
             jobController.activeJobs[jobController.jobIndexes[_jobId]]
             : jobController.completedJobs[jobController.jobIndexes[_jobId]];
-        CJL.CognitiveJob memory job = jobs[_jobId];
-        return (
-            job.responseTimestamps,
-            job.responseFlags,
-            job.progress,
-            job.state
-        );
+        responseTimestamps = job.responseTimestamps;
+        responseFlags = job.responseFlags;
+        progress = job.progress;
+        state = job.state;
     }
 
     /// @notice Public function which checks queue of jobs and create new jobs
@@ -208,7 +222,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
             // @fixme remove in upcoming version
             // (temporarily due to worker controller absence) convert workers array to address array
-            address[] storage workerAddresses = address[](assignedWorkers.length);
+            address[] memory workerAddresses = new address[](assignedWorkers.length);
             for (uint256 i = 0; i < workerAddresses.length; i++) {
                 workerAddresses[i] = address(assignedWorkers[i]);
             }
@@ -307,30 +321,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         }
     }
 
-    /// @notice Can"t be called by the user, for internal use only
-    /// @dev Function must be called only by the master node running cognitive job. It completes the job, updates
-    /// worker node back to `Idle` state (in smart contract) and removes job contract from the list of active contracts
-    function finishCognitiveJob(
-        bytes32 jobId
-    )
-    external
-    //todo onlyAssignedWorker
-    {
-        uint16 index = jobAddresses[msg.sender];
-        require(index != 0);
-        index--;
-
-        bytes32 job = cognitiveJobs[index];
-        require(address(job) == msg.sender);
-
-        // Increase reputation of workers involved to computation
-        uint256 reputationReward = job.complexity();
-        //todo add koef for complexity-reputation
-        for (uint256 i = 0; i <= job.activeWorkersCount(); i++) {
-            reputation.incrReputation(address(i), reputationReward);
-        }
-    }
-
     function getQueueDepth(
         // No arguments
     )
@@ -345,7 +335,17 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         bytes _ipfsResults
     )
     external {
-        jobController.completeWork(_jobId, _workerId, _ipfsResults);
+        //todo get workerId with workerController in new v.
+        if (jobController.completeWork(_jobId, msg.sender, _ipfsResults)) {
+            // Increase reputation of workers involved to computation
+            //todo add koef for complexity-reputation
+            CJL.CognitiveJob storage job = jobController.activeJobs[jobController.jobIndexes[_jobId]];
+            for (uint256 i = 0; i <= job.activeWorkers.length; i++) {
+                reputation.incrReputation(
+                    job.activeWorkers[i],
+                    job.complexity.div(i));
+            }
+        }
     }
 
     function respondToJob(
@@ -359,7 +359,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     function commitProgress(
         bytes32 _jobId,
-        uint _percent)
+        uint8 _percent)
     external {
         //todo implement get workerId with worker controller in new version
         jobController.commitProgress(_jobId, msg.sender, _percent);
@@ -400,15 +400,15 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // @fixme remove in upcoming version
         // (temporarily due to worker controller absence) convert workers array to address array
-        address[] storage workerAddresses = address[](_assignedWorkers.length);
+        address[] memory workerAddresses = new address[](_assignedWorkers.length);
         for (uint256 i = 0; i < workerAddresses.length; i++) {
             workerAddresses[i] = address(_assignedWorkers[i]);
         }
 
-        o_jobId = CJL.createCognitiveJob(
+        o_jobId = jobController.createCognitiveJob(
             address(_kernel),
             address(_dataset),
-            _assignedWorkers,
+            workerAddresses,
             _complexity,
             _description);
 
