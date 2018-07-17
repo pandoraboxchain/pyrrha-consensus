@@ -38,12 +38,6 @@ module.exports.finishActiveJob = async (pandora, workerInstance, workerOwner, op
 
         if (workerState.toNumber() !== WORKER_STATE_IDLE) {
             await pandora.unlockFinalizedWorker(activeJob, options);
-
-            const jobState = await CognitiveJob.at(activeJob).currentState.call();
-            assert.equal(
-                JOB_STATES[jobState.toNumber()],
-                JOB_STATES[JOB_STATE_COMPLETED],
-                `Cognitive job (${jobId}) state should be ${JOB_STATES[JOB_STATE_COMPLETED]} (${JOB_STATE_COMPLETED})`);
         }
     }
 };

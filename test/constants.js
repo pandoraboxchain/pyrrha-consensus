@@ -53,3 +53,9 @@ module.exports.QUEUE_PROCEED_LIMIT = 10;
 
 module.exports.EMPTY = "0x0000000000000000000000000000000000000000";
 module.exports.BALANCE_INACCURACY = 5000;
+
+
+module.exports.INVALID_OPCODE = "INVALID_OPCODE";
+module.exports.IS_NOT_CONTRACT = "IS_NOT_CONTRACT";
+module.exports.OUT_OF_GAS = "OUT_OF_GAS";
+module.exports.REVERT = "REVERT";
