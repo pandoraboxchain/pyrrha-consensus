@@ -4,7 +4,6 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 import "../libraries/IStateMachine.sol";
 import "../pandora/IPandora.sol";
-import "../jobs/IComputingJob.sol";
 import "./WorkerNodeStates.sol";
 
 contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
@@ -17,8 +16,7 @@ contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
         OfflineWhileCognition
     }
 
-    IPandora public pandora;
-    IComputingJob public activeJob;
+    bytes32 public activeJob;
 
     function destroy() external;
     function alive() external;
@@ -33,7 +31,6 @@ contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
     function processToCognition() external;
     function provideResults(bytes ipfs) external;
     function withdrawBalance() external;
-    function unlockFinalizedState() external;
 
     event WorkerDestroyed();
 }

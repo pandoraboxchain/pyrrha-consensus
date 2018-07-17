@@ -5,10 +5,9 @@ import "../../lifecycle/Initializable.sol";
 import "../lottery/RandomEngine.sol";
 import "./ICognitiveJobManager.sol";
 import "./WorkerNodeManager.sol";
-import "../../jobs/IComputingJob.sol";
 import "../token/Reputation.sol";
 
-import {CognitiveJobLib as CJL} from "..\..\libraries\CognitiveJobLib.sol";
+import {CognitiveJobLib as CJL} from "../../libraries/CognitiveJobLib.sol";
 import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
 
 /**
@@ -58,11 +57,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     // Queue for CognitiveJobs kept while no Idle WorkerNodes available
     /// @dev Cognitive job queue used for case when no idle workers available
     using JQL for JQL.Queue;
-    JQL.Queue internal queue;
+    JQL.Queue internal jobQueue;
 
     // Controller for CognitiveJobs
     using CJL for CJL.Controller;
-    CJL.Controller internal controller;
+    CJL.Controller internal jobController;
 
     using SafeMath for uint;
 
@@ -84,7 +83,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     /// @dev Constructor receives addresses for the owners of whitelisted worker nodes, which will be assigned an owners
     /// of worker nodes contracts
     constructor(
-        ICognitiveJobFactory _jobFactory, /// Factory class for creating CognitiveJob contracts
         IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
         IReputation _reputation
     )
@@ -93,9 +91,6 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // Must ensure that the supplied factories are already created contracts
         require(_jobFactory != address(0));
-
-        // Assign factories to storage variables
-        cognitiveJobFactory = _jobFactory;
 
         // Init reputation storage contract
         reputation = _reputation;
@@ -124,15 +119,19 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     returns (
         bool
     ) {
-        return controller.jobAddresses[_jobId] != 0;
+        return jobController.jobIndexes[_jobId] != 0;
     }
 
-    function getCognitiveJobDetails(bytes32 _jobId)
+    function getCognitiveJobDetails(bytes32 _jobId, bool isActive)
     public
+    view
     returns (
         address, address, uint256, bytes32, bytes32[], bytes[]
     ) {
-        CJL.CognitiveJob memory job = controller.cognitiveJobs[_self.jobIndexes[_jobId]];
+        CJL.CognitiveJob[] storage jobs = isActive ?
+            jobController.activeJobs[jobController.jobIndexes[_jobId]]
+            : jobController.completedJobs[jobController.jobIndexes[_jobId]];
+        CJL.CognitiveJob memory job = jobs[_jobId];
         return (
             job.kernel,
             job.dataset,
@@ -143,18 +142,105 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         );
     }
 
-    function getCognitiveJobProgressInfo(bytes32 _jobId)
+    function getCognitiveJobProgressInfo(bytes32 _jobId, bool isActive)
     public
     returns(
         uint32[], bool[], uint8, uint8
     ) {
-        CJL.CognitiveJob memory job = controller.cognitiveJobs[_self.jobIndexes[_jobId]];
+        CJL.CognitiveJob[] storage jobs = isActive ?
+            jobController.activeJobs[jobController.jobIndexes[_jobId]]
+            : jobController.completedJobs[jobController.jobIndexes[_jobId]];
+        CJL.CognitiveJob memory job = jobs[_jobId];
         return (
             job.responseTimestamps,
             job.responseFlags,
             job.progress,
             job.state
         );
+    }
+
+    /// @notice Public function which checks queue of jobs and create new jobs
+    /// #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address)
+    /// to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
+    function checkJobQueue(
+    // No arguments
+    )
+    public {
+        JQL.QueuedJob memory queuedJob;
+        // Iterate queue and check queue depth
+
+        uint256 limitQueueReq = jobQueue.queueDepth();
+        limitQueueReq = limitQueueReq > 1 ? 1 : limitQueueReq;
+        // todo check limit (2) for queue requests with tests
+
+        for (uint256 k = 0; k < limitQueueReq; k++) {
+
+            // Count remaining gas
+            uint initialGas = gasleft();
+
+            // Counting number of available worker nodes (in Idle state)
+            uint256 estimatedSize = _countIdleWorkers();
+
+            // There must be at least one free worker node
+            if (estimatedSize <= 0) {
+                break;
+            }
+
+            // Initializing in-memory array for idle node list and populating it with data
+            IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
+            uint actualSize = idleWorkers.length;
+            if (actualSize != estimatedSize) {
+                break;
+            }
+
+            // Check number of batches with number of idle workers
+            if (!jobQueue.checkElementBatches(actualSize)) {
+                break;
+            }
+
+            // uint value1 = cognitiveJobQueue.queueDepth();
+            uint256 value;
+            // Value from queuedJob deposit
+            (queuedJob, value) = jobQueue.requestJob();
+
+            // Running lottery to select worker node to be assigned cognitive job contract
+            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.batches);
+
+            // @fixme remove in upcoming version
+            // (temporarily due to worker controller absence) convert workers array to address array
+            address[] storage workerAddresses = address[](assignedWorkers.length);
+            for (uint256 i = 0; i < workerAddresses.length; i++) {
+                workerAddresses[i] = address(assignedWorkers[i]);
+            }
+
+            bytes32 jobId = _initQueuedJob(queuedJob, assignedWorkers);
+
+            //todo assign job to each worker
+            for (uint256 j = 0; j < assignedWorkers.length; i++) {
+                assignedWorkers[j].assignJob(jobId);
+            }
+
+            emit CognitiveJobCreated(jobId);
+
+            // Count used funds for queue
+            //todo set limit for gasprice
+            uint weiUsed = (57000 + initialGas - gasleft()) * tx.gasprice;
+            //57k of gas used for transfers and storage writing
+            if (weiUsed > value) {
+                weiUsed = value; //weiUsed should not exceed deposit fixme set constraint to minimal deposit
+            }
+
+            //Withdraw from customer's deposit
+            deposits[queuedJob.customer] = deposits[queuedJob.customer].sub(value);
+
+            // Gas refund to node
+            tx.origin.transfer(weiUsed);
+
+            // Return remaining deposit to customer
+            if (value - weiUsed != 0) {
+                queuedJob.customer.transfer(value - weiUsed);
+            }
+        }
     }
 
     /// ### External
@@ -193,7 +279,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         if (estimatedSize < uint256(batchesCount)) {
             // Put task in queue
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            queue.put(
+            jobQueue.put(
                 address(_kernel),
                 address(_dataset),
                 msg.sender,
@@ -251,103 +337,35 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     external
     returns (uint256)
     {
-        return queue.queueDepth();
+        return jobQueue.queueDepth();
     }
 
-    /// @notice Private function which checks queue of jobs and create new jobs
-    /// #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address)
-    /// to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
-    function checkJobQueue(
-    // No arguments
+    function provideResults(
+        bytes32 _jobId,
+        bytes _ipfsResults
     )
-    public
-    onlyInitialized {
-        JQL.QueuedJob memory queuedJob;
-        // Iterate queue and check queue depth
+    external {
+        jobController.completeWork(_jobId, _workerId, _ipfsResults);
+    }
 
-        uint256 limitQueueReq = queue.queueDepth();
-        limitQueueReq = limitQueueReq > 1 ? 1 : limitQueueReq;
-        // todo check limit (2) for queue requests with tests
-
-        for (uint256 k = 0; k < limitQueueReq; k++) {
-
-            // Count remaining gas
-            uint initialGas = gasleft();
-
-            // Counting number of available worker nodes (in Idle state)
-            uint256 estimatedSize = _countIdleWorkers();
-
-            // There must be at least one free worker node
-            if (estimatedSize <= 0) {
-                break;
-            }
-
-            // Initializing in-memory array for idle node list and populating it with data
-            IWorkerNode[] memory idleWorkers = _listIdleWorkers(estimatedSize);
-            uint actualSize = idleWorkers.length;
-            if (actualSize != estimatedSize) {
-                break;
-            }
-
-            // Check number of batches with number of idle workers
-            if (!queue.checkElementBatches(actualSize)) {
-                break;
-            }
-
-            // uint value1 = cognitiveJobQueue.queueDepth();
-            uint256 value;
-            // Value from queuedJob deposit
-            (queuedJob, value) = queue.requestJob();
-
-            // Running lottery to select worker node to be assigned cognitive job contract
-            IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.batches);
-
-            // @fixme remove in upcoming version
-            // (temporarily due to worker controller absence) convert workers array to address array
-            address[] workerAddresses = address[](assignedWorkers.length);
-            for (uint256 i = 0; i < workerAddresses.length; i++) {
-                workerAddresses[i] = address(assignedWorkers[i]);
-            }
-
-            IComputingJob createdCognitiveJob = _initQueuedJob(queuedJob, assignedWorkers);
-
-            //todo assign job to each worker
-            for (uint256 i = 0; i < assignedWorkers.length; i++) {
-                assignedWorkers[i].assignJob(o_jobId);
-            }
-
-            emit CognitiveJobCreated(createdCognitiveJob, RESULT_CODE_JOB_CREATED);
-
-            // Count used funds for queue
-            //todo set limit for gasprice
-            uint weiUsed = (57000 + initialGas - gasleft()) * tx.gasprice;
-            //57k of gas used for transfers and storage writing
-            if (weiUsed > value) {
-                weiUsed = value; //weiUsed should not exceed deposit fixme set constraint to minimal deposit
-            }
-
-            //Withdraw from customer's deposit
-            deposits[queuedJob.customer] = deposits[queuedJob.customer].sub(value);
-
-            // Gas refund to node
-            tx.origin.transfer(weiUsed);
-
-            // Return remaining deposit to customer
-            if (value - weiUsed != 0) {
-                queuedJob.customer.transfer(value - weiUsed);
-            }
-        }
+    function respondToJob(
+        bytes32 _jobId,
+        uint8 _responseType,
+        bool _response)
+    external {
+        //todo implement get workerId with worker controller in new version
+        jobController.onWorkerResponse(_jobId, msg.sender, _responseType, _response);
     }
 
     function commitProgress(
         bytes32 _jobId,
         uint _percent)
     external {
-        //todo implement check msg.sender with worker controller
-        CJL.commitProgress(_jobId, msg.sender, _percent);
+        //todo implement get workerId with worker controller in new version
+        jobController.commitProgress(_jobId, msg.sender, _percent);
     }
 
-    function _initQueuedJob(JobQueueLib.QueuedJob queuedJob, IWorkerNode[] assignedWorkers)
+    function _initQueuedJob(JQL.QueuedJob queuedJob, IWorkerNode[] assignedWorkers)
     private
     onlyInitialized
     returns (
@@ -382,9 +400,9 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
         // @fixme remove in upcoming version
         // (temporarily due to worker controller absence) convert workers array to address array
-        address[] workerAddresses = address[](assignedWorkers.length);
+        address[] storage workerAddresses = address[](_assignedWorkers.length);
         for (uint256 i = 0; i < workerAddresses.length; i++) {
-            workerAddresses[i] = address(assignedWorkers[i]);
+            workerAddresses[i] = address(_assignedWorkers[i]);
         }
 
         o_jobId = CJL.createCognitiveJob(
@@ -395,8 +413,8 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             _description);
 
         //assign each worker to job
-        for (uint256 i = 0; i < assignedWorkers.length; i++) {
-            assignedWorkers[i].assignJob(o_jobId);
+        for (uint256 j = 0; j < _assignedWorkers.length; j++) {
+            _assignedWorkers[j].assignJob(o_jobId);
         }
     }
 

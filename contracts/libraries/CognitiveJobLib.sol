@@ -33,7 +33,10 @@ library CognitiveJobLib {
         mapping(bytes32 => uint16) jobIndexes;
 
         /// @dev List of all active cognitive jobs
-        CognitiveJob[] cognitiveJobs;
+        CognitiveJob[] activeJobs;
+
+        /// @dev List of all completed cognitive jobs
+        CognitiveJob[] completedJobs;
 
         ///Table of all possible state transitions
         mapping(uint8 => uint8[]) transitionTable;
@@ -136,6 +139,7 @@ library CognitiveJobLib {
         uint8 _percent)
     requireState(_self, _jobId, uint8(States.Cognition))
     internal {
+        //todo check active worker
         uint256 workerIndex = _getWorkerIndex(_self, _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
         _self.cognitiveJobs[_self.jobIndexes[_jobId]].responseTimestamps[workerIndex] = uint32(block.timestamp);
@@ -335,7 +339,7 @@ library CognitiveJobLib {
         uint8 state = _self.cognitiveJobs[_self.jobIndexes[_jobId]].state;
         if (state == uint8(States.InsufficientWorkers)) {
             emit WorkersNotFound(_jobId);
-            //_cleanStorage(); //todo refactor with queue
+            //_onJobComplete(_jobId); //todo refactor with queue
         } else if (state == uint8(States.DataValidation)) {
             emit DataValidationStarted(_jobId);
         } else if (state == uint8(States.InvalidData)) {
@@ -349,7 +353,13 @@ library CognitiveJobLib {
         } else if (state == uint8(States.Completed)) {
             emit CognitionCompleted(_jobId, false);
 //            pandora.finishCognitiveJob();
+              _onJobComplete(_jobId);
         }
+    }
+
+    function _onJobComplete(bytes32 _jobId)
+    private {
+        //todo implement
     }
 
     /******************************************************************************************************************

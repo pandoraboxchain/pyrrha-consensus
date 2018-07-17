@@ -2,7 +2,6 @@ pragma solidity ^0.4.23;
 
 import "../libraries/StateMachine.sol";
 import "../pandora/IPandora.sol";
-import "../jobs/IComputingJob.sol";
 import "./IWorkerNode.sol";
 
 /**
@@ -22,7 +21,7 @@ import "./IWorkerNode.sol";
  * - Worker node contract itself
  */
 
-contract WorkerNode is IWorkerNode, StateMachine /* final */ {
+contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
     /**
      * ## State Machine extensions
      */
@@ -105,23 +104,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         require(msg.sender == address(pandora));
         _;
     }
-        //todo below modifiers removed, should be implemented in manager
-//    /// @dev Modifier for functions that can be called only by one of the active cognitive jobs performed under
-//    /// main Pandora contract. It includes jobs _not_ assigned to the worker node
-//    modifier onlyCognitiveJob() {
-//        require(pandora != address(0));
-//        IComputingJob sender = IComputingJob(msg.sender);
-//        require(pandora == sender.pandora());
-//        require(pandora.isActiveJob(sender));
-//        _;
-//    }
-//
-//    /// @dev Modifier for functions that can be called only by the cognitive job assigned or performed by the worker
-//    /// node in one of its active states
-//    modifier onlyActiveCognitiveJob() {
-//        require(msg.sender == address(activeJob));
-//        _;
-//    }
 
     /// ### External and public functions
 
@@ -155,26 +137,25 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
     /// the main Pandora contract
     function assignJob(
         /// @dev Cognitive job to be assigned
-        bytes32 _job
+        bytes32 _jobId
 
     )
     onlyPandora
-    external // Can"t be called internally
-        /// @dev Must be called only by one of active cognitive jobs listed under the main Pandora contract
-        onlyCognitiveJob
+    external
         /// @dev Job can be assigned only to Idle workers
         requireState(Idle)
     {
-        activeJob = _job;
+        activeJob = _jobId;
         jobProgress = 0;
         _transitionToState(Assigned);
     }
 
-    function cancelJob() external
-        onlyActiveCognitiveJob
+    function cancelJob()
+        onlyPandora
         requireActiveStates
+        external
     {
-        activeJob = IComputingJob(0);
+        activeJob = bytes32(0);
         _transitionToState(Idle);
     }
 
@@ -182,7 +163,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyOwner
         requireState(Assigned)
     {
-        require(activeJob != IComputingJob(0));
+        require(activeJob != bytes32(0));
         activeJob.gatheringWorkersResponse(true);
         _transitionToState(ReadyForDataValidation);
     }
@@ -191,7 +172,7 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyOwner
         requireState(Assigned)
     {
-        require(activeJob != IComputingJob(0));
+        require(activeJob != bytes32(0));
         activeJob.gatheringWorkersResponse(false);
         _transitionToState(Idle);
     }
@@ -207,8 +188,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyOwner
         requireState(ValidatingData)
     {
-        require(activeJob != IComputingJob(0));
-        activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Accept);
+        require(activeJob != bytes32(0));
+        pandora.respondToJob(activeJob, 1, true); // 1 - response type DataValidation
         _transitionToState(ReadyForComputing);
     }
 
@@ -216,8 +197,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyOwner
         requireState(ValidatingData)
     {
-        require(activeJob != IComputingJob(0));
-        activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Decline);
+        require(activeJob != bytes32(0));
+        pandora.respondToJob(activeJob, 1, false);  // 1 - response type DataValidation
         _transitionToState(Idle);
     }
 
@@ -225,8 +206,8 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyOwner
         requireState(ValidatingData)
     {
-        require(activeJob != IComputingJob(0));
-        activeJob.dataValidationResponse(IComputingJob.DataValidationResponse.Invalid);
+        require(activeJob != bytes32(0));
+        //todo implement with validation
         _transitionToState(Idle);
     }
 
@@ -237,25 +218,14 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         _transitionToState(Computing);
     }
 
-    ///Job is considered completed, when every worker finalize. The last one, who submits results should chech the
-    ///Pandora job queue, in case it doesn't do this - it couldn't switch to idle state.
     function provideResults(
         bytes _ipfsAddress
     ) external
         onlyOwner
         requireState(Computing)
     {
-        require(activeJob != IComputingJob(0));
-        bool isFinalized = activeJob.completeWork(_ipfsAddress);
-        if (!isFinalized) {
-            _transitionToState(Idle);
-        }
-    }
-
-    function unlockFinalizedState()
-    external
-    onlyActiveCognitiveJob
-    {
+        require(activeJob != bytes32(0));
+        pandora.completeWork(_ipfsAddress);
         _transitionToState(Idle);
     }
 
@@ -264,7 +234,6 @@ contract WorkerNode is IWorkerNode, StateMachine /* final */ {
         onlyOwner // Can be called only by the owner
         requireStates2(Idle, Offline)
     {
-        /// @todo Handle stakes etc
         owner.transfer(address(this).balance);
     }
 
