@@ -4,7 +4,7 @@
 
 Core set of Ethereum contracts for Pandora Boxchain implementing the first level of consensus. 
 For details on the first level of consensus please check 
-["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
+["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/@pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
 
 ## Implementation Details
 Contracts implement [Pandora Protocol Specification](https://github.com/pandoraboxchain/techspecs/wiki)
