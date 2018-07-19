@@ -142,7 +142,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
     function getCognitiveJobResults(
         bytes32 _jobId,
         bool isActive, // set false if completed jobs needed
-        uint8 number
+        uint8 index //index of worker, whose results should be returned
     )
     public
     view
@@ -152,7 +152,7 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         CJL.CognitiveJob storage job = isActive ?
         jobController.activeJobs[jobController.jobIndexes[_jobId]]
         : jobController.completedJobs[jobController.jobIndexes[_jobId]];
-        ipfsResults = job.ipfsResults[number];
+        ipfsResults = job.ipfsResults[index];
     }
 
     function getCognitiveJobProgressInfo(

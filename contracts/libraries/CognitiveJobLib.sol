@@ -41,6 +41,7 @@ library CognitiveJobLib {
         ///Table of all possible state transitions
         mapping(uint8 => uint8[]) transitionTable;
 
+        bool initialized;
 //        uint8 WORKER_TIMEOUT = 30 minutes;
     }
 
@@ -62,6 +63,17 @@ library CognitiveJobLib {
      * ## Functions
      */
 
+    modifier onlyInitialized(Controller storage _self) {
+        if (!_self.initialized) {
+            _initStateMachine(_self);
+        }
+        _;
+    }
+
+    /*******************************************************************************************************************
+     * ## Functions
+     */
+
     /// ### Public and external
 
     function createCognitiveJob (
@@ -72,6 +84,7 @@ library CognitiveJobLib {
         uint256 _complexity,
         bytes32 _description
     )
+    onlyInitialized(_self)
     internal
     returns(
         bytes32 id
@@ -113,6 +126,7 @@ library CognitiveJobLib {
         address _workerId,
         uint8 _responseType,
         bool _response)
+    onlyInitialized(_self)
     requireActiveStates(_self, _jobId)
     internal
     returns (bool result)
@@ -144,6 +158,7 @@ library CognitiveJobLib {
         bytes32 _jobId,
         address _workerId,
         uint8 _percent)
+    onlyInitialized(_self)
     requireState(_self, _jobId, uint8(States.Cognition))
     internal {
         //todo check active worker with workerController
@@ -159,6 +174,7 @@ library CognitiveJobLib {
         bytes32 _jobId,
         address _workerId,
         bytes _ipfsResults)
+    onlyInitialized(_self)
     requireState(_self, _jobId, uint8(States.Cognition))
     internal
     returns (
@@ -185,6 +201,7 @@ library CognitiveJobLib {
         bytes32 _jobId,
         address _workerId,
         bool _response)
+    onlyInitialized(_self)
     private {
         uint256 workerIndex = _getWorkerIndex(_self, _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
@@ -198,6 +215,7 @@ library CognitiveJobLib {
         Controller storage _self,
         bytes32 _jobId,
         address _workerId)
+    onlyInitialized(_self)
     private
     view
     returns (
@@ -215,6 +233,7 @@ library CognitiveJobLib {
     function _isAllWorkersResponded(
         Controller storage _self,
         bytes32 _jobId)
+    onlyInitialized(_self)
     private
     view
     returns (
@@ -234,6 +253,7 @@ library CognitiveJobLib {
         bytes32 _jobId,
         uint256 _workerIndex,
         bool _response)
+    onlyInitialized(_self)
     private {
         _self.activeJobs[_self.jobIndexes[_jobId]].responseFlags[_workerIndex] = _response;
         _self.activeJobs[_self.jobIndexes[_jobId]].responseTimestamps[_workerIndex] = uint32(block.timestamp);
@@ -243,6 +263,7 @@ library CognitiveJobLib {
     function _resetAllResponses(
         Controller storage _self,
         bytes32 _jobId)
+    onlyInitialized(_self)
     private {
         CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId]];
         for (uint256 i = 0; i < job.responseFlags.length; i++) {
@@ -255,6 +276,7 @@ library CognitiveJobLib {
     function _trackOfflineWorkers(
         Controller storage _self,
         bytes32 _jobId)
+    onlyInitialized(_self)
     requireActiveStates(_self, _jobId)
     internal
     returns (
@@ -276,8 +298,8 @@ library CognitiveJobLib {
 
     modifier requireActiveStates(
         Controller storage _self,
-        bytes32 _jobId
-    ) {
+        bytes32 _jobId)
+    {
         CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId]];
         require(
             job.state == uint8(States.GatheringWorkers) ||
@@ -318,8 +340,9 @@ library CognitiveJobLib {
         Controller storage _self,
         bytes32 _jobId,
         uint8 _newState)
-    private
+    onlyInitialized(_self)
     requireAllowedTransition(_self, _jobId, _newState)
+    private
     {
         CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId]];
         uint8 oldState = job.state;
@@ -346,6 +369,7 @@ library CognitiveJobLib {
     function _fireStateEvent(
         Controller storage _self,
         bytes32 _jobId)
+    onlyInitialized(_self)
     private {
         uint8 state = _self.activeJobs[_self.jobIndexes[_jobId]].state;
         if (state == uint8(States.InsufficientWorkers)) {
@@ -364,12 +388,16 @@ library CognitiveJobLib {
         } else if (state == uint8(States.Completed)) {
             emit CognitionCompleted(_jobId, false);
 //            pandora.finishCognitiveJob();
-              _onJobComplete(_jobId);
+              _onJobComplete(_self, _jobId);
         }
     }
 
-    function _onJobComplete(bytes32 _jobId)
-    private {
+    function _onJobComplete(
+        Controller storage _self,
+        bytes32 _jobId)
+    onlyInitialized(_self)
+    private
+    {
         //todo implement
     }
 
