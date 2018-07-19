@@ -21,7 +21,7 @@ import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
  * for more details.
  */
 
-contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeManager {
+contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -141,30 +141,33 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
 
     function getCognitiveJobResults(
         bytes32 _jobId,
-        bool isActive, // set false if completed jobs needed
-        uint8 index //index of worker, whose results should be returned
+        bool _isActive, // set false if completed jobs needed
+        uint8 _index //index of worker, whose results should be returned
     )
     public
     view
     returns(
         bytes ipfsResults
     ) {
-        CJL.CognitiveJob storage job = isActive ?
+        CJL.CognitiveJob storage job = _isActive ?
         jobController.activeJobs[jobController.jobIndexes[_jobId]]
         : jobController.completedJobs[jobController.jobIndexes[_jobId]];
-        ipfsResults = job.ipfsResults[index];
+        ipfsResults = job.ipfsResults[_index];
     }
 
     function getCognitiveJobProgressInfo(
         bytes32 _jobId,
-        bool isActive // set false if completed jobs needed
+        bool _isActive // set false if completed jobs needed
     )
     public
     view
     returns(
-        uint32[] responseTimestamps, bool[] responseFlags, uint8 progress, uint8 state
+        uint32[] responseTimestamps,
+        bool[] responseFlags,
+        uint8 progress,
+        uint8 state
     ) {
-        CJL.CognitiveJob storage job = isActive ?
+        CJL.CognitiveJob storage job = _isActive ?
             jobController.activeJobs[jobController.jobIndexes[_jobId]]
             : jobController.completedJobs[jobController.jobIndexes[_jobId]];
         responseTimestamps = job.responseTimestamps;
@@ -183,11 +186,11 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
         JQL.QueuedJob memory queuedJob;
         // Iterate queue and check queue depth
 
-        uint256 limitQueueReq = jobQueue.queueDepth();
+        uint8 limitQueueReq = uint8(jobQueue.queueDepth());
         limitQueueReq = limitQueueReq > 1 ? 1 : limitQueueReq;
         // todo check limit (2) for queue requests with tests
 
-        for (uint256 k = 0; k < limitQueueReq; k++) {
+        for (uint8 k = 0; k < limitQueueReq; k++) {
 
             // Count remaining gas
             uint initialGas = gasleft();
@@ -223,14 +226,14 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             // @fixme remove in upcoming version
             // (temporarily due to worker controller absence) convert workers array to address array
             address[] memory workerAddresses = new address[](assignedWorkers.length);
-            for (uint256 i = 0; i < workerAddresses.length; i++) {
+            for (uint8 i = 0; i < workerAddresses.length; i++) {
                 workerAddresses[i] = address(assignedWorkers[i]);
             }
 
             bytes32 jobId = _initQueuedJob(queuedJob, assignedWorkers);
 
             //todo assign job to each worker
-            for (uint256 j = 0; j < assignedWorkers.length; i++) {
+            for (uint8 j = 0; j < assignedWorkers.length; i++) {
                 assignedWorkers[j].assignJob(jobId);
             }
 
@@ -240,15 +243,12 @@ contract CognitiveJobManager is Initializable, ICognitiveJobManager, WorkerNodeM
             //todo set limit for gasprice
             uint weiUsed = (57000 + initialGas - gasleft()) * tx.gasprice;
             //57k of gas used for transfers and storage writing
-            if (weiUsed > value) {
-                weiUsed = value; //weiUsed should not exceed deposit fixme set constraint to minimal deposit
-            }
 
-            //Withdraw from customer's deposit
-            deposits[queuedJob.customer] = deposits[queuedJob.customer].sub(value);
+            weiUsed = weiUsed > value ? value : weiUsed;
+            //weiUsed should not exceed deposit fixme set constraint to minimal deposit
 
             // Gas refund to node
-            tx.origin.transfer(weiUsed);
+            msg.sender.transfer(weiUsed);
 
             // Return remaining deposit to customer
             if (value - weiUsed != 0) {

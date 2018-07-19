@@ -1,7 +1,7 @@
 pragma solidity ^0.4.23;
 
 import "../libraries/StateMachine.sol";
-import "../pandora/IPandora.sol";
+import "../pandora/managers/ICognitiveJobManager.sol";
 import "./IWorkerNode.sol";
 
 /**
@@ -71,7 +71,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
     /// @notice Reference to the main Pandora contract.
     /// @dev Required to check the validity of the method calls coming from the Pandora contract.
     /// Initialy set from the address supplied to the constructor and can"t be changed after.
-    IPandora public pandora;
+    ICognitiveJobManager public pandora;
 
     /// @notice Active cognitive job reference. Zero when there is no active cognitive job assigned or performed
     /// @dev Valid (non-zero) only for active states (see `activeStates` modified for the list of such states)
@@ -85,7 +85,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
     /// ### Constructor and destructor
 
     constructor(
-        IPandora _pandora /// Reference to the main Pandora contract that creates Worker Node
+        ICognitiveJobManager _pandora /// Reference to the main Pandora contract that creates Worker Node
     )
     public {
         require(_pandora != address(0));

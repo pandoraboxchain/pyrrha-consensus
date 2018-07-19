@@ -1,8 +1,7 @@
 pragma solidity ^0.4.23;
 
 import "../../nodes/WorkerNode.sol";
-import "../IPandora.sol";
-
+import "../managers/ICognitiveJobManager.sol";
 import "./IWorkerNodeFactory.sol";
 
 contract WorkerNodeFactory is IWorkerNodeFactory {
@@ -20,7 +19,7 @@ contract WorkerNodeFactory is IWorkerNodeFactory {
         WorkerNode o_workerNode /// Worker node created by the factory
     ) {
         // Creating node
-        o_workerNode = new WorkerNode(IPandora(owner));
+        o_workerNode = new WorkerNode(ICognitiveJobManager(owner));
 
         // Checking that it was created correctly
         assert(o_workerNode != WorkerNode(0));

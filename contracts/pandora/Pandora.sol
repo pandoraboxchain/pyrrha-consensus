@@ -1,13 +1,9 @@
 pragma solidity ^0.4.23;
 
 import "../lifecycle/OnlyOnce.sol";
-import "../nodes/IWorkerNode.sol";
-import "../entities/IDataEntity.sol";
 import "./factories/IWorkerNodeFactory.sol";
 import "./managers/CognitiveJobManager.sol";
-import "./lottery/RandomEngine.sol";
-
-import "./IPandora.sol";
+import "./token/PAN.sol";
 
 /**
  * @title Pandora Smart Contract
@@ -23,7 +19,7 @@ import "./IPandora.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract Pandora is IPandora, OnlyOnce, CognitiveJobManager {
+contract Pandora is OnlyOnce, CognitiveJobManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -54,7 +50,7 @@ contract Pandora is IPandora, OnlyOnce, CognitiveJobManager {
     // Ensure that the contract is still uninitialized and `initialize` function be called to check the proper
     // setup of class factories
     Initializable()
-    Ownable() {         
+    Ownable() {
     }
 
     /// ### Initialization

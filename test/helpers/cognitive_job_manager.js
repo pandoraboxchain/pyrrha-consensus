@@ -1,4 +1,3 @@
-const CognitiveJob = artifacts.require('CognitiveJob');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
 const { assign } = require("lodash");
@@ -22,9 +21,9 @@ module.exports.finishActiveJob = async (pandora, workerInstance, workerOwner, op
 
     if (activeJob === EMPTY) return;
 
-    const activeJobState = await CognitiveJob.at(activeJob).currentState.call();
+    // const activeJobState = await CognitiveJob.at(activeJob).currentState.call();
 
-    if (activeJobState.toNumber() !== JOB_STATE_COMPLETED) {
+    // if (activeJobState.toNumber() !== JOB_STATE_COMPLETED) {
         await workerInstance.acceptAssignment(options);
         await workerInstance.processToDataValidation(options);
         await workerInstance.acceptValidData(options);
@@ -39,13 +38,13 @@ module.exports.finishActiveJob = async (pandora, workerInstance, workerOwner, op
         if (workerState.toNumber() !== WORKER_STATE_IDLE) {
             await pandora.unlockFinalizedWorker(activeJob, options);
 
-            const jobState = await CognitiveJob.at(activeJob).currentState.call();
-            assert.equal(
-                JOB_STATES[jobState.toNumber()],
-                JOB_STATES[JOB_STATE_COMPLETED],
-                `Cognitive job (${jobId}) state should be ${JOB_STATES[JOB_STATE_COMPLETED]} (${JOB_STATE_COMPLETED})`);
+            // const jobState = await CognitiveJob.at(activeJob).currentState.call();
+            // assert.equal(
+            //     JOB_STATES[jobState.toNumber()],
+            //     JOB_STATES[JOB_STATE_COMPLETED],
+            //     `Cognitive job (${jobId}) state should be ${JOB_STATES[JOB_STATE_COMPLETED]} (${JOB_STATE_COMPLETED})`);
         }
-    }
+    // }
 };
 
 module.exports.createCognitiveJob = async (pandora, batchesCount, opts = {}) => {
