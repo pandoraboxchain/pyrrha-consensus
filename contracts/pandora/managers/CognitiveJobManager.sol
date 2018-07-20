@@ -265,7 +265,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             //todo add koef for complexity-reputation
             uint256 complexity;
             address[] memory activeWorkers;
-            ( , ,complexity, ,activeWorkers) = jobController.getCognitiveJobDetails(_jobId);
+            ( , ,complexity, ,activeWorkers, , ) = jobController.getCognitiveJobDetails(_jobId);
             for (uint256 i = 0; i <= activeWorkers.length; i++) {
                 reputation.incrReputation(
                     activeWorkers[i],

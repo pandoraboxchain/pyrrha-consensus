@@ -20,7 +20,9 @@ contract ICognitiveJobController is Ownable{
         address dataset,
         uint256 complexity,
         bytes32 description,
-        address[] activeWorkers
+        address[] activeWorkers,
+        uint8 progress,
+        uint8 state
     );
 
     function createCognitiveJob (

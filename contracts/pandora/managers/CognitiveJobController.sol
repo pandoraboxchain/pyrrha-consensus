@@ -97,7 +97,9 @@ contract CognitiveJobController is ICognitiveJobController{
         address dataset,
         uint256 complexity,
         bytes32 description,
-        address[] activeWorkers
+        address[] activeWorkers,
+        uint8 progress,
+        uint8 state
     ) {
         CognitiveJob storage job = isActiveJob(_jobId) ?
             activeJobs[activeJobsIndexes[_jobId]]
@@ -107,6 +109,8 @@ contract CognitiveJobController is ICognitiveJobController{
         complexity = job.complexity;
         description = job.description;
         activeWorkers = job.activeWorkers;
+        progress = job.progress;
+        state = job.state;
     }
 
     function getCognitiveJobResults(
@@ -124,24 +128,20 @@ contract CognitiveJobController is ICognitiveJobController{
         ipfsResults = job.ipfsResults[_index];
     }
 
-    function getCognitiveJobProgressInfo(
+    function getCognitiveJobServiceInfo(
         bytes32 _jobId
     )
     public
     view
     returns(
         uint32[] responseTimestamps,
-        bool[] responseFlags,
-        uint8 progress,
-        uint8 state
+        bool[] responseFlags
     ) {
         CognitiveJob storage job = isActiveJob(_jobId) ?
             activeJobs[activeJobsIndexes[_jobId]]
             : completedJobs[completedJobsIndexes[_jobId]];
         responseTimestamps = job.responseTimestamps;
         responseFlags = job.responseFlags;
-        progress = job.progress;
-        state = job.state;
     }
 
     /******************************************************************************************************************
