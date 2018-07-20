@@ -119,7 +119,17 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         return jobController.jobIndexes[_jobId] != 0;
     }
 
-    function getCognitiveJobDetails(bytes32 _jobId, bool isActive)
+    function getJobId(uint16 _index, bool _isActive)
+    view
+    public
+    returns(bytes32){
+        CJL.CognitiveJob storage job = _isActive ?
+            jobController.activeJobs[_index]
+            : jobController.completedJobs[_index];
+        return job.id;
+    }
+
+    function getCognitiveJobDetails(bytes32 _jobId, bool _isActive)
     public
     view
     returns (
@@ -129,7 +139,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         bytes32 description,
         address[] activeWorkers
     ) {
-        CJL.CognitiveJob storage job = isActive ?
+        CJL.CognitiveJob storage job = _isActive ?
             jobController.activeJobs[jobController.jobIndexes[_jobId]]
             : jobController.completedJobs[jobController.jobIndexes[_jobId]];
         kernel = job.kernel;
@@ -257,7 +267,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         }
     }
 
-    /// ### External
+    /******************************************************************************************************************
+    External functions
+    */
 
     /// @notice Creates and returns new cognitive job contract and starts actual cognitive work instantly
     /// @dev Core function creating new cognitive job contract and returning it back to the caller
@@ -364,6 +376,10 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         //todo implement get workerId with worker controller in new version
         jobController.commitProgress(_jobId, msg.sender, _percent);
     }
+
+    /******************************************************************************************************************
+    Private functions
+    */
 
     function _initQueuedJob(JQL.QueuedJob queuedJob, IWorkerNode[] assignedWorkers)
     private
