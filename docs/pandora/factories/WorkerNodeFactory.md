@@ -1,11 +1,11 @@
 # WorkerNodeFactory
 
 
-**Execution cost**: less than 21743 gas
+**Execution cost**: less than 21621 gas
 
-**Deployment cost**: less than 1393200 gas
+**Deployment cost**: less than 1280000 gas
 
-**Combined cost**: less than 1414943 gas
+**Combined cost**: less than 1301621 gas
 
 ## Constructor
 
@@ -82,6 +82,8 @@ Returns:
 
 --- 
 ### renounceOwnership()
+>
+>Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
 >
 > Allows the current owner to relinquish control of the contract.
 

@@ -1,0 +1,2428 @@
+{
+  "contractName": "ICognitiveJobManager",
+  "abi": [
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_jobId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "CognitiveJobCreated",
+      "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "activeJobsCount",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_jobId",
+          "type": "bytes32"
+        }
+      ],
+      "name": "isActiveJob",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_jobId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_isActive",
+          "type": "bool"
+        }
+      ],
+      "name": "getCognitiveJobDetails",
+      "outputs": [
+        {
+          "name": "kernel",
+          "type": "address"
+        },
+        {
+          "name": "dataset",
+          "type": "address"
+        },
+        {
+          "name": "comlexity",
+          "type": "uint256"
+        },
+        {
+          "name": "description",
+          "type": "bytes32"
+        },
+        {
+          "name": "activeWorkers",
+          "type": "address[]"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_jobId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_isActive",
+          "type": "bool"
+        },
+        {
+          "name": "_index",
+          "type": "uint8"
+        }
+      ],
+      "name": "getCognitiveJobResults",
+      "outputs": [
+        {
+          "name": "ipfsResults",
+          "type": "bytes"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [
+        {
+          "name": "_jobId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_isActive",
+          "type": "bool"
+        }
+      ],
+      "name": "getCognitiveJobProgressInfo",
+      "outputs": [
+        {
+          "name": "responseTimestamps",
+          "type": "uint32[]"
+        },
+        {
+          "name": "responseFlags",
+          "type": "bool[]"
+        },
+        {
+          "name": "progress",
+          "type": "uint8"
+        },
+        {
+          "name": "state",
+          "type": "uint8"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_jobId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_ipfsResults",
+          "type": "bytes"
+        }
+      ],
+      "name": "provideResults",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_jobId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_responseType",
+          "type": "uint8"
+        },
+        {
+          "name": "_response",
+          "type": "bool"
+        }
+      ],
+      "name": "respondToJob",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_jobId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_percent",
+          "type": "uint8"
+        }
+      ],
+      "name": "commitProgress",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "sourceMap": "",
+  "deployedSourceMap": "",
+  "source": "pragma solidity ^0.4.23;\n\nimport \"../../nodes/IWorkerNode.sol\";\nimport \"../../entities/IDataEntity.sol\";\nimport \"../../entities/IKernel.sol\";\nimport \"../../entities/IDataset.sol\";\n\ncontract ICognitiveJobManager {\n\n    function activeJobsCount() view public returns (uint256);\n\n    function isActiveJob(bytes32 _jobId) view public returns (bool);\n\n    function getCognitiveJobDetails(bytes32 _jobId, bool _isActive) public view returns (\n        address kernel, address dataset, uint256 comlexity, bytes32 description, address[] activeWorkers);\n\n    function getCognitiveJobResults(bytes32 _jobId, bool _isActive, uint8 _index) public view returns(\n        bytes ipfsResults);\n\n    function getCognitiveJobProgressInfo(bytes32 _jobId, bool _isActive) public view returns(\n        uint32[] responseTimestamps, bool[] responseFlags, uint8 progress, uint8 state);\n\n    //workers interaction\n    function provideResults(bytes32 _jobId, bytes _ipfsResults) external;\n    function respondToJob(bytes32 _jobId, uint8 _responseType, bool _response) external;\n    function commitProgress(bytes32 _jobId, uint8 _percent) external;\n\n    event CognitiveJobCreated(bytes32 _jobId);\n}\n",
+  "sourcePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
+  "ast": {
+    "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
+    "exportedSymbols": {
+      "ICognitiveJobManager": [
+        4409
+      ]
+    },
+    "id": 4410,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4319,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".23"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:26"
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
+        "file": "../../nodes/IWorkerNode.sol",
+        "id": 4320,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 2512,
+        "src": "26:37:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
+        "file": "../../entities/IDataEntity.sol",
+        "id": 4321,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 631,
+        "src": "64:40:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IKernel.sol",
+        "file": "../../entities/IKernel.sol",
+        "id": 4322,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 647,
+        "src": "105:36:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataset.sol",
+        "file": "../../entities/IDataset.sol",
+        "id": 4323,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 639,
+        "src": "142:37:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 4409,
+        "linearizedBaseContracts": [
+          4409
+        ],
+        "name": "ICognitiveJobManager",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4328,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "activeJobsCount",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4324,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "242:2:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4327,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4326,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4328,
+                  "src": "266:7:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 4325,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "266:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "265:9:26"
+            },
+            "scope": 4409,
+            "src": "218:57:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4335,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "isActiveJob",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4331,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4330,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4335,
+                  "src": "302:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4329,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "302:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "301:16:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4334,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4333,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4335,
+                  "src": "339:4:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4332,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "339:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "338:6:26"
+            },
+            "scope": 4409,
+            "src": "281:64:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4353,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getCognitiveJobDetails",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4340,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4337,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "383:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4336,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "383:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4339,
+                  "name": "_isActive",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "399:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4338,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "399:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "382:32:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4352,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4342,
+                  "name": "kernel",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "445:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4341,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "445:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4344,
+                  "name": "dataset",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "461:15:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4343,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "461:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4346,
+                  "name": "comlexity",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "478:17:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 4345,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "478:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4348,
+                  "name": "description",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "497:19:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4347,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "497:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4351,
+                  "name": "activeWorkers",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "518:23:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 4349,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "518:7:26",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 4350,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "518:9:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "435:107:26"
+            },
+            "scope": 4409,
+            "src": "351:192:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4364,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getCognitiveJobResults",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4360,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4355,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "581:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4354,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "581:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4357,
+                  "name": "_isActive",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "597:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4356,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "597:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4359,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "613:12:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4358,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "613:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "580:46:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4363,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4362,
+                  "name": "ipfsResults",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "656:17:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 4361,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "656:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "646:28:26"
+            },
+            "scope": 4409,
+            "src": "549:126:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4381,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getCognitiveJobProgressInfo",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4369,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4366,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "718:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4365,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "718:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4368,
+                  "name": "_isActive",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "734:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4367,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "734:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "717:32:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4380,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4372,
+                  "name": "responseTimestamps",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "779:27:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint32_$dyn_memory_ptr",
+                    "typeString": "uint32[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 4370,
+                      "name": "uint32",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "779:6:26",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint32",
+                        "typeString": "uint32"
+                      }
+                    },
+                    "id": 4371,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "779:8:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint32_$dyn_storage_ptr",
+                      "typeString": "uint32[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4375,
+                  "name": "responseFlags",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "808:20:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_bool_$dyn_memory_ptr",
+                    "typeString": "bool[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 4373,
+                      "name": "bool",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "808:4:26",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "id": 4374,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "808:6:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_bool_$dyn_storage_ptr",
+                      "typeString": "bool[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4377,
+                  "name": "progress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "830:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4376,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "830:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4379,
+                  "name": "state",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "846:11:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4378,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "846:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "769:89:26"
+            },
+            "scope": 4409,
+            "src": "681:178:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4388,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "provideResults",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4386,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4383,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4388,
+                  "src": "915:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4382,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "915:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4385,
+                  "name": "_ipfsResults",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4388,
+                  "src": "931:18:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 4384,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "931:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "914:36:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4387,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "959:0:26"
+            },
+            "scope": 4409,
+            "src": "891:69:26",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4397,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "respondToJob",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4395,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4390,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4397,
+                  "src": "987:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4389,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "987:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4392,
+                  "name": "_responseType",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4397,
+                  "src": "1003:19:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4391,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1003:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4394,
+                  "name": "_response",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4397,
+                  "src": "1024:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4393,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1024:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "986:53:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4396,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1048:0:26"
+            },
+            "scope": 4409,
+            "src": "965:84:26",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4404,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "commitProgress",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4402,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4399,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4404,
+                  "src": "1078:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4398,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1078:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4401,
+                  "name": "_percent",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4404,
+                  "src": "1094:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4400,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1094:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1077:32:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4403,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1118:0:26"
+            },
+            "scope": 4409,
+            "src": "1054:65:26",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 4408,
+            "name": "CognitiveJobCreated",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 4407,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4406,
+                  "indexed": false,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4408,
+                  "src": "1151:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4405,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1151:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1150:16:26"
+            },
+            "src": "1125:42:26"
+          }
+        ],
+        "scope": 4410,
+        "src": "181:988:26"
+      }
+    ],
+    "src": "0:1170:26"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
+    "exportedSymbols": {
+      "ICognitiveJobManager": [
+        4409
+      ]
+    },
+    "id": 4410,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 4319,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".23"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:26"
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
+        "file": "../../nodes/IWorkerNode.sol",
+        "id": 4320,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 2512,
+        "src": "26:37:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
+        "file": "../../entities/IDataEntity.sol",
+        "id": 4321,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 631,
+        "src": "64:40:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IKernel.sol",
+        "file": "../../entities/IKernel.sol",
+        "id": 4322,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 647,
+        "src": "105:36:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataset.sol",
+        "file": "../../entities/IDataset.sol",
+        "id": 4323,
+        "nodeType": "ImportDirective",
+        "scope": 4410,
+        "sourceUnit": 639,
+        "src": "142:37:26",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [],
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "documentation": null,
+        "fullyImplemented": false,
+        "id": 4409,
+        "linearizedBaseContracts": [
+          4409
+        ],
+        "name": "ICognitiveJobManager",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4328,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "activeJobsCount",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4324,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "242:2:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4327,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4326,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4328,
+                  "src": "266:7:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 4325,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "266:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "265:9:26"
+            },
+            "scope": 4409,
+            "src": "218:57:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4335,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "isActiveJob",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4331,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4330,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4335,
+                  "src": "302:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4329,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "302:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "301:16:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4334,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4333,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4335,
+                  "src": "339:4:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4332,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "339:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "338:6:26"
+            },
+            "scope": 4409,
+            "src": "281:64:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4353,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getCognitiveJobDetails",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4340,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4337,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "383:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4336,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "383:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4339,
+                  "name": "_isActive",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "399:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4338,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "399:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "382:32:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4352,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4342,
+                  "name": "kernel",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "445:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4341,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "445:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4344,
+                  "name": "dataset",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "461:15:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 4343,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "461:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4346,
+                  "name": "comlexity",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "478:17:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 4345,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "478:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4348,
+                  "name": "description",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "497:19:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4347,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "497:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4351,
+                  "name": "activeWorkers",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4353,
+                  "src": "518:23:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_memory_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 4349,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "518:7:26",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 4350,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "518:9:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "435:107:26"
+            },
+            "scope": 4409,
+            "src": "351:192:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4364,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getCognitiveJobResults",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4360,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4355,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "581:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4354,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "581:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4357,
+                  "name": "_isActive",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "597:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4356,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "597:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4359,
+                  "name": "_index",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "613:12:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4358,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "613:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "580:46:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4363,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4362,
+                  "name": "ipfsResults",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4364,
+                  "src": "656:17:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_memory_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 4361,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "656:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "646:28:26"
+            },
+            "scope": 4409,
+            "src": "549:126:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4381,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getCognitiveJobProgressInfo",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4369,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4366,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "718:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4365,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "718:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4368,
+                  "name": "_isActive",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "734:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4367,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "734:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "717:32:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4380,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4372,
+                  "name": "responseTimestamps",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "779:27:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint32_$dyn_memory_ptr",
+                    "typeString": "uint32[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 4370,
+                      "name": "uint32",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "779:6:26",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint32",
+                        "typeString": "uint32"
+                      }
+                    },
+                    "id": 4371,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "779:8:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint32_$dyn_storage_ptr",
+                      "typeString": "uint32[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4375,
+                  "name": "responseFlags",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "808:20:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_bool_$dyn_memory_ptr",
+                    "typeString": "bool[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 4373,
+                      "name": "bool",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "808:4:26",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "id": 4374,
+                    "length": null,
+                    "nodeType": "ArrayTypeName",
+                    "src": "808:6:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_bool_$dyn_storage_ptr",
+                      "typeString": "bool[]"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4377,
+                  "name": "progress",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "830:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4376,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "830:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4379,
+                  "name": "state",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4381,
+                  "src": "846:11:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4378,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "846:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "769:89:26"
+            },
+            "scope": 4409,
+            "src": "681:178:26",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4388,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "provideResults",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4386,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4383,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4388,
+                  "src": "915:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4382,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "915:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4385,
+                  "name": "_ipfsResults",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4388,
+                  "src": "931:18:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 4384,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "931:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "914:36:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4387,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "959:0:26"
+            },
+            "scope": 4409,
+            "src": "891:69:26",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4397,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "respondToJob",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4395,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4390,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4397,
+                  "src": "987:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4389,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "987:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4392,
+                  "name": "_responseType",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4397,
+                  "src": "1003:19:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4391,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1003:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4394,
+                  "name": "_response",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4397,
+                  "src": "1024:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 4393,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1024:4:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "986:53:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4396,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1048:0:26"
+            },
+            "scope": 4409,
+            "src": "965:84:26",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 4404,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "commitProgress",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 4402,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4399,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4404,
+                  "src": "1078:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4398,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1078:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 4401,
+                  "name": "_percent",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4404,
+                  "src": "1094:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 4400,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1094:5:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1077:32:26"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 4403,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1118:0:26"
+            },
+            "scope": 4409,
+            "src": "1054:65:26",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "anonymous": false,
+            "documentation": null,
+            "id": 4408,
+            "name": "CognitiveJobCreated",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 4407,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 4406,
+                  "indexed": false,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 4408,
+                  "src": "1151:14:26",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 4405,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1151:7:26",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1150:16:26"
+            },
+            "src": "1125:42:26"
+          }
+        ],
+        "scope": 4410,
+        "src": "181:988:26"
+      }
+    ],
+    "src": "0:1170:26"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.24+commit.e67f0147.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2018-07-20T09:53:22.667Z"
+}

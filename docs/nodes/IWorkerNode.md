@@ -53,19 +53,16 @@ Params:
 
 
 ## Methods
-### Offline()
+### assignJob(bytes32)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
+Params:
 
+1. **_jobId** *of type `bytes32`*
 
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### processToCognition()
@@ -75,21 +72,6 @@ Returns:
 
 
 
-
---- 
-### pandora()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
 
 --- 
 ### declineValidData()
@@ -263,24 +245,27 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### Offline()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
 ### destroy()
 
 
 **Execution cost**: No bound available
 
 
-
-
---- 
-### assignJob(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **job** *of type `address`*
 
 
 --- 
@@ -311,7 +296,7 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `address`*
+1. **output_0** *of type `bytes32`*
 
 --- 
 ### UnderPenalty()
@@ -379,7 +364,7 @@ Returns:
 
 Params:
 
-1. **ipfs** *of type `bytes`*
+1. **_ipfsAddress** *of type `bytes`*
 
 
 --- 

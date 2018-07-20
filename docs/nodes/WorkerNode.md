@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 932600 gas
+**Deployment cost**: less than 821800 gas
 
 **Combined cost**: No bound available
 
@@ -63,19 +63,20 @@ Params:
 
 
 ## Methods
-### Offline()
+### assignJob(bytes32)
+>
+>Do not call
+>
+> Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under the main Pandora contract
 
 
-**Execution cost**: less than 545 gas
-
-**Attributes**: constant
+**Execution cost**: No bound available
 
 
+Params:
 
-Returns:
+1. **_jobId** *of type `bytes32`*
 
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### processToCognition()
@@ -292,30 +293,29 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### Offline()
+
+
+**Execution cost**: less than 567 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
 ### destroy()
 >
 >### External and public functions
 
 
-**Execution cost**: less than 32136 gas
+**Execution cost**: less than 31860 gas
 
 
-
-
---- 
-### assignJob(address)
->
->Do not call
->
-> Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under the main Pandora contract
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_job** *of type `address`*
 
 
 --- 
@@ -337,7 +337,7 @@ Returns:
 ### activeJob()
 
 
-**Execution cost**: less than 977 gas
+**Execution cost**: less than 824 gas
 
 **Attributes**: constant
 
@@ -346,7 +346,7 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `address`*
+1. **output_0** *of type `bytes32`*
 
 --- 
 ### UnderPenalty()
@@ -419,6 +419,8 @@ Params:
 
 --- 
 ### renounceOwnership()
+>
+>Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
 >
 > Allows the current owner to relinquish control of the contract.
 
