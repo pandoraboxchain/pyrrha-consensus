@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1605600 gas
+**Deployment cost**: less than 2858400 gas
 
 **Combined cost**: No bound available
 
@@ -16,12 +16,11 @@
 
 Params:
 
-1. **_jobFactory** *of type `address`*
-2. **_nodeFactory** *of type `address`*
-3. **_reputation** *of type `address`*
+1. **_nodeFactory** *of type `address`*
+2. **_reputation** *of type `address`*
 
 ## Events
-### DebugEvent3(bytes32)
+### CognitiveJobCreated(bytes32)
 
 
 **Execution cost**: No bound available
@@ -29,10 +28,10 @@ Params:
 
 Params:
 
-1. **descr** *of type `bytes32`*
+1. **jobId** *of type `bytes32`*
 
 --- 
-### CognitiveJobCreated(address,uint256)
+### CognitiveJobQueued(bytes32)
 
 
 **Execution cost**: No bound available
@@ -40,64 +39,7 @@ Params:
 
 Params:
 
-1. **cognitiveJob** *of type `address`*
-2. **resultCode** *of type `uint256`*
-
---- 
-### CognitiveJobCreateFailed(address,uint256)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **cognitiveJob** *of type `address`*
-2. **resultCode** *of type `uint256`*
-
---- 
-### CognitiveJobCreated(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **cognitiveJob** *of type `address`*
-
---- 
-### DebugEvent(uint256)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **value** *of type `uint256`*
-
---- 
-### DebugEvent1(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **addr** *of type `address`*
-
---- 
-### DebugEvent2(address[])
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **nodes** *of type `address[]`*
+1. **jobId** *of type `bytes32`*
 
 --- 
 ### OwnershipRenounced(address)
@@ -146,30 +88,47 @@ Params:
 
 
 ## Methods
-### initialize()
+### RESULT_CODE_ADD_TO_QUEUE()
 
 
-**Execution cost**: less than 20703 gas
+**Execution cost**: less than 586 gas
+
+**Attributes**: constant
 
 
 
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
-### isActiveJob(address)
->
->### Public and externalTest whether the given `job` is registered as an active job by the main Pandora contract
->
-> Used to test if some given job contract is a contract created by the Pandora and is listed by it as an active contract
+### workerAddresses(address)
 
 
-**Execution cost**: less than 1594 gas
+**Execution cost**: less than 1247 gas
 
 **Attributes**: constant
 
 
 Params:
 
-1. **_job** *of type `address`*
+1. **param_0** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `uint16`*
+
+--- 
+### initialized()
+
+
+**Execution cost**: less than 503 gas
+
+**Attributes**: constant
+
+
 
 Returns:
 
@@ -180,7 +139,7 @@ Returns:
 ### deposits(address)
 
 
-**Execution cost**: less than 1144 gas
+**Execution cost**: less than 1210 gas
 
 **Attributes**: constant
 
@@ -195,10 +154,10 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
-### initialized()
+### RESULT_CODE_JOB_CREATED()
 
 
-**Execution cost**: less than 525 gas
+**Execution cost**: less than 344 gas
 
 **Attributes**: constant
 
@@ -207,14 +166,236 @@ Returns:
 Returns:
 
 
+1. **output_0** *of type `uint8`*
+
+--- 
+### getCognitiveJobDetails(bytes32,bool)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **isActive** *of type `bool`*
+
+Returns:
+
+
+1. **kernel** *of type `address`*
+2. **dataset** *of type `address`*
+3. **comlexity** *of type `uint256`*
+4. **description** *of type `bytes32`*
+5. **activeWorkers** *of type `address[]`*
+
+--- 
+### activeJobsCount()
+>
+>### Public
+>
+> Returns total count of active jobs
+
+
+**Execution cost**: less than 579 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### penaltizeWorkerNode(address,uint8)
+
+
+**Execution cost**: less than 679 gas
+
+
+Params:
+
+1. **_guiltyWorker** *of type `address`*
+2. **_reason** *of type `uint8`*
+
+
+--- 
+### commitProgress(bytes32,uint8)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_percent** *of type `uint8`*
+
+
+--- 
+### transferOwnership(address)
+>
+> Allows the current owner to transfer control of the contract to a newOwner.
+
+
+**Execution cost**: less than 23428 gas
+
+
+Params:
+
+1. **_newOwner** *of type `address`*
+
+    > The address to transfer ownership to.
+
+
+
+--- 
+### renounceOwnership()
+>
+>Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
+>
+> Allows the current owner to relinquish control of the contract.
+
+
+**Execution cost**: less than 22374 gas
+
+
+
+
+--- 
+### isActiveJob(bytes32)
+>
+>Test whether the given `job` is registered as an active job and not completed
+
+
+**Execution cost**: less than 779 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+
+Returns:
+
+
 1. **output_0** *of type `bool`*
 
 --- 
-### finishCognitiveJob()
+### blacklistWorkerOwner(address)
 >
->Can"t be called by the user, for internal use only
+>Removes address from the whitelist of owners allowed to create WorkerNodes contracts
 >
-> Function must be called only by the master node running cognitive job. It completes the job, updates worker node back to `Idle` state (in smart contract) and removes job contract from the list of active contracts
+> Can be called only by the owner of Pandora contract
+
+
+**Execution cost**: less than 21205 gas
+
+
+Params:
+
+1. **_workerOwner** *of type `address`*
+
+
+--- 
+### getQueueDepth()
+
+
+**Execution cost**: less than 983 gas
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### initialize()
+
+
+**Execution cost**: less than 20725 gas
+
+
+
+
+--- 
+### whitelistWorkerOwner(address)
+>
+>### Public and externalAdds address to the whitelist of owners allowed to create WorkerNodes contracts
+>
+> Can be called only by the owner of Pandora contract
+
+
+**Execution cost**: less than 20969 gas
+
+
+Params:
+
+1. **_workerOwner** *of type `address`*
+
+
+--- 
+### getCognitiveJobProgressInfo(bytes32,bool)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_isActive** *of type `bool`*
+
+Returns:
+
+
+1. **responseTimestamps** *of type `uint32[]`*
+2. **responseFlags** *of type `bool[]`*
+3. **progress** *of type `uint8`*
+4. **state** *of type `uint8`*
+
+--- 
+### createWorkerNode()
+>
+>Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
+
+
+**Execution cost**: No bound available
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### owner()
+
+
+**Execution cost**: less than 1007 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### checkJobQueue()
+>
+>Public function which checks queue of jobs and create new jobs #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address) to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
 
 
 **Execution cost**: No bound available
@@ -223,9 +404,85 @@ Returns:
 
 
 --- 
+### destroyWorkerNode(address)
+>
+>Removes worker from the workers list and destroys it. Can be called only by the worker node owner and only for the idle workers
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_workerNode** *of type `address`*
+
+
+--- 
+### respondToJob(bytes32,uint8,bool)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_responseType** *of type `uint8`*
+3. **_response** *of type `bool`*
+
+
+--- 
+### provideResults(bytes32,bytes)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_ipfsResults** *of type `bytes`*
+
+
+--- 
+### REQUIRED_DEPOSIT()
+
+
+**Execution cost**: less than 753 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### getCognitiveJobResults(bytes32,bool,uint8)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_isActive** *of type `bool`*
+3. **_index** *of type `uint8`*
+
+Returns:
+
+
+1. **ipfsResults** *of type `bytes`*
+
+--- 
 ### createCognitiveJob(address,address,uint256,bytes32)
 >
->Creates and returns new cognitive job contract and starts actual cognitive work instantly
+>### ExternalCreates and returns new cognitive job contract and starts actual cognitive work instantly
 >
 > Core function creating new cognitive job contract and returning it back to the caller
 
@@ -245,277 +502,14 @@ Params:
 Returns:
 
 
-1. **o_cognitiveJob** *of type `address`*
+1. **o_jobId** *of type `bytes32`*
 2. **o_resultCode** *of type `uint8`*
-
---- 
-### RESULT_CODE_JOB_CREATED()
-
-
-**Execution cost**: less than 388 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
-### cognitiveJobFactory()
-
-
-**Execution cost**: less than 754 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### REQUIRED_DEPOSIT()
-
-
-**Execution cost**: less than 687 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### cognitiveJobs(uint256)
-
-
-**Execution cost**: less than 1318 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### destroyWorkerNode(address)
->
->Removes worker from the workers list and destroys it. Can be called only by the worker node owner and only for the idle workers
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_workerNode** *of type `address`*
-
-
---- 
-### cognitiveJobsCount()
->
-> Returns total count of active jobs
-
-
-**Execution cost**: less than 1061 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### blacklistWorkerOwner(address)
->
->Removes address from the whitelist of owners allowed to create WorkerNodes contracts
->
-> Can be called only by the owner of Pandora contract
-
-
-**Execution cost**: less than 21194 gas
-
-
-Params:
-
-1. **_workerOwner** *of type `address`*
-
-
---- 
-### createWorkerNode()
->
->Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
-
-
-**Execution cost**: No bound available
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### RESULT_CODE_ADD_TO_QUEUE()
-
-
-**Execution cost**: less than 564 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
-### reputation()
-
-
-**Execution cost**: less than 1062 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### workerAddresses(address)
-
-
-**Execution cost**: less than 1181 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `uint16`*
-
---- 
-### renounceOwnership()
->
-> Allows the current owner to relinquish control of the contract.
-
-
-**Execution cost**: less than 22380 gas
-
-
-
-
---- 
-### whitelistWorkerOwner(address)
->
->### Public and externalAdds address to the whitelist of owners allowed to create WorkerNodes contracts
->
-> Can be called only by the owner of Pandora contract
-
-
-**Execution cost**: less than 20980 gas
-
-
-Params:
-
-1. **_workerOwner** *of type `address`*
-
-
---- 
-### penaltizeWorkerNode(address,uint8)
-
-
-**Execution cost**: less than 723 gas
-
-
-Params:
-
-1. **_guiltyWorker** *of type `address`*
-2. **_reason** *of type `uint8`*
-
-
---- 
-### jobAddresses(address)
-
-
-**Execution cost**: less than 785 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `uint16`*
-
---- 
-### owner()
-
-
-**Execution cost**: less than 952 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### transferOwnership(address)
->
-> Allows the current owner to transfer control of the contract to a newOwner.
-
-
-**Execution cost**: less than 23329 gas
-
-
-Params:
-
-1. **_newOwner** *of type `address`*
-
-    > The address to transfer ownership to.
-
-
 
 --- 
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1128 gas
+**Execution cost**: less than 1194 gas
 
 **Attributes**: constant
 
@@ -530,7 +524,7 @@ Returns:
 ### workerNodeOwners(address)
 
 
-**Execution cost**: less than 826 gas
+**Execution cost**: less than 804 gas
 
 **Attributes**: constant
 
@@ -548,7 +542,7 @@ Returns:
 ### workerNodes(uint256)
 
 
-**Execution cost**: less than 1010 gas
+**Execution cost**: less than 966 gas
 
 **Attributes**: constant
 
@@ -568,7 +562,7 @@ Returns:
 >Returns count of registered worker nodes
 
 
-**Execution cost**: less than 710 gas
+**Execution cost**: less than 688 gas
 
 **Attributes**: constant
 

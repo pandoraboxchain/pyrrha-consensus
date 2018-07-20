@@ -9,7 +9,7 @@
 
 
 ## Events
-### CognitiveJobCreated(address)
+### CognitiveJobCreated(bytes32)
 
 
 **Execution cost**: No bound available
@@ -17,44 +17,11 @@
 
 Params:
 
-1. **cognitiveJob** *of type `address`*
+1. **_jobId** *of type `bytes32`*
 
 
 ## Methods
-### cognitiveJobFactory()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### cognitiveJobs(uint256)
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### cognitiveJobsCount()
+### activeJobsCount()
 
 
 **Execution cost**: No bound available
@@ -69,38 +36,20 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
-### createCognitiveJob(address,address,uint256,bytes32)
+### commitProgress(bytes32,uint8)
 
 
 **Execution cost**: No bound available
-
-**Attributes**: payable
 
 
 Params:
 
-1. **kernel** *of type `address`*
-2. **dataset** *of type `address`*
-3. **comlexity** *of type `uint256`*
-4. **description** *of type `bytes32`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-2. **output_1** *of type `uint8`*
-
---- 
-### finishCognitiveJob()
-
-
-**Execution cost**: No bound available
-
-
+1. **_jobId** *of type `bytes32`*
+2. **_percent** *of type `uint8`*
 
 
 --- 
-### isActiveJob(address)
+### getCognitiveJobDetails(bytes32,bool)
 
 
 **Execution cost**: No bound available
@@ -110,7 +59,72 @@ Returns:
 
 Params:
 
-1. **job** *of type `address`*
+1. **_jobId** *of type `bytes32`*
+2. **_isActive** *of type `bool`*
+
+Returns:
+
+
+1. **kernel** *of type `address`*
+2. **dataset** *of type `address`*
+3. **comlexity** *of type `uint256`*
+4. **description** *of type `bytes32`*
+5. **activeWorkers** *of type `address[]`*
+
+--- 
+### getCognitiveJobProgressInfo(bytes32,bool)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_isActive** *of type `bool`*
+
+Returns:
+
+
+1. **responseTimestamps** *of type `uint32[]`*
+2. **responseFlags** *of type `bool[]`*
+3. **progress** *of type `uint8`*
+4. **state** *of type `uint8`*
+
+--- 
+### getCognitiveJobResults(bytes32,bool,uint8)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_isActive** *of type `bool`*
+3. **_index** *of type `uint8`*
+
+Returns:
+
+
+1. **ipfsResults** *of type `bytes`*
+
+--- 
+### isActiveJob(bytes32)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
 
 Returns:
 
@@ -118,21 +132,30 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### jobAddresses(address)
+### provideResults(bytes32,bytes)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_ipfsResults** *of type `bytes`*
+
+
+--- 
+### respondToJob(bytes32,uint8,bool)
+
+
+**Execution cost**: No bound available
 
 
 Params:
 
-1. **param_0** *of type `address`*
+1. **_jobId** *of type `bytes32`*
+2. **_responseType** *of type `uint8`*
+3. **_response** *of type `bool`*
 
-Returns:
-
-
-1. **output_0** *of type `uint16`*
 
 [Back to the top ↑](#icognitivejobmanager)

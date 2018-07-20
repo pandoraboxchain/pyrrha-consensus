@@ -19,11 +19,11 @@
 
 Params:
 
-1. **max** *of type `uint256`*
+1. **_max** *of type `uint256`*
 
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **o_result** *of type `uint256`*
 
 [Back to the top ↑](#ilotteryengine)
