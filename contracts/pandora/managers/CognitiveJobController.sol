@@ -443,7 +443,22 @@ contract CognitiveJobController is ICognitiveJobController{
         bytes32 _jobId)
     private
     {
-        //todo implement - move job from active to completed
+        CognitiveJob memory currentJob = activeJobs[activeJobsIndexes[_jobId]];
+
+        //Add current job to completed jobs array and mapping
+        completedJobs.push(currentJob);
+        completedJobsIndexes[_jobId] = uint8(completedJobs.length);
+
+        if (activeJobsIndexes[_jobId] != activeJobs.length) {
+            //Get last job in active array
+            CognitiveJob memory movedJob = activeJobs[activeJobs.length - 1];
+            //Rewrite current job with last one
+            activeJobs[activeJobsIndexes[_jobId]] = movedJob;
+        }
+        //Remove last job from active jobs array and mapping
+        delete activeJobs[activeJobsIndexes[_jobId]]; //todo check storage erasing in test
+        activeJobsIndexes[_jobId] = 0;
+        activeJobs.length--;
     }
 
     /// @dev Checks that job with given id is active or not (tx will fail if job is not existed)
