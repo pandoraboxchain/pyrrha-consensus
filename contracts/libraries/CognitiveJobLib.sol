@@ -364,6 +364,7 @@ library CognitiveJobLib {
             [uint8(States.InvalidData), uint8(States.Cognition), uint8(States.InsufficientWorkers)];
         transitions[uint8(States.Cognition)] =
             [uint8(States.Completed), uint8(States.PartialResult)];
+        _self.initialized = true;
     }
 
     function _fireStateEvent(

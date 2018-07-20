@@ -98,8 +98,8 @@ contract('CognitiveJobManager', accounts => {
 
             await createCognitiveJob(pandora, 1);
 
-            // await finishActiveJob(pandora, workerInstance0, workerOwner0);
-            // assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+            await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
         //
         // it(`should not create job if customer doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
