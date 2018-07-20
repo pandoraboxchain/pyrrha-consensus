@@ -1,8 +1,10 @@
 pragma solidity ^0.4.24;
 
+import "./ICognitiveJobController.sol";
+
 
 // Contract implement main cognitive job functionality
-library CognitiveJobLib {
+contract CognitiveJobController is ICognitiveJobController{
 
     /*******************************************************************************************************************
      * ## Storage
@@ -26,25 +28,6 @@ library CognitiveJobLib {
         Destroyed
     }
 
-    struct Controller {
-        /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
-        /// (owners of the corresponding cognitive job contracts). Zero values corresponds to no active job,
-        /// one – to the one with index 0 and so forth.
-        mapping(bytes32 => uint16) jobIndexes;
-
-        /// @dev List of all active cognitive jobs
-        CognitiveJob[] activeJobs;
-
-        /// @dev List of all completed cognitive jobs
-        CognitiveJob[] completedJobs;
-
-        ///Table of all possible state transitions
-        mapping(uint8 => uint8[]) transitionTable;
-
-        bool initialized;
-//        uint8 WORKER_TIMEOUT = 30 minutes;
-    }
-
     struct CognitiveJob {
         bytes32 id;
         address kernel;
@@ -59,41 +42,128 @@ library CognitiveJobLib {
         uint8 state;
     }
 
-    /*******************************************************************************************************************
-     * ## Functions
-     */
+    /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
+    /// (owners of the corresponding cognitive job contracts). Zero values corresponds to no active job,
+    /// one – to the one with index 0 and so forth.
+    mapping(bytes32 => uint16) public activeJobsIndexes;
 
-    modifier onlyInitialized(Controller storage _self) {
-        if (!_self.initialized) {
-            _initStateMachine(_self);
-        }
-        _;
+    /// @dev List of all active cognitive jobs
+    CognitiveJob[] activeJobs;
+
+    mapping(bytes32 => uint16) public completedJobsIndexes;
+
+    /// @dev List of all completed cognitive jobs
+    CognitiveJob[] public completedJobs;
+
+    ///Table of all possible state transitions
+    mapping(uint8 => uint8[]) public transitionTable;
+
+    //        uint8 WORKER_TIMEOUT = 30 minutes;
+
+    constructor() public {
+        //state machine initialization should be performed only once with filling transitionTable
+        _initStateMachine();
     }
 
-    /*******************************************************************************************************************
-     * ## Functions
-     */
+    /******************************************************************************************************************
+    Public functions
+    */
 
-    /// ### Public and external
+    /// @dev Returns total count of active jobs
+    function activeJobsCount() view public returns (uint256) {
+        return activeJobs.length;
+    }
 
+    /// @dev Returns total count of active jobs
+    function completedJobsCount() view public returns (uint256) {
+        return completedJobs.length;
+    }
+
+    function getJobId(uint16 _index, bool _isActive)
+    view
+    public
+    returns(bytes32){
+        CognitiveJob storage job = _isActive ?
+            activeJobs[_index]
+            : completedJobs[_index];
+        return job.id;
+    }
+
+    function getCognitiveJobDetails(bytes32 _jobId)
+    public
+    view
+    returns (
+        address kernel,
+        address dataset,
+        uint256 complexity,
+        bytes32 description,
+        address[] activeWorkers
+    ) {
+        CognitiveJob storage job = isActiveJob(_jobId) ?
+            activeJobs[activeJobsIndexes[_jobId]]
+            : completedJobs[completedJobsIndexes[_jobId]];
+        kernel = job.kernel;
+        dataset = job.dataset;
+        complexity = job.complexity;
+        description = job.description;
+        activeWorkers = job.activeWorkers;
+    }
+
+    function getCognitiveJobResults(
+        bytes32 _jobId,
+        uint8 _index //index of worker, whose results should be returned
+    )
+    public
+    view
+    returns(
+        bytes ipfsResults
+    ) {
+        CognitiveJob storage job = isActiveJob(_jobId) ?
+            activeJobs[activeJobsIndexes[_jobId]]
+            : completedJobs[completedJobsIndexes[_jobId]];
+        ipfsResults = job.ipfsResults[_index];
+    }
+
+    function getCognitiveJobProgressInfo(
+        bytes32 _jobId
+    )
+    public
+    view
+    returns(
+        uint32[] responseTimestamps,
+        bool[] responseFlags,
+        uint8 progress,
+        uint8 state
+    ) {
+        CognitiveJob storage job = isActiveJob(_jobId) ?
+            activeJobs[activeJobsIndexes[_jobId]]
+            : completedJobs[completedJobsIndexes[_jobId]];
+        responseTimestamps = job.responseTimestamps;
+        responseFlags = job.responseFlags;
+        progress = job.progress;
+        state = job.state;
+    }
+
+    /******************************************************************************************************************
+    External functions (Only Pandora by interface)
+    */
     function createCognitiveJob (
-        Controller storage _self,
         address _kernel,
         address _dataset,
         address[] _assignedWorkers,
         uint256 _complexity,
         bytes32 _description
     )
-    onlyInitialized(_self)
-    internal
+    onlyOwner()
+    external
     returns(
         bytes32 id
     ){
         // The created job must fit into uint16 size
-        require(_self.activeJobs.length < uint16(-1));
+        require(activeJobs.length < uint16(-1));
 
-        id = keccak256(_self.activeJobs.length + block.number);
-        _self.activeJobs.push(CognitiveJob({
+        id = keccak256(activeJobs.length + block.number);
+        activeJobs.push(CognitiveJob({
             id: id,
             kernel: _kernel,
             dataset: _dataset,
@@ -108,43 +178,43 @@ library CognitiveJobLib {
             })
         );
         // Add to addresses map
-        _self.jobIndexes[id] = uint16(_self.activeJobs.length);
+        activeJobsIndexes[id] = uint16(activeJobs.length);
 
-        CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[id] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[id] - 1];
         // Init timestamps
         for (uint256 i = 0; i < job.responseTimestamps.length; i++) {
             job.responseTimestamps[i] = uint32(block.timestamp);
         }
-        _transitionToState(_self, id, uint8(States.GatheringWorkers));
+        _transitionToState( id, uint8(States.GatheringWorkers));
         emit WorkersUpdated(id);
     }
 
     /// @dev Could be called from manager with two types of response - Assignment and DataValidation
     function onWorkerResponse(
-        Controller storage _self,
         bytes32 _jobId,
         address _workerId,
         uint8 _responseType,
         bool _response)
-    onlyInitialized(_self)
-    requireActiveStates(_self, _jobId)
-    internal
+    requireActiveStates( _jobId)
+    onlyOwner()
+    external
     returns (bool result)
     {
-        _checkResponse(_self, _jobId, _workerId, _response);
+        _checkResponse( _jobId, _workerId, _response);
         // Transition to next state when all workers have responded
-        if (_isAllWorkersResponded(_self, _jobId)) {
+        if (_isAllWorkersResponded( _jobId)) {
             result = true;
             if (_responseType == uint8(WorkerResponses.Assignment)) {
-                _transitionToState(_self, _jobId, uint8(States.GatheringWorkers));
+                _transitionToState( _jobId, uint8(States.GatheringWorkers));
                 //todo implement process decline, with validation in new v.
-                _resetAllResponses(_self, _jobId);
+                _resetAllResponses( _jobId);
             } else if (_responseType == uint8(WorkerResponses.DataValidation)) {
-                _transitionToState(_self, _jobId, uint8(States.Cognition));
+                _transitionToState( _jobId, uint8(States.Cognition));
                 //todo implement process decline, with validation in new v.
-                _resetAllResponses(_self, _jobId);
+                _resetAllResponses( _jobId);
             } else if (_responseType == uint8(WorkerResponses.Result)) {
-                _transitionToState(_self, _jobId, uint8(States.Completed));
+                _transitionToState( _jobId, uint8(States.Completed));
+                _onJobComplete(_jobId); // move active job to completed ones
             } else {
                 result = false; //not all workers responded
             }
@@ -154,38 +224,35 @@ library CognitiveJobLib {
     //should be called for responseTimestamp refresh after actual progress change in workerNode
     //todo implement requirement of new progress > current progress in workerController in new v.
     function commitProgress(
-        Controller storage _self,
         bytes32 _jobId,
         address _workerId,
         uint8 _percent)
-    onlyInitialized(_self)
-    requireState(_self, _jobId, uint8(States.Cognition))
-    internal {
+    requireState( _jobId, uint8(States.Cognition))
+    onlyOwner()
+    external {
         //todo check active worker with workerController
-        uint256 workerIndex = _getWorkerIndex(_self, _jobId, _workerId);
+        uint256 workerIndex = _getWorkerIndex( _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
-        _self.activeJobs[_self.jobIndexes[_jobId] - 1].responseTimestamps[workerIndex] = uint32(block.timestamp);
+        activeJobs[activeJobsIndexes[_jobId] - 1].responseTimestamps[workerIndex] = uint32(block.timestamp);
         emit CognitionProgressed(_jobId, _percent);
     }
 
     /// @notice should be called with provided results
     function completeWork(
-        Controller storage _self,
         bytes32 _jobId,
         address _workerId,
         bytes _ipfsResults)
-    onlyInitialized(_self)
-    requireState(_self, _jobId, uint8(States.Cognition))
-    internal
+    requireState( _jobId, uint8(States.Cognition))
+    onlyOwner()
+    external
     returns (
         bool result // true - if all workers have submitted result
     ){
-        uint256 workerIndex = _getWorkerIndex(_self, _jobId, _workerId);
+        uint256 workerIndex = _getWorkerIndex( _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
 
-        _self.activeJobs[_self.jobIndexes[_jobId] - 1].ipfsResults[workerIndex] = _ipfsResults;
-        result = onWorkerResponse(_self, _jobId, _workerId, uint8(WorkerResponses.Result), true);
-        //todo move to completed jobs
+        activeJobs[activeJobsIndexes[_jobId] - 1].ipfsResults[workerIndex] = _ipfsResults;
+        result = this.onWorkerResponse( _jobId, _workerId, uint8(WorkerResponses.Result), true);
     }
 
     //    function reportOfflineWorker(IWorkerNode reported) payable external requireActiveStates;
@@ -197,31 +264,27 @@ library CognitiveJobLib {
 
     ///@dev Checks is worker actually computing current job, then updates response's flag and timestamp
     function _checkResponse(
-        Controller storage _self,
         bytes32 _jobId,
         address _workerId,
         bool _response)
-    onlyInitialized(_self)
     private {
-        uint256 workerIndex = _getWorkerIndex(_self, _jobId, _workerId);
+        uint256 workerIndex = _getWorkerIndex( _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
 
         //todo implement penalties
-        _updateResponse(_self, _jobId, workerIndex, _response);
-        _trackOfflineWorkers(_self, _jobId);
+        _updateResponse( _jobId, workerIndex, _response);
+        _trackOfflineWorkers( _jobId);
     }
 
     function _getWorkerIndex(
-        Controller storage _self,
         bytes32 _jobId,
         address _workerId)
-    onlyInitialized(_self)
     private
     view
     returns (
         uint256
     ) {
-        CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[_jobId] - 1];
         for (uint256 i = 0; i < job.activeWorkers.length; i++) {
             if (job.activeWorkers[i] == _workerId) {
                 return i;
@@ -231,16 +294,14 @@ library CognitiveJobLib {
     }
 
     function _isAllWorkersResponded(
-        Controller storage _self,
         bytes32 _jobId)
-    onlyInitialized(_self)
     private
     view
     returns (
         bool responded
     ) {
         responded = true;
-        CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[_jobId] - 1];
         for (uint256 i = 0; i < job.responseFlags.length; i++) {
             if (job.responseFlags[i] != true) {
                 responded = false;
@@ -249,23 +310,19 @@ library CognitiveJobLib {
     }
 
     function _updateResponse(
-        Controller storage _self,
         bytes32 _jobId,
         uint256 _workerIndex,
         bool _response)
-    onlyInitialized(_self)
     private {
-        _self.activeJobs[_self.jobIndexes[_jobId] - 1].responseFlags[_workerIndex] = _response;
-        _self.activeJobs[_self.jobIndexes[_jobId] - 1].responseTimestamps[_workerIndex] = uint32(block.timestamp);
+        activeJobs[activeJobsIndexes[_jobId] - 1].responseFlags[_workerIndex] = _response;
+        activeJobs[activeJobsIndexes[_jobId] - 1].responseTimestamps[_workerIndex] = uint32(block.timestamp);
     }
 
     ///@dev Reset all response flags and update all timestamps
     function _resetAllResponses(
-        Controller storage _self,
         bytes32 _jobId)
-    onlyInitialized(_self)
     private {
-        CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[_jobId] - 1];
         for (uint256 i = 0; i < job.responseFlags.length; i++) {
             job.responseFlags[i] = false;
             job.responseTimestamps[i] = uint32(block.timestamp);
@@ -274,16 +331,14 @@ library CognitiveJobLib {
 
     //todo provide listener and handle guilty worker and job state in manager, so it could penaltize worker
     function _trackOfflineWorkers(
-        Controller storage _self,
         bytes32 _jobId)
-    onlyInitialized(_self)
-    requireActiveStates(_self, _jobId)
+    requireActiveStates( _jobId)
     internal
     returns (
         address guiltyWorker,
         uint8 jobState
     ){
-        CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[_jobId] - 1];
         for (uint256 i = 0; i < job.responseTimestamps.length; i++) {
             if (uint8(block.timestamp) - job.responseTimestamps[i] > 30 minutes) {
                 guiltyWorker = job.activeWorkers[i];
@@ -297,10 +352,9 @@ library CognitiveJobLib {
     */
 
     modifier requireActiveStates(
-        Controller storage _self,
         bytes32 _jobId)
     {
-        CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[_jobId] - 1];
         require(
             job.state == uint8(States.GatheringWorkers) ||
             job.state == uint8(States.DataValidation) ||
@@ -310,23 +364,21 @@ library CognitiveJobLib {
     }
 
     modifier requireState(
-        Controller storage _self,
         bytes32 _jobId,
         uint8 requiredState
     ) {
-        require(_self.activeJobs[_self.jobIndexes[_jobId] - 1].state == requiredState);
+        require(activeJobs[activeJobsIndexes[_jobId] - 1].state == requiredState);
         _;
     }
 
     modifier requireAllowedTransition(
-        Controller storage _self,
         bytes32 _jobId,
         uint8 _newState
     ) {
         // Checking if the state transition is allowed
         bool transitionAllowed = false;
         uint8[] storage allowedStates =
-            _self.transitionTable[uint8(_self.activeJobs[_self.jobIndexes[_jobId] - 1].state)];
+            transitionTable[uint8(activeJobs[activeJobsIndexes[_jobId] - 1].state)];
         for (uint no = 0; no < allowedStates.length; no++) {
             if (allowedStates[no] == _newState) {
                 transitionAllowed = true;
@@ -337,25 +389,22 @@ library CognitiveJobLib {
     }
 
     function _transitionToState(
-        Controller storage _self,
         bytes32 _jobId,
         uint8 _newState)
-    onlyInitialized(_self)
-    requireAllowedTransition(_self, _jobId, _newState)
+    requireAllowedTransition( _jobId, _newState)
     private
     {
-        CognitiveJob storage job = _self.activeJobs[_self.jobIndexes[_jobId] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[_jobId] - 1];
         uint8 oldState = job.state;
         job.state = _newState;
         emit JobStateChanged(_jobId, oldState, job.state);
-        _fireStateEvent(_self, _jobId);
+        _fireStateEvent(_jobId);
     }
 
     //Fill table of possible state transitions
-    function _initStateMachine(
-        Controller storage _self)
+    function _initStateMachine()
     private {
-        mapping(uint8 => uint8[]) transitions = _self.transitionTable;
+        mapping(uint8 => uint8[]) transitions = transitionTable;
         transitions[uint8(States.Uninitialized)] =
             [uint8(States.GatheringWorkers)];
         transitions[uint8(States.GatheringWorkers)] =
@@ -364,15 +413,12 @@ library CognitiveJobLib {
             [uint8(States.InvalidData), uint8(States.Cognition), uint8(States.InsufficientWorkers)];
         transitions[uint8(States.Cognition)] =
             [uint8(States.Completed), uint8(States.PartialResult)];
-        _self.initialized = true;
     }
 
     function _fireStateEvent(
-        Controller storage _self,
         bytes32 _jobId)
-    onlyInitialized(_self)
     private {
-        uint8 state = _self.activeJobs[_self.jobIndexes[_jobId] - 1].state;
+        uint8 state = activeJobs[activeJobsIndexes[_jobId] - 1].state;
         if (state == uint8(States.InsufficientWorkers)) {
             emit WorkersNotFound(_jobId);
             //_onJobComplete(_jobId); //todo refactor with queue
@@ -389,30 +435,31 @@ library CognitiveJobLib {
         } else if (state == uint8(States.Completed)) {
             emit CognitionCompleted(_jobId, false);
 //            pandora.finishCognitiveJob();
-              _onJobComplete(_self, _jobId);
+              _onJobComplete(_jobId);
         }
     }
 
     function _onJobComplete(
-        Controller storage _self,
         bytes32 _jobId)
-    onlyInitialized(_self)
     private
     {
-        //todo implement
+        //todo implement - move job from active to completed
     }
 
-    /******************************************************************************************************************
-     * ## Events
-     */
-
-    //todo 'indexed' should be removed from lib
-    event JobStateChanged(bytes32 indexed jobId, uint8 oldState, uint8 newState);
-    event WorkersUpdated(bytes32 indexed jobId);
-    event WorkersNotFound(bytes32 indexed jobId);
-    event DataValidationStarted(bytes32 indexed jobId);
-    event DataValidationFailed(bytes32 indexed jobId);
-    event CognitionStarted(bytes32 indexed jobId);
-    event CognitionProgressed(bytes32 indexed jobId, uint8 precent);
-    event CognitionCompleted(bytes32 indexed jobId, bool partialResult);
+    /// @dev Checks that job with given id is active or not (tx will fail if job is not existed)
+    function isActiveJob(
+        bytes32 _jobId
+    )
+    view
+    private
+    returns (
+        bool
+    ) {
+        if (activeJobsIndexes[_jobId] != 0) {
+            return true;
+        } else {
+            require(completedJobsIndexes[_jobId] != 0);
+            return false;
+        }
+    }
 }
