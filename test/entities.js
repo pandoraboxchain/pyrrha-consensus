@@ -1,10 +1,13 @@
 const assertRevert = require('./helpers/assertRevert');
 const Pandora = artifacts.require('Pandora');
+const CognitiveJobController = artifacts.require('CognitiveJobController');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
 const WorkerNode = artifacts.require('WorkerNode');
-const CognitiveJob = artifacts.require('CognitiveJob');
 const DataEntity = artifacts.require('DataEntity');
+
+const Web3latest = require('web3');
+const web3latest = new Web3latest();
 
 contract('Entities', accounts => {
 
@@ -12,6 +15,7 @@ contract('Entities', accounts => {
     const kernelIpfsAddress = 'QmZ2ThDyq5jZSGpniUMg1gbJPzGk4ASBxztvNYvaqq6MzZ';
 
     let pandora;
+    let jobController;
 
     let workerNode;
     let workerNode1;
@@ -27,7 +31,7 @@ contract('Entities', accounts => {
 
     before('setup test entities', async () => {
 
-        pandora = await Pandora.deployed();
+        jobController = await CognitiveJobController.deployed();
 
         await pandora.whitelistWorkerOwner(workerOwner);
         workerNode = await pandora.createWorkerNode({from: workerOwner});
@@ -37,6 +41,18 @@ contract('Entities', accounts => {
         workerInstance = await WorkerNode.at(idleWorkerAddress);
         await workerInstance.alive({from: workerOwner});
     });
+
+    // describe('CognitiveJobController', async () => {
+    //
+    //     it('should return proper detatils', async () => {
+    //
+    //         let result = await jobController.getCognitiveJobDetails.call();
+    //         console.log(result)
+    //
+    //
+    //     })
+    // });
+
 
     describe('WorkerNode', async () => {
 

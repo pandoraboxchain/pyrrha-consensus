@@ -11,6 +11,7 @@ library JobQueueLib {
     }
 
     struct QueuedJob {
+        bytes32 id;
         address kernel;
         address dataset;
         address customer;
@@ -41,11 +42,12 @@ library JobQueueLib {
         bytes32 _description
     )
     internal
-    returns(uint) {
+    returns(bytes32) {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _customer, _batches, _complexity, _description));
+        bytes32 id = keccak256((uint256(-1) - _queue.jobArray.length - block.number));
+        _queue.jobArray.push(QueuedJob(id, _kernel, _dataset, _customer, _batches, _complexity, _description));
         _queue.deposits.push(_value);
-        return queueDepth(_queue);
+        return id;
     }
 
     /// @notice Unsafe function -  should check queue depth before call this method with queueDepth()

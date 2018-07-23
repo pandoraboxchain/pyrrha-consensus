@@ -217,7 +217,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         if (estimatedSize < uint256(batchesCount)) {
             // Put task in queue
             o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            jobQueue.put(
+            o_jobId = jobQueue.put(
                 address(_kernel),
                 address(_dataset),
                 msg.sender,
