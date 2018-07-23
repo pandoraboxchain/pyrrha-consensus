@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 2858400 gas
+**Deployment cost**: less than 1670800 gas
 
 **Combined cost**: No bound available
 
@@ -16,8 +16,9 @@
 
 Params:
 
-1. **_nodeFactory** *of type `address`*
-2. **_reputation** *of type `address`*
+1. **_jobController** *of type `address`*
+2. **_nodeFactory** *of type `address`*
+3. **_reputation** *of type `address`*
 
 ## Events
 ### CognitiveJobCreated(bytes32)
@@ -91,7 +92,7 @@ Params:
 ### RESULT_CODE_ADD_TO_QUEUE()
 
 
-**Execution cost**: less than 586 gas
+**Execution cost**: less than 542 gas
 
 **Attributes**: constant
 
@@ -106,7 +107,7 @@ Returns:
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 1247 gas
+**Execution cost**: less than 1181 gas
 
 **Attributes**: constant
 
@@ -139,7 +140,7 @@ Returns:
 ### deposits(address)
 
 
-**Execution cost**: less than 1210 gas
+**Execution cost**: less than 1144 gas
 
 **Attributes**: constant
 
@@ -169,37 +170,10 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### getCognitiveJobDetails(bytes32,bool)
+### jobController()
 
 
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-2. **isActive** *of type `bool`*
-
-Returns:
-
-
-1. **kernel** *of type `address`*
-2. **dataset** *of type `address`*
-3. **comlexity** *of type `uint256`*
-4. **description** *of type `bytes32`*
-5. **activeWorkers** *of type `address[]`*
-
---- 
-### activeJobsCount()
->
->### Public
->
-> Returns total count of active jobs
-
-
-**Execution cost**: less than 579 gas
+**Execution cost**: less than 710 gas
 
 **Attributes**: constant
 
@@ -208,13 +182,13 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `address`*
 
 --- 
 ### penaltizeWorkerNode(address,uint8)
 
 
-**Execution cost**: less than 679 gas
+**Execution cost**: less than 657 gas
 
 
 Params:
@@ -242,7 +216,7 @@ Params:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23428 gas
+**Execution cost**: less than 23362 gas
 
 
 Params:
@@ -261,30 +235,10 @@ Params:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22374 gas
+**Execution cost**: less than 22352 gas
 
 
 
-
---- 
-### isActiveJob(bytes32)
->
->Test whether the given `job` is registered as an active job and not completed
-
-
-**Execution cost**: less than 779 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-
-Returns:
-
-
-1. **output_0** *of type `bool`*
 
 --- 
 ### blacklistWorkerOwner(address)
@@ -294,7 +248,7 @@ Returns:
 > Can be called only by the owner of Pandora contract
 
 
-**Execution cost**: less than 21205 gas
+**Execution cost**: less than 21161 gas
 
 
 Params:
@@ -306,7 +260,7 @@ Params:
 ### getQueueDepth()
 
 
-**Execution cost**: less than 983 gas
+**Execution cost**: less than 939 gas
 
 
 
@@ -319,7 +273,7 @@ Returns:
 ### initialize()
 
 
-**Execution cost**: less than 20725 gas
+**Execution cost**: less than 20681 gas
 
 
 
@@ -341,28 +295,6 @@ Params:
 
 
 --- 
-### getCognitiveJobProgressInfo(bytes32,bool)
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-2. **_isActive** *of type `bool`*
-
-Returns:
-
-
-1. **responseTimestamps** *of type `uint32[]`*
-2. **responseFlags** *of type `bool[]`*
-3. **progress** *of type `uint8`*
-4. **state** *of type `uint8`*
-
---- 
 ### createWorkerNode()
 >
 >Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
@@ -381,7 +313,7 @@ Returns:
 ### owner()
 
 
-**Execution cost**: less than 1007 gas
+**Execution cost**: less than 941 gas
 
 **Attributes**: constant
 
@@ -395,7 +327,7 @@ Returns:
 --- 
 ### checkJobQueue()
 >
->Public function which checks queue of jobs and create new jobs #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address) to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
+>### PublicPublic function which checks queue of jobs and create new jobs #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address) to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
 
 
 **Execution cost**: No bound available
@@ -448,7 +380,7 @@ Params:
 ### REQUIRED_DEPOSIT()
 
 
-**Execution cost**: less than 753 gas
+**Execution cost**: less than 687 gas
 
 **Attributes**: constant
 
@@ -460,29 +392,24 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
-### getCognitiveJobResults(bytes32,bool,uint8)
+### reputation()
 
 
-**Execution cost**: No bound available
+**Execution cost**: less than 1062 gas
 
 **Attributes**: constant
 
 
-Params:
-
-1. **_jobId** *of type `bytes32`*
-2. **_isActive** *of type `bool`*
-3. **_index** *of type `uint8`*
 
 Returns:
 
 
-1. **ipfsResults** *of type `bytes`*
+1. **output_0** *of type `address`*
 
 --- 
 ### createCognitiveJob(address,address,uint256,bytes32)
 >
->### ExternalCreates and returns new cognitive job contract and starts actual cognitive work instantly
+>Creates and returns new cognitive job contract and starts actual cognitive work instantly
 >
 > Core function creating new cognitive job contract and returning it back to the caller
 
@@ -509,7 +436,7 @@ Returns:
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1194 gas
+**Execution cost**: less than 1128 gas
 
 **Attributes**: constant
 
@@ -524,7 +451,7 @@ Returns:
 ### workerNodeOwners(address)
 
 
-**Execution cost**: less than 804 gas
+**Execution cost**: less than 782 gas
 
 **Attributes**: constant
 
