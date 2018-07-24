@@ -2,6 +2,7 @@ const Pandora = artifacts.require('Pandora');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
 const WorkerNode = artifacts.require('WorkerNode');
+const CognitiveJobController = artifacts.require('CognitiveJobController');
 
 const assertRevert = require('./helpers/assertRevert');
 const assertWorkerState = require('./helpers/assertWorkerState');
@@ -42,6 +43,7 @@ const {
 contract('CognitiveJobManager', accounts => {
 
     let pandora;
+    let jobController;
 
     let workerInstance0;
     let workerInstance1;
@@ -55,6 +57,7 @@ contract('CognitiveJobManager', accounts => {
     before('setup test cognitive job manager', async () => {
 
         pandora = await Pandora.deployed();
+        jobController = await CognitiveJobController.deployed();
 
         workerInstance0 = await createWorkerNode(pandora, workerOwner0);
         workerInstance1 = await createWorkerNode(pandora, workerOwner1);
@@ -96,12 +99,23 @@ contract('CognitiveJobManager', accounts => {
 
         it('Cognitive job should be successfully completed after computation', async () => {
 
-            await createCognitiveJob(pandora, 1);
+            let receipt = await createCognitiveJob(pandora, 1);
+            let args = receipt.logs[0].args;
+            console.log(args.jobId);
 
-            await finishActiveJob(pandora, workerInstance0, workerOwner0);
-            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+            const logSuccess = receipt.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
+            console.log(logSuccess);
+
+            let jobIdResult = await jobController.getJobId.call(0, true);
+            console.log(jobIdResult);
+
+            let result = await jobController.getCognitiveJobDetails.call(args.jobId);
+            console.log(result);
+
+            // await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            // assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
-        //
+
         // it(`should not create job if customer doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
         //
         //     assertRevert(createCognitiveJob(pandora, 1, {value: REQUIRED_DEPOSIT - 1000}));

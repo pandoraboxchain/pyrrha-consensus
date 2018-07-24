@@ -90,7 +90,7 @@ contract CognitiveJobController is ICognitiveJobController{
     }
 
     function getCognitiveJobDetails(bytes32 _jobId)
-    public
+    external
     view
     returns (
         address kernel,
@@ -102,8 +102,8 @@ contract CognitiveJobController is ICognitiveJobController{
         uint8 state
     ) {
         CognitiveJob storage job = isActiveJob(_jobId) ?
-            activeJobs[activeJobsIndexes[_jobId]]
-            : completedJobs[completedJobsIndexes[_jobId]];
+            activeJobs[activeJobsIndexes[_jobId] - 1]
+            : completedJobs[completedJobsIndexes[_jobId] - 1];
         kernel = job.kernel;
         dataset = job.dataset;
         complexity = job.complexity;
@@ -123,8 +123,8 @@ contract CognitiveJobController is ICognitiveJobController{
         bytes ipfsResults
     ) {
         CognitiveJob storage job = isActiveJob(_jobId) ?
-            activeJobs[activeJobsIndexes[_jobId]]
-            : completedJobs[completedJobsIndexes[_jobId]];
+            activeJobs[activeJobsIndexes[_jobId] - 1]
+            : completedJobs[completedJobsIndexes[_jobId] - 1];
         ipfsResults = job.ipfsResults[_index];
     }
 
@@ -138,8 +138,8 @@ contract CognitiveJobController is ICognitiveJobController{
         bool[] responseFlags
     ) {
         CognitiveJob storage job = isActiveJob(_jobId) ?
-            activeJobs[activeJobsIndexes[_jobId]]
-            : completedJobs[completedJobsIndexes[_jobId]];
+            activeJobs[activeJobsIndexes[_jobId] - 1]
+            : completedJobs[completedJobsIndexes[_jobId] - 1];
         responseTimestamps = job.responseTimestamps;
         responseFlags = job.responseFlags;
     }

@@ -13,7 +13,7 @@ contract ICognitiveJobController is Ownable{
     /// ### Public and external
 
     function getCognitiveJobDetails(bytes32 _jobId)
-    public
+    external
     view
     returns (
         address kernel,

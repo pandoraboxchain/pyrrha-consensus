@@ -42,18 +42,6 @@ contract('Entities', accounts => {
         await workerInstance.alive({from: workerOwner});
     });
 
-    // describe('CognitiveJobController', async () => {
-    //
-    //     it('should return proper detatils', async () => {
-    //
-    //         let result = await jobController.getCognitiveJobDetails.call();
-    //         console.log(result)
-    //
-    //
-    //     })
-    // });
-
-
     describe('WorkerNode', async () => {
 
         it('should properly change states during computations', async () => {
