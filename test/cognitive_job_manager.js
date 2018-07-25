@@ -20,7 +20,11 @@ const {
 } = require("./helpers/worker_node");
 
 const {
-    finishActiveJob,
+    acceptAssignment,
+    processToDataValidation,
+    acceptValidData,
+    processToCognition,
+    provideResults,
     createCognitiveJob,
     datasetIpfsAddress,
     kernelIpfsAddress
@@ -69,45 +73,26 @@ contract('CognitiveJobManager', accounts => {
     });
 
     describe("createCognitiveJob", async () => {
-        // it('should not create cognitive contract from outside of Pandora', async () => {
-        //
-        //     const numberOfBatches = 2;
-        //     const testDataset = await Dataset.new(datasetIpfsAddress, 1, numberOfBatches, 0, "m-a", "d-n");
-        //     const testKernel = await Kernel.new(kernelIpfsAddress, 1, 2, 3, "m-a", "d-n");
-        //
-        //     assertRevert(CognitiveJob.new(
-        //         pandora.address, testDataset.address, testKernel.address, [workerInstance0.address], 1, "d-n"));
-        //
-        //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        // });
 
-        // it(`should not create job if number of batches more then ${BATCHES_COUNT_LIMIT}`, async () => {
-        //     assertRevert(createCognitiveJob(pandora, 11));
-        //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        // });
-        //
-        // it("should not create job if dimensions of the input data and neural network input layer is not equal", async () => {
-        //     const batchesCount = 1;
-        //     const testDataset = await Dataset.new(datasetIpfsAddress, 1, batchesCount, 10, "m-a", "d-n");
-        //     const testKernel = await Kernel.new(kernelIpfsAddress, 2, 2, 3, "m-a", "d-n");
-        //
-        //     assertRevert(pandora.createCognitiveJob(
-        //         testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)})
-        //     );
-        //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        // });
+        it(`should not create job if number of batches more then ${BATCHES_COUNT_LIMIT}`, async () => {
+            assertRevert(createCognitiveJob(pandora, 11));
+            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+        });
+
+        it("should not create job if dimensions of the input data and neural network input layer is not equal", async () => {
+            const batchesCount = 1;
+            const testDataset = await Dataset.new(datasetIpfsAddress, 1, batchesCount, 10, "m-a", "d-n");
+            const testKernel = await Kernel.new(kernelIpfsAddress, 2, 2, 3, "m-a", "d-n");
+
+            assertRevert(pandora.createCognitiveJob(
+                testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)})
+            );
+            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+        });
 
         it('Cognitive job should be successfully completed after computation', async () => {
 
             let receipt = await createCognitiveJob(pandora, 1);
-            let args = receipt.logs[0].args;
-            // console.log(args.jobId);
-            //
-            // const logSuccess = receipt.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
-            // console.log(logSuccess);
-            //
-            // let jobIdResult = await jobController.getJobId.call(0, true);
-            // console.log(jobIdResult);
 
             // let result = await jobController.getCognitiveJobDetails.call(args.jobId);
             // console.log(result);
@@ -115,62 +100,75 @@ contract('CognitiveJobManager', accounts => {
             // let resultS = await jobController.getCognitiveJobResults.call(args.jobId, 0);
             // console.log(resultS);
 
-            await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            await acceptAssignment(pandora, workerInstance0, workerOwner0);
+            await processToDataValidation(pandora, workerInstance0, workerOwner0);
+            await acceptValidData(pandora, workerInstance0, workerOwner0);
+            await processToCognition(pandora, workerInstance0, workerOwner0);
+            await provideResults(pandora, workerInstance0, workerOwner0);
+
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
 
-        // it(`should not create job if customer doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
-        //
-        //     assertRevert(createCognitiveJob(pandora, 1, {value: REQUIRED_DEPOSIT - 1000}));
-        //
-        //     await createCognitiveJob(pandora, 1, {value: REQUIRED_DEPOSIT});
-        //
-        //     await finishActiveJob(pandora, workerInstance0, workerOwner0);
-        //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        // });
-        //
-        // it('should not create job, and put it to queue if # of idle workers < number of batches', async () => {
-        //
-        //     await createCognitiveJob(pandora, 1);
-        //
-        //     const activeJobCountStart = await pandora.cognitiveJobsCount();
-        //     const result = await createCognitiveJob(pandora, 2);
-        //
-        //     const activeJobCountEnd = await pandora.cognitiveJobsCount();
-        //
-        //     const logSuccess = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
-        //     const logFailure = result.logs.filter(l => l.event === 'CognitiveJobCreateFailed')[0];
-        //     const logEntries = result.logs.length;
-        //
-        //     assert.equal(
-        //         activeJobCountEnd.toNumber(),
-        //         activeJobCountStart.toNumber(),
-        //         'Active jobs should not be increased');
-        //
-        //     assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
-        //
-        //     assert.equal(logEntries, 1, 'Should be fired only 1 event');
-        //     assert.isOk(logFailure, 'Should be fired failed event');
-        //     assert.isNotOk(logSuccess, 'Should not be fired successful creation event');
-        //
-        //
-        //     // Erase queue
-        //     await aliveWorker(workerInstance1, workerOwner1);
-        //
-        //     await finishActiveJob(pandora, workerInstance0, workerOwner0);
-        //
-        //     assertQueueDepth(pandora, 0);
-        //
-        //     assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
-        //     assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
-        //
-        //     await finishActiveJob(pandora, workerInstance0, workerOwner0);
-        //     await finishActiveJob(pandora, workerInstance1, workerOwner1);
-        //
-        //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        //     assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
-        // });
-        //
+        it(`should not create job if customer doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
+
+            assertRevert(createCognitiveJob(pandora, 1, {value: REQUIRED_DEPOSIT - 1000}));
+        });
+
+        it('should not create job, and put it to queue if # of idle workers < number of batches', async () => {
+
+            await createCognitiveJob(pandora, 1);
+
+            const activeJobCountStart = await jobController.activeJobsCount();
+
+            const result = await createCognitiveJob(pandora, 2);
+
+            const activeJobCountEnd = await jobController.activeJobsCount();
+
+            const logCreated = result.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
+            const logQueued = result.logs.filter(l => l.event === 'CognitiveJobQueued')[0];
+            const logEntries = result.logs.length;
+
+            assert.equal(
+                activeJobCountEnd.toNumber(),
+                activeJobCountStart.toNumber(),
+                'Active jobs should not be increased');
+
+            // assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
+
+            assert.equal(logEntries, 1, 'Should be fired only 1 event');
+            assert.isOk(logQueued, 'Should be fired failed event');
+            assert.isNotOk(logCreated, 'Should not be fired successful creation event');
+
+
+            // Erase queue
+            await aliveWorker(workerInstance1, workerOwner1);
+
+            await acceptAssignment(pandora, workerInstance0, workerOwner0);
+            await processToDataValidation(pandora, workerInstance0, workerOwner0);
+            await acceptValidData(pandora, workerInstance0, workerOwner0);
+            await processToCognition(pandora, workerInstance0, workerOwner0);
+            await provideResults(pandora, workerInstance0, workerOwner0);
+
+            await pandora.checkJobQueue();
+
+            assertQueueDepth(pandora, 0);
+
+            assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
+            assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
+
+            await acceptAssignment(pandora, workerInstance0, workerOwner0);
+            await acceptAssignment(pandora, workerInstance1, workerOwner1);
+            await processToDataValidation(pandora, workerInstance0, workerOwner0);
+            await processToDataValidation(pandora, workerInstance1, workerOwner1);
+            await acceptValidData(pandora, workerInstance0, workerOwner0);
+            await acceptValidData(pandora, workerInstance1, workerOwner1);
+            await processToCognition(pandora, workerInstance0, workerOwner0);
+            await processToCognition(pandora, workerInstance1, workerOwner1);
+            await provideResults(pandora, workerInstance0, workerOwner0);
+            await provideResults(pandora, workerInstance1, workerOwner1);
+
+        });
+
         // it("should create job if it's ok", async () => {
         //
         //     const active_job_count_start = await pandora.cognitiveJobsCount();
@@ -269,34 +267,52 @@ contract('CognitiveJobManager', accounts => {
         // });
     });
 
-    // describe("checkJobQueue", () => {
-    //     it.skip(`should proceed job only if there is at least one idle worker`, async () => {});
-    //     it.skip(`should proceed job only if butches count at least equal to number of idle workers`, async () => {});
-    //     it(`should init cognitive job from queue`, async () => {
-    //         let result = await createCognitiveJob(pandora, 2);
-    //
-    //         assertSuccessResultCode(result, RESULT_CODE_JOB_CREATED);
-    //
-    //         result = await createCognitiveJob(pandora, 2);
-    //
-    //         assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
-    //
-    //         assertQueueDepth(pandora, 1);
-    //
-    //         await finishActiveJob(pandora, workerInstance0, workerOwner0);
-    //         await finishActiveJob(pandora, workerInstance1, workerOwner1);
-    //
-    //         assertQueueDepth(pandora, 0);
-    //
-    //         assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
-    //         assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
-    //
-    //         await finishActiveJob(pandora, workerInstance0, workerOwner0);
-    //         await finishActiveJob(pandora, workerInstance1, workerOwner1);
-    //
-    //         assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-    //         assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
-    //     });
+    describe("checkJobQueue", () => {
+        it.skip(`should proceed job only if there is at least one idle worker`, async () => {});
+        it.skip(`should proceed job only if butches count at least equal to number of idle workers`, async () => {});
+        it(`should init cognitive job from queue`, async () => {
+            let result = await createCognitiveJob(pandora, 2);
+
+            // assertSuccessResultCode(result, RESULT_CODE_JOB_CREATED);
+
+            result = await createCognitiveJob(pandora, 2);
+
+            // assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
+
+            assertQueueDepth(pandora, 1);
+
+            await acceptAssignment(pandora, workerInstance0, workerOwner0);
+            await acceptAssignment(pandora, workerInstance1, workerOwner1);
+            await processToDataValidation(pandora, workerInstance0, workerOwner0);
+            await processToDataValidation(pandora, workerInstance1, workerOwner1);
+            await acceptValidData(pandora, workerInstance0, workerOwner0);
+            await acceptValidData(pandora, workerInstance1, workerOwner1);
+            await processToCognition(pandora, workerInstance0, workerOwner0);
+            await processToCognition(pandora, workerInstance1, workerOwner1);
+            await provideResults(pandora, workerInstance0, workerOwner0);
+            await provideResults(pandora, workerInstance1, workerOwner1);
+
+            await pandora.checkJobQueue();
+
+            assertQueueDepth(pandora, 0);
+
+            // assertWorkerState(workerInstance0, WORKER_STATE_ASSIGNED, 0);
+            // assertWorkerState(workerInstance1, WORKER_STATE_ASSIGNED, 1);
+
+            await acceptAssignment(pandora, workerInstance0, workerOwner0);
+            await acceptAssignment(pandora, workerInstance1, workerOwner1);
+            await processToDataValidation(pandora, workerInstance0, workerOwner0);
+            await processToDataValidation(pandora, workerInstance1, workerOwner1);
+            await acceptValidData(pandora, workerInstance0, workerOwner0);
+            await acceptValidData(pandora, workerInstance1, workerOwner1);
+            await processToCognition(pandora, workerInstance0, workerOwner0);
+            await processToCognition(pandora, workerInstance1, workerOwner1);
+            await provideResults(pandora, workerInstance0, workerOwner0);
+            await provideResults(pandora, workerInstance1, workerOwner1);
+
+            // assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+            // assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
+        });
     //     it("should debit customer max deposit value for transaction fee", async () => {
     //
     //         let result = await createCognitiveJob(pandora, 2);
@@ -346,7 +362,7 @@ contract('CognitiveJobManager', accounts => {
     //         assertWorkerState(workerInstance1, WORKER_STATE_IDLE, 1);
     //
     //     });
-    // });
+    });
     //
     // describe("isActiveJob", async () => {
     //     it('should return if job not exist', async () => {

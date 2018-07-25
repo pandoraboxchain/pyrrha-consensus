@@ -3,9 +3,14 @@ const Kernel = artifacts.require('Kernel');
 const { assign } = require("lodash");
 
 const {
-    WORKER_STATE_COMPUTING,
     WORKER_STATE_IDLE,
-    WORKER_STATES,
+    WORKER_STATE_UNINITIALIZED,
+    WORKER_STATE_OFFLINE,
+    WORKER_STATE_ASSIGNED,
+    WORKER_STATE_READYFORDATAVALIDATION,
+    WORKER_STATE_VALIDATINGDATA,
+    WORKER_STATE_READYFORCOMPUTING,
+    WORKER_STATE_COMPUTING,
 
     JOB_STATE_COMPLETED,
     JOB_STATES,
@@ -15,34 +20,59 @@ const {
 const datasetIpfsAddress = 'QmSFdikKbHCBnTRMgxcakjLQD5E6Nbmoo69YbQPM9ACXJj';
 const kernelIpfsAddress = 'QmZ2ThDyq5jZSGpniUMg1gbJPzGk4ASBxztvNYvaqq6MzZ';
 
-module.exports.finishActiveJob = async (pandora, workerInstance, workerOwner, opts) => {
+module.exports.acceptAssignment = async (pandora, workerInstance, workerOwner, opts) => {
     const options = assign({}, {from: workerOwner}, opts);
     const activeJob = await workerInstance.activeJob.call();
 
     if (activeJob === EMPTY) return;
+    await workerInstance.acceptAssignment(options);
 
-    // const activeJobState = await CognitiveJob.at(activeJob).currentState.call();
+    const workerState = await workerInstance.currentState.call();
+    assert.equal(workerState, WORKER_STATE_READYFORDATAVALIDATION);
+};
 
-    // if (activeJobState.toNumber() !== JOB_STATE_COMPLETED) {
-        await workerInstance.acceptAssignment(options);
-        await workerInstance.processToDataValidation(options);
-        await workerInstance.acceptValidData(options);
-        await workerInstance.processToCognition(options);
-        await workerInstance.provideResults('0x42', options);
+module.exports.processToDataValidation = async (pandora, workerInstance, workerOwner, opts) => {
+    const options = assign({}, {from: workerOwner}, opts);
+    const activeJob = await workerInstance.activeJob.call();
 
-        const workerState = await workerInstance.currentState.call();
-        // const jobId = await pandora.jobAddresses(activeJob);
-        //
-        // if (workerState.toNumber() !== WORKER_STATE_IDLE) {
-        //     await pandora.unlockFinalizedWorker(activeJob, options);
+    if (activeJob === EMPTY) return;
+    await workerInstance.processToDataValidation(options);
 
-            // const jobState = await CognitiveJob.at(activeJob).currentState.call();
-            // assert.equal(
-            //     JOB_STATES[jobState.toNumber()],
-            //     JOB_STATES[JOB_STATE_COMPLETED],
-            //     `Cognitive job (${jobId}) state should be ${JOB_STATES[JOB_STATE_COMPLETED]} (${JOB_STATE_COMPLETED})`);
-        // }
-    // }
+    const workerState = await workerInstance.currentState.call();
+    assert.equal(workerState, WORKER_STATE_VALIDATINGDATA);
+};
+
+module.exports.acceptValidData = async (pandora, workerInstance, workerOwner, opts) => {
+    const options = assign({}, {from: workerOwner}, opts);
+    const activeJob = await workerInstance.activeJob.call();
+
+    if (activeJob === EMPTY) return;
+    await workerInstance.acceptValidData(options);
+
+    const workerState = await workerInstance.currentState.call();
+    assert.equal(workerState, WORKER_STATE_READYFORCOMPUTING);
+};
+
+module.exports.processToCognition = async (pandora, workerInstance, workerOwner, opts) => {
+    const options = assign({}, {from: workerOwner}, opts);
+    const activeJob = await workerInstance.activeJob.call();
+
+    if (activeJob === EMPTY) return;
+    await workerInstance.processToCognition(options);
+
+    const workerState = await workerInstance.currentState.call();
+    assert.equal(workerState, WORKER_STATE_COMPUTING);
+};
+
+module.exports.provideResults = async (pandora, workerInstance, workerOwner, opts) => {
+    const options = assign({}, {from: workerOwner}, opts);
+    const activeJob = await workerInstance.activeJob.call();
+
+    if (activeJob === EMPTY) return;
+    await workerInstance.provideResults('0x42', options);
+
+    const workerState = await workerInstance.currentState.call();
+    assert.equal(workerState, WORKER_STATE_IDLE);
 };
 
 module.exports.createCognitiveJob = async (pandora, batchesCount, opts = {}) => {

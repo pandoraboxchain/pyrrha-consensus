@@ -145,19 +145,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, queuedJob.batches);
 
-            // @fixme remove in upcoming version
-            // (temporarily due to worker controller absence) convert workers array to address array
-            address[] memory workerAddresses = new address[](assignedWorkers.length);
-            for (uint8 i = 0; i < workerAddresses.length; i++) {
-                workerAddresses[i] = address(assignedWorkers[i]);
-            }
-
             bytes32 jobId = _initQueuedJob(queuedJob, assignedWorkers);
-
-            //todo assign job to each worker
-            for (uint8 j = 0; j < assignedWorkers.length; i++) {
-                assignedWorkers[j].assignJob(jobId);
-            }
 
             emit CognitiveJobCreated(jobId);
 
@@ -178,6 +166,8 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             }
         }
     }
+
+    event Debug(address worker);
 
     /******************************************************************************************************************
     External functions
@@ -216,11 +206,16 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
 
+        o_jobId = keccak256(abi.encodePacked(
+                jobController.activeJobsCount() +
+                jobController.completedJobsCount() +
+                jobQueue.jobArray.length +
+                block.number));
         uint256 estimatedSize = _countIdleWorkers();
         if (estimatedSize < uint256(batchesCount)) {
             // Put task in queue
-            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
-            o_jobId = jobQueue.put(
+            jobQueue.put(
+                o_jobId,
                 address(_kernel),
                 address(_dataset),
                 msg.sender,
@@ -230,6 +225,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
                 _description);
             //  Hold payment from customer
             deposits[msg.sender] = deposits[msg.sender].add(msg.value);
+            o_resultCode = RESULT_CODE_ADD_TO_QUEUE;
             emit CognitiveJobQueued(o_jobId);
         } else {
             // Job created instantly
@@ -241,7 +237,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, batchesCount);
 
-            o_jobId = _initCognitiveJob(_kernel, _dataset, assignedWorkers, _complexity, _description);
+            _initCognitiveJob(o_jobId, _kernel, _dataset, assignedWorkers, _complexity, _description);
             o_resultCode = RESULT_CODE_JOB_CREATED;
 
             emit CognitiveJobCreated(o_jobId);
@@ -302,21 +298,24 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     private
     onlyInitialized
     returns (
-        bytes32 jobId
+        bytes32
     ) {
-        jobId = _initCognitiveJob(
+        _initCognitiveJob(
+            queuedJob.id,
             IKernel(queuedJob.kernel),
             IDataset(queuedJob.dataset),
             assignedWorkers,
             queuedJob.complexity,
             queuedJob.description
         );
+        return queuedJob.id;
     }
 
     /// @notice Can"t be called by the user or other contract: for private use only
     /// @dev Creates cognitive job contract, saves it to storage and fires global event to notify selected worker node.
     /// Used both by `createCognitiveJob()` and `_checksJobQueue()` methods.
     function _initCognitiveJob(
+        bytes32 _id,
         IKernel _kernel, /// Pre-initialized kernel data entity contract (taken from `createCognitiveJob` arguments or
     /// from the the `cognitiveJobQueue` `QueuedJob` structure)
         IDataset _dataset, /// Pre-initialized dataset entity contract (taken from `createCognitiveJob` arguments or
@@ -326,10 +325,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         bytes32 _description
     )
     private
-    onlyInitialized
-    returns (
-        bytes32 o_jobId /// Created cognitive job ID
-    ) {
+    onlyInitialized {
 
         // @fixme remove in upcoming version
         // (temporarily due to worker controller absence) convert workers array to address array
@@ -338,7 +334,8 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             workerAddresses[i] = address(_assignedWorkers[i]);
         }
 
-        o_jobId = jobController.createCognitiveJob(
+        jobController.createCognitiveJob(
+            _id,
             address(_kernel),
             address(_dataset),
             workerAddresses,
@@ -347,7 +344,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
 
         //assign each worker to job
         for (uint256 j = 0; j < _assignedWorkers.length; j++) {
-            _assignedWorkers[j].assignJob(o_jobId);
+            _assignedWorkers[j].assignJob(_id);
         }
     }
 

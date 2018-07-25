@@ -12,6 +12,12 @@ contract ICognitiveJobController is Ownable{
 
     /// ### Public and external
 
+    /// @dev Returns total count of active jobs
+    function activeJobsCount() view public returns (uint256);
+
+    /// @dev Returns total count of active jobs
+    function completedJobsCount() view public returns (uint256);
+
     function getCognitiveJobDetails(bytes32 _jobId)
     external
     view
@@ -26,16 +32,14 @@ contract ICognitiveJobController is Ownable{
     );
 
     function createCognitiveJob (
+        bytes32 _id,
         address _kernel,
         address _dataset,
         address[] _assignedWorkers,
         uint256 _complexity,
         bytes32 _description
     )
-    external
-    returns(
-        bytes32 id
-    );
+    external;
 
     /// @dev Could be called from manager with two types of response - Assignment and DataValidation
     function respondToJob(

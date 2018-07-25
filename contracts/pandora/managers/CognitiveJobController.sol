@@ -148,6 +148,7 @@ contract CognitiveJobController is ICognitiveJobController{
     External functions (Only Pandora by interface)
     */
     function createCognitiveJob (
+        bytes32 _id,
         address _kernel,
         address _dataset,
         address[] _assignedWorkers,
@@ -155,16 +156,12 @@ contract CognitiveJobController is ICognitiveJobController{
         bytes32 _description
     )
     onlyOwner()
-    external
-    returns(
-        bytes32 id
-    ){
+    external {
         // The created job must fit into uint16 size
         require(activeJobs.length < uint16(-1));
 
-        id = keccak256(abi.encodePacked(activeJobs.length + block.number));
         activeJobs.push(CognitiveJob({
-            id: id,
+            id: _id,
             kernel: _kernel,
             dataset: _dataset,
             complexity: _complexity,
@@ -178,15 +175,15 @@ contract CognitiveJobController is ICognitiveJobController{
             })
         );
         // Add to addresses map
-        activeJobsIndexes[id] = uint16(activeJobs.length);
+        activeJobsIndexes[_id] = uint16(activeJobs.length);
 
-        CognitiveJob storage job = activeJobs[activeJobsIndexes[id] - 1];
+        CognitiveJob storage job = activeJobs[activeJobsIndexes[_id] - 1];
         // Init timestamps
         for (uint256 i = 0; i < job.responseTimestamps.length; i++) {
             job.responseTimestamps[i] = uint32(block.timestamp);
         }
-        _transitionToState( id, uint8(States.GatheringWorkers));
-        emit WorkersUpdated(id);
+        _transitionToState( _id, uint8(States.GatheringWorkers));
+        emit WorkersUpdated(_id);
     }
 
     function respondToJob(

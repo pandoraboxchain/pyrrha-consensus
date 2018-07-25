@@ -33,6 +33,7 @@ library JobQueueLib {
     /// @dev Inserts the specified element at the tail of the queue
     function put(
         Queue storage _queue,
+        bytes32 _id,
         address _kernel,
         address _dataset,
         address _customer,
@@ -42,12 +43,10 @@ library JobQueueLib {
         bytes32 _description
     )
     internal
-    returns(bytes32) {
+    {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        bytes32 id = keccak256(abi.encodePacked(uint256(-1) - _queue.jobArray.length - block.number));
-        _queue.jobArray.push(QueuedJob(id, _kernel, _dataset, _customer, _batches, _complexity, _description));
+        _queue.jobArray.push(QueuedJob(_id, _kernel, _dataset, _customer, _batches, _complexity, _description));
         _queue.deposits.push(_value);
-        return id;
     }
 
     /// @notice Unsafe function -  should check queue depth before call this method with queueDepth()
