@@ -1,12 +1,12 @@
 # Pandora
 > Pandora Smart Contract
 >
-> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
+> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation> 
 
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1780800 gas
+**Deployment cost**: less than 1773400 gas
 
 **Combined cost**: No bound available
 
@@ -41,6 +41,17 @@ Params:
 Params:
 
 1. **jobId** *of type `bytes32`*
+
+--- 
+### Debug(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **worker** *of type `address`*
 
 --- 
 ### OwnershipRenounced(address)
@@ -287,9 +298,9 @@ Returns:
 --- 
 ### initialize()
 >
->### InitializationFunction that checks the proper setup of class factories. May be called only once and only by Pandora contract owner.
+>### InitializationFunction that checks the proper setup of class factories. May be called only once and only by Pandora contract owner.
 >
-> Function that checks the proper setup of class factories. May be called only once and only by Pandora contract owner.
+> Function that checks the proper setup of class factories. May be called only once and only by Pandora contract owner.
 
 
 **Execution cost**: No bound available
@@ -300,7 +311,7 @@ Returns:
 --- 
 ### whitelistWorkerOwner(address)
 >
->### Public and externalAdds address to the whitelist of owners allowed to create WorkerNodes contracts
+>### Public and externalAdds address to the whitelist of owners allowed to create WorkerNodes contracts
 >
 > Can be called only by the owner of Pandora contract
 
@@ -316,7 +327,7 @@ Params:
 --- 
 ### createWorkerNode()
 >
->Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
+>Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
 
 
 **Execution cost**: No bound available
@@ -346,7 +357,7 @@ Returns:
 --- 
 ### checkJobQueue()
 >
->### PublicPublic function which checks queue of jobs and create new jobs #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address) to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
+>### PublicPublic function which checks queue of jobs and create new jobs #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address) to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
 
 
 **Execution cost**: No bound available
@@ -357,7 +368,7 @@ Returns:
 --- 
 ### destroyWorkerNode(address)
 >
->Removes worker from the workers list and destroys it. Can be called only by the worker node owner and only for the idle workers
+>Removes worker from the workers list and destroys it. Can be called only by the worker node owner and only for the idle workers
 
 
 **Execution cost**: No bound available

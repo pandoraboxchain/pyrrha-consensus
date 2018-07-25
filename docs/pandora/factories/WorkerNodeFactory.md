@@ -50,7 +50,7 @@ Params:
 ## Methods
 ### create(address)
 >
-> Creates worker node contract for the main Pandora contract and does necessary preparations of it (transferring ownership). Can be called only by a Pandora contract (Pandora is the owner of the factory)
+> Creates worker node contract for the main Pandora contract and does necessary preparations of it (transferring ownership). Can be called only by a Pandora contract (Pandora is the owner of the factory)
 
 
 **Execution cost**: No bound available

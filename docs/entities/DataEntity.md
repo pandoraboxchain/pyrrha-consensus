@@ -1,7 +1,7 @@
 # DataEntity
 > DataEntity Contract (parent for Kernel and Dataset contracts)
 >
-> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
+> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation> 
 
 
 **Execution cost**: No bound available

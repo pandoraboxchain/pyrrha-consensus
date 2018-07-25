@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 2175400 gas
+**Deployment cost**: less than 2160800 gas
 
 **Combined cost**: No bound available
 
@@ -185,23 +185,6 @@ Params:
 
 
 --- 
-### activeJobsCount()
->
-> Returns total count of active jobs
-
-
-**Execution cost**: less than 539 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
 ### completeWork(bytes32,address,bytes)
 >
 >should be called with provided results
@@ -222,6 +205,23 @@ Returns:
 1. **result** *of type `bool`*
 
 --- 
+### activeJobsCount()
+>
+> Returns total count of active jobs
+
+
+**Execution cost**: less than 539 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
 ### owner()
 
 
@@ -237,9 +237,44 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### onWorkerResponse(bytes32,address,uint8,bool)
+### completedJobsIndexes(bytes32)
+
+
+**Execution cost**: less than 581 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `bytes32`*
+
+Returns:
+
+
+1. **output_0** *of type `uint16`*
+
+--- 
+### completedJobsCount()
 >
-> Could be called from manager with two types of response - Assignment and DataValidation
+> Returns total count of active jobs
+
+
+**Execution cost**: less than 692 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### createCognitiveJob(bytes32,address,address,address[],uint256,bytes32)
+>
+>**************************************************************************************************************** External functions (Only Pandora by interface)
 
 
 **Execution cost**: No bound available
@@ -247,15 +282,13 @@ Returns:
 
 Params:
 
-1. **_jobId** *of type `bytes32`*
-2. **_workerId** *of type `address`*
-3. **_responseType** *of type `uint8`*
-4. **_response** *of type `bool`*
+1. **_id** *of type `bytes32`*
+2. **_kernel** *of type `address`*
+3. **_dataset** *of type `address`*
+4. **_assignedWorkers** *of type `address[]`*
+5. **_complexity** *of type `uint256`*
+6. **_description** *of type `bytes32`*
 
-Returns:
-
-
-1. **result** *of type `bool`*
 
 --- 
 ### getCognitiveJobDetails(bytes32)
@@ -301,21 +334,23 @@ Returns:
 1. **ipfsResults** *of type `bytes`*
 
 --- 
-### completedJobsCount()
->
-> Returns total count of active jobs
+### getCognitiveJobServiceInfo(bytes32)
 
 
-**Execution cost**: less than 692 gas
+**Execution cost**: No bound available
 
 **Attributes**: constant
 
 
+Params:
+
+1. **_jobId** *of type `bytes32`*
 
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **responseTimestamps** *of type `uint32[]`*
+2. **responseFlags** *of type `bool[]`*
 
 --- 
 ### getJobId(uint16,bool)
@@ -337,65 +372,6 @@ Returns:
 1. **output_0** *of type `bytes32`*
 
 --- 
-### completedJobsIndexes(bytes32)
-
-
-**Execution cost**: less than 603 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `bytes32`*
-
-Returns:
-
-
-1. **output_0** *of type `uint16`*
-
---- 
-### getCognitiveJobServiceInfo(bytes32)
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-
-Returns:
-
-
-1. **responseTimestamps** *of type `uint32[]`*
-2. **responseFlags** *of type `bool[]`*
-
---- 
-### createCognitiveJob(address,address,address[],uint256,bytes32)
->
->**************************************************************************************************************** External functions (Only Pandora by interface)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_kernel** *of type `address`*
-2. **_dataset** *of type `address`*
-3. **_assignedWorkers** *of type `address[]`*
-4. **_complexity** *of type `uint256`*
-5. **_description** *of type `bytes32`*
-
-Returns:
-
-
-1. **id** *of type `bytes32`*
-
---- 
 ### renounceOwnership()
 >
 >Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
@@ -407,6 +383,25 @@ Returns:
 
 
 
+
+--- 
+### respondToJob(bytes32,address,uint8,bool)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_workerId** *of type `address`*
+3. **_responseType** *of type `uint8`*
+4. **_response** *of type `bool`*
+
+Returns:
+
+
+1. **result** *of type `bool`*
 
 --- 
 ### transferOwnership(address)

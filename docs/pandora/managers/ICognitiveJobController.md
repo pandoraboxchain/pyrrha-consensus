@@ -125,6 +125,21 @@ Params:
 
 
 ## Methods
+### activeJobsCount()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
 ### commitProgress(bytes32,address,uint8)
 
 
@@ -157,7 +172,22 @@ Returns:
 1. **result** *of type `bool`*
 
 --- 
-### createCognitiveJob(address,address,address[],uint256,bytes32)
+### completedJobsCount()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### createCognitiveJob(bytes32,address,address,address[],uint256,bytes32)
 
 
 **Execution cost**: No bound available
@@ -165,16 +195,13 @@ Returns:
 
 Params:
 
-1. **_kernel** *of type `address`*
-2. **_dataset** *of type `address`*
-3. **_assignedWorkers** *of type `address[]`*
-4. **_complexity** *of type `uint256`*
-5. **_description** *of type `bytes32`*
+1. **_id** *of type `bytes32`*
+2. **_kernel** *of type `address`*
+3. **_dataset** *of type `address`*
+4. **_assignedWorkers** *of type `address[]`*
+5. **_complexity** *of type `uint256`*
+6. **_description** *of type `bytes32`*
 
-Returns:
-
-
-1. **id** *of type `bytes32`*
 
 --- 
 ### getCognitiveJobDetails(bytes32)
@@ -201,25 +228,6 @@ Returns:
 7. **state** *of type `uint8`*
 
 --- 
-### onWorkerResponse(bytes32,address,uint8,bool)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-2. **_workerId** *of type `address`*
-3. **_responseType** *of type `uint8`*
-4. **_response** *of type `bool`*
-
-Returns:
-
-
-1. **result** *of type `bool`*
-
---- 
 ### owner()
 
 
@@ -242,6 +250,25 @@ Returns:
 
 
 
+
+--- 
+### respondToJob(bytes32,address,uint8,bool)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_workerId** *of type `address`*
+3. **_responseType** *of type `uint8`*
+4. **_response** *of type `bool`*
+
+Returns:
+
+
+1. **result** *of type `bool`*
 
 --- 
 ### transferOwnership(address)
