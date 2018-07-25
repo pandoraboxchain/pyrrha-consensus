@@ -3,5 +3,5 @@ module.exports.aliveWorker = async (worker, owner) => {
 };
 
 module.exports.desctroyWorker = async (worker, owner) => {
-    await worker.destroy({from: owner});
+    return await worker.destroy({from: owner});
 };

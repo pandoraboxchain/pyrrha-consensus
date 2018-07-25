@@ -189,12 +189,14 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
         IWorkerNode _workerNode
     )
     external
-    checkWorkerAndOwner(_workerNode) /// Worker node can be destroyed only by its owner
     onlyInitialized {
-        address nodeOwner = msg.sender;
+        /// Can be called only by worker owner
+        require(_workerNode.owner() == msg.sender);
 
         /// Can be called only for the idle workers
         require(_workerNode.currentState() == _workerNode.Idle());
+
+        require(workerAddresses[_workerNode] != 0);
 
         /// Call worker node destroy function (can be triggered only by this Pandora contract). All balance
         /// is transferred to the node owner.
@@ -204,10 +206,17 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
         _workerNode.destroy();
 
         /// Immediately removing node from the lists
-        uint16 index = workerAddresses[nodeOwner] - 1;
-        delete workerAddresses[nodeOwner];
-        IWorkerNode movedWorker = workerNodes[index] = workerNodes[workerNodes.length - 1];
-        workerAddresses[movedWorker] = index + 1;
+        uint16 index = workerAddresses[_workerNode] - 1;
+
+        delete workerAddresses[_workerNode];
+
+        if (index != workerNodes.length - 1) {
+            IWorkerNode movedWorker = workerNodes[workerNodes.length - 1];
+            workerNodes[index] = movedWorker;
+            workerAddresses[movedWorker] = index + 1;
+        } else {
+            delete workerNodes[workerNodes.length - 1];
+        }
         workerNodes.length--;
 
         /// @todo Return the unspent stake
