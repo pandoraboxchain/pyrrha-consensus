@@ -203,6 +203,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         uint8 batchesCount = _dataset.batchesCount();
         require(batchesCount <= 10);
 
+        // Complexity should be divisible by workers
+        require(_complexity >= uint256(batchesCount));
+
         // Dimensions of the input data and neural network input layer must be equal
         require(_kernel.dataDim() == _dataset.dataDim());
 
@@ -266,10 +269,10 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             uint256 complexity;
             address[] memory activeWorkers;
             ( , ,complexity, ,activeWorkers, , ) = jobController.getCognitiveJobDetails(_jobId);
-            for (uint256 i = 0; i <= activeWorkers.length; i++) {
+            for (uint256 i = 0; i < activeWorkers.length; i++) {
                 reputation.incrReputation(
                     activeWorkers[i],
-                    complexity.div(i));
+                    complexity / activeWorkers.length);
             }
         }
     }
@@ -280,7 +283,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         bool _response)
     external {
         //todo implement get workerId with worker controller in new version
-        jobController.onWorkerResponse(_jobId, msg.sender, _responseType, _response);
+        jobController.respondToJob(_jobId, msg.sender, _responseType, _response);
     }
 
     function commitProgress(

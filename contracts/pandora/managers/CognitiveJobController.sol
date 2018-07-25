@@ -162,7 +162,7 @@ contract CognitiveJobController is ICognitiveJobController{
         // The created job must fit into uint16 size
         require(activeJobs.length < uint16(-1));
 
-        id = keccak256(activeJobs.length + block.number);
+        id = keccak256(abi.encodePacked(activeJobs.length + block.number));
         activeJobs.push(CognitiveJob({
             id: id,
             kernel: _kernel,
@@ -189,8 +189,7 @@ contract CognitiveJobController is ICognitiveJobController{
         emit WorkersUpdated(id);
     }
 
-    /// @dev Could be called from manager with two types of response - Assignment and DataValidation
-    function onWorkerResponse(
+    function respondToJob(
         bytes32 _jobId,
         address _workerId,
         uint8 _responseType,
@@ -200,25 +199,7 @@ contract CognitiveJobController is ICognitiveJobController{
     external
     returns (bool result)
     {
-        _checkResponse( _jobId, _workerId, _response);
-        // Transition to next state when all workers have responded
-        if (_isAllWorkersResponded( _jobId)) {
-            result = true;
-            if (_responseType == uint8(WorkerResponses.Assignment)) {
-                _transitionToState( _jobId, uint8(States.GatheringWorkers));
-                //todo implement process decline, with validation in new v.
-                _resetAllResponses( _jobId);
-            } else if (_responseType == uint8(WorkerResponses.DataValidation)) {
-                _transitionToState( _jobId, uint8(States.Cognition));
-                //todo implement process decline, with validation in new v.
-                _resetAllResponses( _jobId);
-            } else if (_responseType == uint8(WorkerResponses.Result)) {
-                _transitionToState( _jobId, uint8(States.Completed));
-                _onJobComplete(_jobId); // move active job to completed ones
-            } else {
-                result = false; //not all workers responded
-            }
-        }
+        return _onWorkerResponse(_jobId, _workerId, _responseType, _response);
     }
 
     //should be called for responseTimestamp refresh after actual progress change in workerNode
@@ -252,7 +233,7 @@ contract CognitiveJobController is ICognitiveJobController{
         require(workerIndex != uint256(-1)); //worker is computing current job
 
         activeJobs[activeJobsIndexes[_jobId] - 1].ipfsResults[workerIndex] = _ipfsResults;
-        result = this.onWorkerResponse( _jobId, _workerId, uint8(WorkerResponses.Result), true);
+        result = _onWorkerResponse( _jobId, _workerId, uint8(WorkerResponses.Result), true);
     }
 
     //    function reportOfflineWorker(IWorkerNode reported) payable external requireActiveStates;
@@ -261,6 +242,36 @@ contract CognitiveJobController is ICognitiveJobController{
     /******************************************************************************************************************
     Private functions
     */
+
+    /// @dev Could be called from manager with two types of response - Assignment and DataValidation
+    function _onWorkerResponse(
+        bytes32 _jobId,
+        address _workerId,
+        uint8 _responseType,
+        bool _response)
+    private
+    returns (bool result)
+    {
+        _checkResponse( _jobId, _workerId, _response);
+        // Transition to next state when all workers have responded
+        if (_isAllWorkersResponded( _jobId)) {
+            result = true;
+            if (_responseType == uint8(WorkerResponses.Assignment)) {
+                _transitionToState( _jobId, uint8(States.DataValidation));
+                //todo implement process decline, with validation in new v.
+                _resetAllResponses( _jobId);
+            } else if (_responseType == uint8(WorkerResponses.DataValidation)) {
+                _transitionToState( _jobId, uint8(States.Cognition));
+                //todo implement process decline, with validation in new v.
+                _resetAllResponses( _jobId);
+            } else if (_responseType == uint8(WorkerResponses.Result)) {
+                _transitionToState( _jobId, uint8(States.Completed));
+                _onJobComplete(_jobId); // move active job to completed ones
+            } else {
+                result = false; //not all workers responded
+            }
+        }
+    }
 
     ///@dev Checks is worker actually computing current job, then updates response's flag and timestamp
     function _checkResponse(
@@ -431,11 +442,8 @@ contract CognitiveJobController is ICognitiveJobController{
             emit CognitionStarted(_jobId);
         } else if (state == uint8(States.PartialResult)) {
             emit CognitionCompleted(_jobId, true);
-//            pandora.finishCognitiveJob();
         } else if (state == uint8(States.Completed)) {
             emit CognitionCompleted(_jobId, false);
-//            pandora.finishCognitiveJob();
-              _onJobComplete(_jobId);
         }
     }
 
@@ -443,20 +451,15 @@ contract CognitiveJobController is ICognitiveJobController{
         bytes32 _jobId)
     private
     {
-        CognitiveJob memory currentJob = activeJobs[activeJobsIndexes[_jobId]];
-
-        //Add current job to completed jobs array and mapping
+        CognitiveJob memory currentJob = activeJobs[activeJobsIndexes[_jobId] - 1];
         completedJobs.push(currentJob);
         completedJobsIndexes[_jobId] = uint8(completedJobs.length);
 
         if (activeJobsIndexes[_jobId] != activeJobs.length) {
-            //Get last job in active array
             CognitiveJob memory movedJob = activeJobs[activeJobs.length - 1];
-            //Rewrite current job with last one
-            activeJobs[activeJobsIndexes[_jobId]] = movedJob;
+            activeJobs[activeJobsIndexes[_jobId] - 1] = movedJob;
         }
-        //Remove last job from active jobs array and mapping
-        delete activeJobs[activeJobsIndexes[_jobId]]; //todo check storage erasing in test
+        delete activeJobs[activeJobsIndexes[_jobId] - 1]; //todo check storage erasing in test
         activeJobsIndexes[_jobId] = 0;
         activeJobs.length--;
     }

@@ -44,7 +44,7 @@ library JobQueueLib {
     internal
     returns(bytes32) {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        bytes32 id = keccak256((uint256(-1) - _queue.jobArray.length - block.number));
+        bytes32 id = keccak256(abi.encodePacked(uint256(-1) - _queue.jobArray.length - block.number));
         _queue.jobArray.push(QueuedJob(id, _kernel, _dataset, _customer, _batches, _complexity, _description));
         _queue.deposits.push(_value);
         return id;

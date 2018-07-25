@@ -38,7 +38,7 @@ contract ICognitiveJobController is Ownable{
     );
 
     /// @dev Could be called from manager with two types of response - Assignment and DataValidation
-    function onWorkerResponse(
+    function respondToJob(
         bytes32 _jobId,
         address _workerId,
         uint8 _responseType,

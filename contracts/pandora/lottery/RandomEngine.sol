@@ -17,9 +17,9 @@ contract RandomEngine is ILotteryEngine {
     returns (uint256 o_result) {
         if (block.number > lastBlockNumber) {
             lastBlockNumber = block.number;
-            baseHash = keccak256((uint256(blockhash(block.number)) + uint256(blockhash(block.number - 10))));
+            baseHash = keccak256(abi.encodePacked(uint256(blockhash(block.number)) + uint256(blockhash(block.number - 10))));
         } else {
-            baseHash = keccak256(baseHash);
+            baseHash = keccak256(abi.encodePacked(baseHash));
         }
         o_result = uint256(baseHash) % _max;
     }

@@ -81,39 +81,42 @@ contract('CognitiveJobManager', accounts => {
         //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         // });
 
-        it(`should not create job if number of batches more then ${BATCHES_COUNT_LIMIT}`, async () => {
-            assertRevert(createCognitiveJob(pandora, 11));
-            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        });
-
-        it("should not create job if dimensions of the input data and neural network input layer is not equal", async () => {
-            const batchesCount = 1;
-            const testDataset = await Dataset.new(datasetIpfsAddress, 1, batchesCount, 10, "m-a", "d-n");
-            const testKernel = await Kernel.new(kernelIpfsAddress, 2, 2, 3, "m-a", "d-n");
-
-            assertRevert(pandora.createCognitiveJob(
-                testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)})
-            );
-            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
-        });
+        // it(`should not create job if number of batches more then ${BATCHES_COUNT_LIMIT}`, async () => {
+        //     assertRevert(createCognitiveJob(pandora, 11));
+        //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+        // });
+        //
+        // it("should not create job if dimensions of the input data and neural network input layer is not equal", async () => {
+        //     const batchesCount = 1;
+        //     const testDataset = await Dataset.new(datasetIpfsAddress, 1, batchesCount, 10, "m-a", "d-n");
+        //     const testKernel = await Kernel.new(kernelIpfsAddress, 2, 2, 3, "m-a", "d-n");
+        //
+        //     assertRevert(pandora.createCognitiveJob(
+        //         testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)})
+        //     );
+        //     assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+        // });
 
         it('Cognitive job should be successfully completed after computation', async () => {
 
             let receipt = await createCognitiveJob(pandora, 1);
             let args = receipt.logs[0].args;
-            console.log(args.jobId);
+            // console.log(args.jobId);
+            //
+            // const logSuccess = receipt.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
+            // console.log(logSuccess);
+            //
+            // let jobIdResult = await jobController.getJobId.call(0, true);
+            // console.log(jobIdResult);
 
-            const logSuccess = receipt.logs.filter(l => l.event === 'CognitiveJobCreated')[0];
-            console.log(logSuccess);
+            // let result = await jobController.getCognitiveJobDetails.call(args.jobId);
+            // console.log(result);
+            //
+            // let resultS = await jobController.getCognitiveJobResults.call(args.jobId, 0);
+            // console.log(resultS);
 
-            let jobIdResult = await jobController.getJobId.call(0, true);
-            console.log(jobIdResult);
-
-            let result = await jobController.getCognitiveJobDetails.call(args.jobId);
-            console.log(result);
-
-            // await finishActiveJob(pandora, workerInstance0, workerOwner0);
-            // assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
+            await finishActiveJob(pandora, workerInstance0, workerOwner0);
+            assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
 
         // it(`should not create job if customer doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
