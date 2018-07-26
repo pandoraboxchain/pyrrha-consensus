@@ -1,7 +1,7 @@
 # PAN
 > PAN Token Contract (Pandora Artificial Neuronetwork Token) for Pyrrha cognitive network
 >
-> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation> 
+> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
 **Execution cost**: less than 40541 gas
