@@ -1,7 +1,7 @@
 # WorkerNode
 > Worker Node Smart Contract
 >
-> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation> 
+> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
 **Execution cost**: No bound available
@@ -67,7 +67,7 @@ Params:
 >
 >Do not call
 >
-> Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under the main Pandora contract
+> Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under the main Pandora contract
 
 
 **Execution cost**: No bound available

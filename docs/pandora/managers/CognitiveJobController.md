@@ -274,7 +274,7 @@ Returns:
 --- 
 ### createCognitiveJob(bytes32,address,address,address[],uint256,bytes32)
 >
->**************************************************************************************************************** External functions (Only Pandora by interface)
+>**************************************************************************************************************** External functions (Only Pandora by interface)
 
 
 **Execution cost**: No bound available
