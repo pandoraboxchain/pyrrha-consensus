@@ -191,7 +191,7 @@ contract CognitiveJobController is ICognitiveJobController{
         address _workerId,
         uint8 _responseType,
         bool _response)
-    requireActiveStates( _jobId)
+    requireActiveStates(_jobId)
     onlyOwner()
     external
     returns (bool result)
@@ -205,7 +205,7 @@ contract CognitiveJobController is ICognitiveJobController{
         bytes32 _jobId,
         address _workerId,
         uint8 _percent)
-    requireState( _jobId, uint8(States.Cognition))
+    requireState(_jobId, uint8(States.Cognition))
     onlyOwner()
     external {
         //todo check active worker with workerController
@@ -220,7 +220,7 @@ contract CognitiveJobController is ICognitiveJobController{
         bytes32 _jobId,
         address _workerId,
         bytes _ipfsResults)
-    requireState( _jobId, uint8(States.Cognition))
+    requireState(_jobId, uint8(States.Cognition))
     onlyOwner()
     external
     returns (
@@ -249,7 +249,8 @@ contract CognitiveJobController is ICognitiveJobController{
     private
     returns (bool result)
     {
-        _checkResponse( _jobId, _workerId, _response);
+
+        _checkResponse( _jobId, _workerId, _responseType, _response);
         // Transition to next state when all workers have responded
         if (_isAllWorkersResponded( _jobId)) {
             result = true;
@@ -274,10 +275,19 @@ contract CognitiveJobController is ICognitiveJobController{
     function _checkResponse(
         bytes32 _jobId,
         address _workerId,
+        uint8 _responseType,
         bool _response)
     private {
         uint256 workerIndex = _getWorkerIndex( _jobId, _workerId);
         require(workerIndex != uint256(-1)); //worker is computing current job
+
+        if (_responseType == uint8(WorkerResponses.Assignment)) {
+            require(activeJobs[activeJobsIndexes[_jobId] - 1].state == uint8(States.GatheringWorkers));
+        } else if (_responseType == uint8(WorkerResponses.DataValidation)) {
+            require(activeJobs[activeJobsIndexes[_jobId] - 1].state == uint8(States.DataValidation));
+        } else if (_responseType == uint8(WorkerResponses.Result)) {
+            require(activeJobs[activeJobsIndexes[_jobId] - 1].state == uint8(States.Cognition));
+        }
 
         //todo implement penalties
         _updateResponse( _jobId, workerIndex, _response);
