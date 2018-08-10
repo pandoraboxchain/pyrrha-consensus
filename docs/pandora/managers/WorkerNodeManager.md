@@ -4,11 +4,11 @@
 > Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
-**Execution cost**: less than 61606 gas
+**Execution cost**: less than 61619 gas
 
-**Deployment cost**: less than 532800 gas
+**Deployment cost**: less than 547000 gas
 
-**Combined cost**: less than 594406 gas
+**Combined cost**: less than 608619 gas
 
 ## Constructor
 
