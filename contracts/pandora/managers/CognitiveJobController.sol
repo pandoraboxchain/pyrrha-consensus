@@ -48,7 +48,7 @@ contract CognitiveJobController is ICognitiveJobController{
     mapping(bytes32 => uint16) public activeJobsIndexes;
 
     /// @dev List of all active cognitive jobs
-    CognitiveJob[] activeJobs;
+    CognitiveJob[] public activeJobs;
 
     mapping(bytes32 => uint16) public completedJobsIndexes;
 
@@ -249,7 +249,6 @@ contract CognitiveJobController is ICognitiveJobController{
     private
     returns (bool result)
     {
-
         _checkResponse( _jobId, _workerId, _responseType, _response);
         // Transition to next state when all workers have responded
         if (_isAllWorkersResponded( _jobId)) {
@@ -365,6 +364,39 @@ contract CognitiveJobController is ICognitiveJobController{
         }
     }
 
+    function _onJobComplete(
+        bytes32 _jobId)
+    private
+    {
+        completedJobs.push(activeJobs[activeJobsIndexes[_jobId] - 1]);
+        completedJobsIndexes[_jobId] = uint8(completedJobs.length);
+
+        if (activeJobsIndexes[_jobId] != activeJobs.length) {
+            activeJobs[activeJobsIndexes[_jobId] - 1] = activeJobs[activeJobs.length - 1];
+            activeJobsIndexes[activeJobs[activeJobs.length - 1].id] = activeJobsIndexes[_jobId];
+        }
+        delete activeJobs[activeJobs.length - 1];
+        activeJobsIndexes[_jobId] = 0;
+        activeJobs.length--;
+    }
+
+    /// @dev Checks that job with given id is active or not (tx will fail if job is not existed)
+    function isActiveJob(
+        bytes32 _jobId
+    )
+    view
+    private
+    returns (
+        bool
+    ) {
+        if (activeJobsIndexes[_jobId] != 0) {
+            return true;
+        } else {
+            require(completedJobsIndexes[_jobId] != 0);
+            return false;
+        }
+    }
+
     /******************************************************************************************************************
     State machine implementation
     */
@@ -451,40 +483,6 @@ contract CognitiveJobController is ICognitiveJobController{
             emit CognitionCompleted(_jobId, true);
         } else if (state == uint8(States.Completed)) {
             emit CognitionCompleted(_jobId, false);
-        }
-    }
-
-    function _onJobComplete(
-        bytes32 _jobId)
-    private
-    {
-        CognitiveJob memory currentJob = activeJobs[activeJobsIndexes[_jobId] - 1];
-        completedJobs.push(currentJob);
-        completedJobsIndexes[_jobId] = uint8(completedJobs.length);
-
-        if (activeJobsIndexes[_jobId] != activeJobs.length) {
-            CognitiveJob memory movedJob = activeJobs[activeJobs.length - 1];
-            activeJobs[activeJobsIndexes[_jobId] - 1] = movedJob;
-        }
-        delete activeJobs[activeJobsIndexes[_jobId] - 1]; //todo check storage erasing in test
-        activeJobsIndexes[_jobId] = 0;
-        activeJobs.length--;
-    }
-
-    /// @dev Checks that job with given id is active or not (tx will fail if job is not existed)
-    function isActiveJob(
-        bytes32 _jobId
-    )
-    view
-    private
-    returns (
-        bool
-    ) {
-        if (activeJobsIndexes[_jobId] != 0) {
-            return true;
-        } else {
-            require(completedJobsIndexes[_jobId] != 0);
-            return false;
         }
     }
 }

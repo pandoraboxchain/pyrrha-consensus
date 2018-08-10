@@ -23,7 +23,6 @@ const kernelIpfsAddress = 'QmZ2ThDyq5jZSGpniUMg1gbJPzGk4ASBxztvNYvaqq6MzZ';
 module.exports.acceptAssignment = async (pandora, workerInstance, workerOwner, opts) => {
     const options = assign({}, {from: workerOwner}, opts);
     const activeJob = await workerInstance.activeJob.call();
-
     if (activeJob === EMPTY) return;
     await workerInstance.acceptAssignment(options);
 
