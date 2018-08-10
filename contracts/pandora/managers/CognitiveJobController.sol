@@ -368,15 +368,14 @@ contract CognitiveJobController is ICognitiveJobController{
         bytes32 _jobId)
     private
     {
-        CognitiveJob memory currentJob = activeJobs[activeJobsIndexes[_jobId] - 1];
-        completedJobs.push(currentJob);
+        completedJobs.push(activeJobs[activeJobsIndexes[_jobId] - 1]);
         completedJobsIndexes[_jobId] = uint8(completedJobs.length);
 
         if (activeJobsIndexes[_jobId] != activeJobs.length) {
-            CognitiveJob memory movedJob = activeJobs[activeJobs.length - 1];
-            activeJobs[activeJobsIndexes[_jobId] - 1] = movedJob;
+            activeJobs[activeJobsIndexes[_jobId] - 1] = activeJobs[activeJobs.length - 1];
+            activeJobsIndexes[activeJobs[activeJobs.length - 1].id] = activeJobsIndexes[_jobId];
         }
-        delete activeJobs[activeJobsIndexes[_jobId] - 1]; //todo check storage erasing in test
+        delete activeJobs[activeJobs.length - 1];
         activeJobsIndexes[_jobId] = 0;
         activeJobs.length--;
     }
