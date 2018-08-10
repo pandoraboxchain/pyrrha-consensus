@@ -59,7 +59,6 @@ contract('CognitiveJobManager', accounts => {
     const customer = accounts[5];
 
     before('setup test cognitive job manager', async () => {
-
         pandora = await Pandora.deployed();
         jobController = await CognitiveJobController.deployed();
 
@@ -135,10 +134,10 @@ contract('CognitiveJobManager', accounts => {
 
             // assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
 
+            console.log(result);
             assert.equal(logEntries, 1, 'Should be fired only 1 event');
             assert.isOk(logQueued, 'Should be fired failed event');
             assert.isNotOk(logCreated, 'Should not be fired successful creation event');
-
 
             // Erase queue
             await aliveWorker(workerInstance1, workerOwner1);
@@ -149,6 +148,7 @@ contract('CognitiveJobManager', accounts => {
             await processToCognition(pandora, workerInstance0, workerOwner0);
             await provideResults(pandora, workerInstance0, workerOwner0);
 
+            console.log("Check queue");
             await pandora.checkJobQueue();
 
             assertQueueDepth(pandora, 0);
