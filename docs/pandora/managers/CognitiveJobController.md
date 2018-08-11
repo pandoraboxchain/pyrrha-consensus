@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 2204200 gas
+**Deployment cost**: less than 1975200 gas
 
 **Combined cost**: No bound available
 
@@ -132,7 +132,7 @@ Params:
 ### activeJobsIndexes(bytes32)
 
 
-**Execution cost**: less than 647 gas
+**Execution cost**: less than 669 gas
 
 **Attributes**: constant
 
@@ -185,6 +185,30 @@ Params:
 
 
 --- 
+### activeJobs(uint256)
+
+
+**Execution cost**: less than 2118 gas
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `uint256`*
+
+Returns:
+
+
+1. **id** *of type `bytes32`*
+2. **kernel** *of type `address`*
+3. **dataset** *of type `address`*
+4. **complexity** *of type `uint256`*
+5. **description** *of type `bytes32`*
+6. **progress** *of type `uint8`*
+7. **state** *of type `uint8`*
+
+--- 
 ### completeWork(bytes32,address,bytes)
 >
 >should be called with provided results
@@ -210,7 +234,7 @@ Returns:
 > Returns total count of active jobs
 
 
-**Execution cost**: less than 539 gas
+**Execution cost**: less than 561 gas
 
 **Attributes**: constant
 
@@ -225,7 +249,7 @@ Returns:
 ### owner()
 
 
-**Execution cost**: less than 779 gas
+**Execution cost**: less than 801 gas
 
 **Attributes**: constant
 
@@ -240,7 +264,7 @@ Returns:
 ### completedJobsIndexes(bytes32)
 
 
-**Execution cost**: less than 581 gas
+**Execution cost**: less than 603 gas
 
 **Attributes**: constant
 
@@ -260,7 +284,7 @@ Returns:
 > Returns total count of active jobs
 
 
-**Execution cost**: less than 692 gas
+**Execution cost**: less than 714 gas
 
 **Attributes**: constant
 
@@ -356,7 +380,7 @@ Returns:
 ### getJobId(uint16,bool)
 
 
-**Execution cost**: less than 973 gas
+**Execution cost**: less than 995 gas
 
 **Attributes**: constant
 
@@ -379,7 +403,7 @@ Returns:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22339 gas
+**Execution cost**: less than 22361 gas
 
 
 
@@ -409,7 +433,7 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23181 gas
+**Execution cost**: less than 23203 gas
 
 
 Params:
@@ -424,7 +448,7 @@ Params:
 ### transitionTable(uint8,uint256)
 
 
-**Execution cost**: less than 2764 gas
+**Execution cost**: less than 2786 gas
 
 **Attributes**: constant
 
