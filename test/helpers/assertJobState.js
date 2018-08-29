@@ -1,4 +1,4 @@
-const CognitiveJob = artifacts.require('CognitiveJob');
+// const CognitiveJob = artifacts.require('CognitiveJob');
 
 const {
     JOB_STATES,

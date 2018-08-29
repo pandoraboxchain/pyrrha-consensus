@@ -2,7 +2,7 @@ const Pandora = artifacts.require('Pandora');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
 const WorkerNode = artifacts.require('WorkerNode');
-const CognitiveJob = artifacts.require('CognitiveJob');
+// const CognitiveJob = artifacts.require('CognitiveJob');
 
 const assertQueueDepth = require('./helpers/assertQueueDepth');
 
@@ -37,7 +37,7 @@ contract('CognitiveJobManager', accounts => {
         }
     });
     describe("checkJobQueue", () => {
-        it("should get from queue 1 job with 10 batches", async () => {
+        it.skip("should get from queue 1 job with 10 batches", async () => {
             assert.equal(await pandora.workerNodesCount(), workersCount, `It should ${workersCount} workers be created for test`);
 
             await aliveWorker(workers[0], owner);

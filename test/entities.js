@@ -9,7 +9,7 @@ const DataEntity = artifacts.require('DataEntity');
 const Web3latest = require('web3');
 const web3latest = new Web3latest();
 
-contract('Entities', accounts => {
+contract.skip('Entities', accounts => {
 
     const datasetIpfsAddress = 'QmSFdikKbHCBnTRMgxcakjLQD5E6Nbmoo69YbQPM9ACXJj';
     const kernelIpfsAddress = 'QmZ2ThDyq5jZSGpniUMg1gbJPzGk4ASBxztvNYvaqq6MzZ';
@@ -32,6 +32,7 @@ contract('Entities', accounts => {
     before('setup test entities', async () => {
 
         jobController = await CognitiveJobController.deployed();
+        pandora = await Pandora.deployed();
 
         await pandora.whitelistWorkerOwner(workerOwner);
         workerNode = await pandora.createWorkerNode({from: workerOwner});
