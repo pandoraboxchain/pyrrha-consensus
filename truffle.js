@@ -13,10 +13,11 @@ const highGas = 6700000;
 
 module.exports = {
     networks: {
-        ganache_cli: {
+        ganache: {
             host: 'localhost',
             port: 8545,
-            network_id: '*'
+            network_id: '*',
+            gas: 76000000
         },
         coverage: {
             host: 'localhost',

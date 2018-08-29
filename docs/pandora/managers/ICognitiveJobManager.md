@@ -9,7 +9,7 @@
 
 
 ## Events
-### CognitiveJobCreated(address)
+### CognitiveJobCreated(bytes32)
 
 
 **Execution cost**: No bound available
@@ -17,122 +17,47 @@
 
 Params:
 
-1. **cognitiveJob** *of type `address`*
+1. **_jobId** *of type `bytes32`*
 
 
 ## Methods
-### cognitiveJobFactory()
+### commitProgress(bytes32,uint8)
 
 
 **Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### cognitiveJobs(uint256)
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
 
 
 Params:
 
-1. **param_0** *of type `uint256`*
+1. **_jobId** *of type `bytes32`*
+2. **_percent** *of type `uint8`*
 
-Returns:
-
-
-1. **output_0** *of type `address`*
 
 --- 
-### cognitiveJobsCount()
+### provideResults(bytes32,bytes)
 
 
 **Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### createCognitiveJob(address,address,uint256,bytes32)
-
-
-**Execution cost**: No bound available
-
-**Attributes**: payable
 
 
 Params:
 
-1. **kernel** *of type `address`*
-2. **dataset** *of type `address`*
-3. **comlexity** *of type `uint256`*
-4. **description** *of type `bytes32`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-2. **output_1** *of type `uint8`*
-
---- 
-### finishCognitiveJob()
-
-
-**Execution cost**: No bound available
-
-
+1. **_jobId** *of type `bytes32`*
+2. **_ipfsResults** *of type `bytes`*
 
 
 --- 
-### isActiveJob(address)
+### respondToJob(bytes32,uint8,bool)
 
 
 **Execution cost**: No bound available
-
-**Attributes**: constant
 
 
 Params:
 
-1. **job** *of type `address`*
+1. **_jobId** *of type `bytes32`*
+2. **_responseType** *of type `uint8`*
+3. **_response** *of type `bool`*
 
-Returns:
-
-
-1. **output_0** *of type `bool`*
-
---- 
-### jobAddresses(address)
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `uint16`*
 
 [Back to the top ↑](#icognitivejobmanager)

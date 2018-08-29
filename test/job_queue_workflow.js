@@ -6,7 +6,7 @@ const CognitiveJob = artifacts.require('CognitiveJob');
 
 const assertRevert = require('./helpers/assertRevert');
 
-contract('Pandora', accounts => {
+contract('CognitiveJobQueue', accounts => {
 
     let datasetIpfsAddress = 'QmSFdikKbHCBnTRMgxcakjLQD5E6Nbmoo69YbQPM9ACXJj';
     let kernelIpfsAddress = 'QmZ2ThDyq5jZSGpniUMg1gbJPzGk4ASBxztvNYvaqq6MzZ';
@@ -47,9 +47,9 @@ contract('Pandora', accounts => {
 
     it('Worker node should request cognitive job from queue when computation is finished', async () => {
 
-        // console.log('Create cognitive job #1 with 2 batches to put it in queue');
+        // console.log('Create cognitive job #1 with 3 batches to put it in queue');
 
-        const numberOfBatches = 2;
+        const numberOfBatches = 3;
         const testDataset = await Dataset.new(datasetIpfsAddress, 784, numberOfBatches, 48, "CIFAR_10,HENDWRITTEN,DIGITS", "CIFAR10,digits");
         const testKernel = await Kernel.new(kernelIpfsAddress, 784, 669706, 48, "CIFAR_10,HENDWRITTEN,DIGITS", "CIFAR10,digits,mode");
         const estimatedCode = 0;
@@ -71,155 +71,116 @@ contract('Pandora', accounts => {
         const estimatedCode2 = 1;
 
         const result2 = await pandora.createCognitiveJob(testKernel2.address, testDataset2.address, 100, "d-n", {value: web3.toWei(0.5)});
-        let activeJob = await workerInstance0.activeJob.call();
+        let cognitiveJob1Batch = await workerInstance0.activeJob.call();
         let workerState = await workerInstance0.currentState.call();
 
         assert.equal(workerState.toNumber(), 3, `worker state should be "assigned" (3)`);
-        assert.notEqual(activeJob, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node');
+        assert.notEqual(cognitiveJob1Batch, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node');
         assert.equal(result2.logs[1].args.resultCode, estimatedCode2, 'result code in event should match RESULT_CODE_JOB_CREATED');
 
         // Setup 2 additional worker nodes, so they could take queued job after any current job being finished;
 
         //#2
         await pandora.whitelistWorkerOwner(workerOwner1);
-        workerNode1 = await pandora.createWorkerNode({
-            from: workerOwner1
-        });
+        workerNode1 = await pandora.createWorkerNode({from: workerOwner1});
+
         const idleWorkerAddress1 = await pandora.workerNodes.call(1);
-        // console.log(idleWorkerAddress1, 'worker node1');
         workerInstance1 = await WorkerNode.at(idleWorkerAddress1);
-        const workerAliveResult1 = await workerInstance1.alive({
-            from: workerOwner1
-        });
+
+        await workerInstance1.alive({from: workerOwner1});
 
         //#3
         await pandora.whitelistWorkerOwner(workerOwner2);
-        workerNode2 = await pandora.createWorkerNode({
-            from: workerOwner2
-        });
+        workerNode2 = await pandora.createWorkerNode({from: workerOwner2});
+
         const idleWorkerAddress2 = await pandora.workerNodes.call(2);
-        // console.log(idleWorkerAddress2, 'worker node2');
         workerInstance2 = await WorkerNode.at(idleWorkerAddress2);
-        const workerAliveResult2 = await workerInstance2.alive({
-            from: workerOwner2
-        });
+
+        await workerInstance2.alive({from: workerOwner2});
 
         //Preparing to finish job on worker node #1;
 
-        activeJob = await workerInstance0.activeJob.call();
-        // console.log(activeJob, 'activeJob #0');
+        await workerInstance0.acceptAssignment({from: workerOwner0});
+        await workerInstance0.processToDataValidation({from: workerOwner0});
+        await workerInstance0.acceptValidData({from: workerOwner0});
 
-        workerState = await workerInstance0.currentState.call();
-        // console.log(workerState.toNumber(), 'worker #0 state');
+        await workerInstance0.processToCognition({from: workerOwner0});
 
-        const preparingValidationResult = await workerInstance0.acceptAssignment({
-            from: workerOwner0
-        });
-        // console.log(preparingValidationResult)
+        const activeJobInstance1Batch = await CognitiveJob.at(cognitiveJob1Batch);
 
-        const validatingDataResult = await workerInstance0.processToDataValidation({
-            from: workerOwner0
-        });
-        // console.log(validatingDataResult)
+        const jobBatches = await activeJobInstance1Batch.batches.call();
+        assert.equal(jobBatches.toNumber(), 1, "batches in job should match");
 
-        const readyForComputingResult = await workerInstance0.acceptValidData({
-            from: workerOwner0
-        });
-        // console.log(readyForComputingResult)
+        await workerInstance0.provideResults('0x01', {from: workerOwner0});
 
-        const processToCognitionResult = await workerInstance0.processToCognition({
-            from: workerOwner0
-        });
-        // console.log(processToCognitionResult)
-
-        workerState = await workerInstance0.currentState.call();
-        // console.log(workerState.toNumber(), 'worker #0 state');
-        assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
-
-        // activeJob = await workerInstance0.activeJob.call();
-        // // console.log(activeJob, 'activeJob #0');
-
-        const activeJobInstance = await CognitiveJob.at(activeJob);
-        let results = await activeJobInstance.ipfsResultsCount.call()
-        // console.log("ipfsResults count: " + results.toNumber())
-        const jobBatches = await activeJobInstance.batches.call();
-        // console.log(jobBatches.toNumber(), 'batches in active job #0');
-
-        // const jobWorkers = await activeJobInstance.activeWorkers.call(0);
-        // console.log(jobWorkers, 'active workers in active job #0');
-
-        const completeResult = await workerInstance0.provideResults('0x01', {from: workerOwner0});
-        // console.log(completeResult)
-
-        let jobState = await CognitiveJob.at(activeJob).currentState.call();
-        // console.log(jobState.toNumber(), 'activeJob #0 state');
+        let jobState = await CognitiveJob.at(cognitiveJob1Batch).currentState.call();
         assert.equal(jobState.toNumber(), 7, `Cognitive job (#1) state should be "Completed" (7)`);
 
-        // check that 2 idle workers assigned to job
+        //here worker returns to Idle state and checks queue
+        await pandora.unlockFinalizedWorker(cognitiveJob1Batch, {from: workerOwner0});
+
+        // check that all 3 idle workers assigned to job
+        const workerState0 = await workerInstance0.currentState.call();
+        const activeJob0 = await workerInstance0.activeJob.call();
+
+        assert.equal(workerState0.toNumber(), 3, `worker state should be "assigned" (3)`);
+        assert.notEqual(activeJob0, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node 1');
+
         const workerState1 = await workerInstance1.currentState.call();
         const activeJob1 = await workerInstance1.activeJob.call();
-
-        // console.log(workerState1.toNumber(), 'worker #1 state');
 
         assert.equal(workerState1.toNumber(), 3, `worker state should be "assigned" (3)`);
         assert.notEqual(activeJob1, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node 1');
 
         const workerState2 = await workerInstance2.currentState.call();
-        const activeJob2 = await workerInstance2.activeJob.call();
+        const cognitiveJob3Batches = await workerInstance2.activeJob.call();
 
         assert.equal(workerState2.toNumber(), 3, `worker state should be "assigned" (3)`);
-        assert.notEqual(activeJob2, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node 2');
-
-        // console.log(workerState2.toNumber(), 'worker #2 state');
+        assert.notEqual(cognitiveJob3Batches, '0x0000000000000000000000000000000000000000', 'should set activeJob to worker node 2');
 
         //completing job from queue
 
+        await workerInstance0.acceptAssignment({from: workerOwner0});
         await workerInstance1.acceptAssignment({from: workerOwner1});
-        // assertRevert(workerInstance1.processToDataValidation({from: workerOwner1}));
-
-        //not all workers ready, state still GatheringWorkers
-        // jobState = await CognitiveJob.at(activeJob2).currentState.call();
-        // assert.equal(jobState.toNumber(), 1, `Cognitive job state should be "GatheringWorkers" (1)`);
-
         await workerInstance2.acceptAssignment({from: workerOwner2});
 
-        //all workers ready, switched to DataValidation state
-        // jobState = await CognitiveJob.at(activeJob2).currentState.call();
-        // assert.equal(jobState.toNumber(), 3, `Cognitive job state should be "DataValidation" (3)`);
-
+        await workerInstance0.processToDataValidation({from: workerOwner0});
         await workerInstance1.processToDataValidation({from: workerOwner1});
         await workerInstance2.processToDataValidation({from: workerOwner2});
 
+        await workerInstance0.acceptValidData({from: workerOwner0});
         await workerInstance1.acceptValidData({from: workerOwner1});
         await workerInstance2.acceptValidData({from: workerOwner2});
 
-        // all workers have validated data, switched to Cognition state
-        jobState = await CognitiveJob.at(activeJob2).currentState.call();
+        jobState = await CognitiveJob.at(cognitiveJob3Batches).currentState.call();
         assert.equal(jobState.toNumber(), 5, `Cognitive job state should be "Cognition" (5)`);
 
+        await workerInstance0.processToCognition({from: workerOwner0});
         await workerInstance1.processToCognition({from: workerOwner1});
         await workerInstance2.processToCognition({from: workerOwner2});
 
+        workerState = await workerInstance0.currentState.call();
+        assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
         workerState = await workerInstance1.currentState.call();
         assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
         workerState = await workerInstance2.currentState.call();
         assert.equal(workerState.toNumber(), 7, `worker state should be "computing" (7)`);
 
+        await workerInstance0.provideResults('0x01', {from: workerOwner0});
         await workerInstance1.provideResults('0x01', {from: workerOwner1});
         await workerInstance2.provideResults('0x01', {from: workerOwner2});
 
+        await pandora.unlockFinalizedWorker(cognitiveJob3Batches, {from: workerOwner2});
+
+        workerState = await workerInstance0.currentState.call();
+        assert.equal(workerState.toNumber(), 2, `worker state should be "idle" (2)`);
         workerState = await workerInstance1.currentState.call();
         assert.equal(workerState.toNumber(), 2, `worker state should be "idle" (2)`);
         workerState = await workerInstance2.currentState.call();
         assert.equal(workerState.toNumber(), 2, `worker state should be "idle" (2)`);
 
         //check that job have been finished correctly
-        jobState = await CognitiveJob.at(activeJob2).currentState.call();
+        jobState = await CognitiveJob.at(cognitiveJob3Batches).currentState.call();
         assert.equal(jobState.toNumber(), 7, `Cognitive job (#1) state should be "Completed" (7)`);
-
-        //now we have 3 idle workers, trying to create one more job with 2 batches dataset
-        await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", {value: web3.toWei(0.5)});
-
-
     });
 });

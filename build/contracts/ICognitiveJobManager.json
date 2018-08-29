@@ -2,141 +2,70 @@
   "contractName": "ICognitiveJobManager",
   "abi": [
     {
-      "constant": true,
-      "inputs": [],
-      "name": "cognitiveJobFactory",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "jobAddresses",
-      "outputs": [
-        {
-          "name": "",
-          "type": "uint16"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "constant": true,
-      "inputs": [
-        {
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "name": "cognitiveJobs",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "payable": false,
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "anonymous": false,
       "inputs": [
         {
           "indexed": false,
-          "name": "cognitiveJob",
-          "type": "address"
+          "name": "_jobId",
+          "type": "bytes32"
         }
       ],
       "name": "CognitiveJobCreated",
       "type": "event"
     },
     {
-      "constant": true,
-      "inputs": [],
-      "name": "cognitiveJobsCount",
-      "outputs": [
+      "constant": false,
+      "inputs": [
         {
-          "name": "",
-          "type": "uint256"
+          "name": "_jobId",
+          "type": "bytes32"
+        },
+        {
+          "name": "_ipfsResults",
+          "type": "bytes"
         }
       ],
+      "name": "provideResults",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
-      "constant": true,
+      "constant": false,
       "inputs": [
         {
-          "name": "job",
-          "type": "address"
-        }
-      ],
-      "name": "isActiveJob",
-      "outputs": [
+          "name": "_jobId",
+          "type": "bytes32"
+        },
         {
-          "name": "",
+          "name": "_responseType",
+          "type": "uint8"
+        },
+        {
+          "name": "_response",
           "type": "bool"
         }
       ],
+      "name": "respondToJob",
+      "outputs": [],
       "payable": false,
-      "stateMutability": "view",
+      "stateMutability": "nonpayable",
       "type": "function"
     },
     {
       "constant": false,
       "inputs": [
         {
-          "name": "kernel",
-          "type": "address"
-        },
-        {
-          "name": "dataset",
-          "type": "address"
-        },
-        {
-          "name": "comlexity",
-          "type": "uint256"
-        },
-        {
-          "name": "description",
+          "name": "_jobId",
           "type": "bytes32"
-        }
-      ],
-      "name": "createCognitiveJob",
-      "outputs": [
-        {
-          "name": "",
-          "type": "address"
         },
         {
-          "name": "",
+          "name": "_percent",
           "type": "uint8"
         }
       ],
-      "payable": true,
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "constant": false,
-      "inputs": [],
-      "name": "finishCognitiveJob",
+      "name": "commitProgress",
       "outputs": [],
       "payable": false,
       "stateMutability": "nonpayable",
@@ -147,20 +76,20 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity ^0.4.23;\n\nimport \"../../entities/IDataEntity.sol\";\nimport \"../../nodes/IWorkerNode.sol\";\nimport \"../../jobs/IComputingJob.sol\";\nimport \"../factories/CognitiveJobFactory.sol\";\n\ncontract ICognitiveJobManager {\n    CognitiveJobFactory public cognitiveJobFactory;\n\n    IComputingJob[] public cognitiveJobs;\n    mapping(address => uint16) public jobAddresses;\n\n    function cognitiveJobsCount() view public returns (uint256);\n    function isActiveJob(IComputingJob job) view public returns (bool);\n\n    function createCognitiveJob(\n        IKernel kernel,\n        IDataset dataset,\n        uint comlexity,\n        bytes32 description) external payable returns (IComputingJob, uint8);\n    function finishCognitiveJob() external;\n\n    event CognitiveJobCreated(IComputingJob cognitiveJob);\n}\n",
+  "source": "pragma solidity ^0.4.23;\n\nimport \"../../nodes/IWorkerNode.sol\";\nimport \"../../entities/IDataEntity.sol\";\nimport \"../../entities/IKernel.sol\";\nimport \"../../entities/IDataset.sol\";\n\ncontract ICognitiveJobManager {\n\n    //workers interaction\n    function provideResults(bytes32 _jobId, bytes _ipfsResults) external;\n    function respondToJob(bytes32 _jobId, uint8 _responseType, bool _response) external;\n    function commitProgress(bytes32 _jobId, uint8 _percent) external;\n\n    event CognitiveJobCreated(bytes32 _jobId);\n}\n",
   "sourcePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
   "ast": {
     "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
     "exportedSymbols": {
       "ICognitiveJobManager": [
-        3835
+        3978
       ]
     },
-    "id": 3836,
+    "id": 3979,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3787,
+        "id": 3946,
         "literals": [
           "solidity",
           "^",
@@ -168,49 +97,49 @@
           ".23"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:22"
-      },
-      {
-        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
-        "file": "../../entities/IDataEntity.sol",
-        "id": 3788,
-        "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 26,
-        "src": "26:40:22",
-        "symbolAliases": [],
-        "unitAlias": ""
+        "src": "0:24:23"
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
         "file": "../../nodes/IWorkerNode.sol",
-        "id": 3789,
+        "id": 3947,
         "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 2031,
-        "src": "67:37:22",
+        "scope": 3979,
+        "sourceUnit": 813,
+        "src": "26:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/jobs/IComputingJob.sol",
-        "file": "../../jobs/IComputingJob.sol",
-        "id": 3790,
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
+        "file": "../../entities/IDataEntity.sol",
+        "id": 3948,
         "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 1423,
-        "src": "105:38:22",
+        "scope": 3979,
+        "sourceUnit": 150,
+        "src": "64:40:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/factories/CognitiveJobFactory.sol",
-        "file": "../factories/CognitiveJobFactory.sol",
-        "id": 3791,
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IKernel.sol",
+        "file": "../../entities/IKernel.sol",
+        "id": 3949,
         "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 2780,
-        "src": "144:46:22",
+        "scope": 3979,
+        "sourceUnit": 166,
+        "src": "105:36:23",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataset.sol",
+        "file": "../../entities/IDataset.sol",
+        "id": 3950,
+        "nodeType": "ImportDirective",
+        "scope": 3979,
+        "sourceUnit": 158,
+        "src": "142:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -220,237 +149,168 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 3835,
+        "id": 3978,
         "linearizedBaseContracts": [
-          3835
+          3978
         ],
         "name": "ICognitiveJobManager",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "constant": false,
-            "id": 3793,
-            "name": "cognitiveJobFactory",
-            "nodeType": "VariableDeclaration",
-            "scope": 3835,
-            "src": "228:46:22",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_contract$_CognitiveJobFactory_$2779",
-              "typeString": "contract CognitiveJobFactory"
-            },
-            "typeName": {
-              "contractScope": null,
-              "id": 3792,
-              "name": "CognitiveJobFactory",
-              "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2779,
-              "src": "228:19:22",
-              "typeDescriptions": {
-                "typeIdentifier": "t_contract$_CognitiveJobFactory_$2779",
-                "typeString": "contract CognitiveJobFactory"
-              }
-            },
-            "value": null,
-            "visibility": "public"
-          },
-          {
-            "constant": false,
-            "id": 3796,
-            "name": "cognitiveJobs",
-            "nodeType": "VariableDeclaration",
-            "scope": 3835,
-            "src": "281:36:22",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_array$_t_contract$_IComputingJob_$1422_$dyn_storage",
-              "typeString": "contract IComputingJob[]"
-            },
-            "typeName": {
-              "baseType": {
-                "contractScope": null,
-                "id": 3794,
-                "name": "IComputingJob",
-                "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 1422,
-                "src": "281:13:22",
-                "typeDescriptions": {
-                  "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                  "typeString": "contract IComputingJob"
-                }
-              },
-              "id": 3795,
-              "length": null,
-              "nodeType": "ArrayTypeName",
-              "src": "281:15:22",
-              "typeDescriptions": {
-                "typeIdentifier": "t_array$_t_contract$_IComputingJob_$1422_$dyn_storage_ptr",
-                "typeString": "contract IComputingJob[]"
-              }
-            },
-            "value": null,
-            "visibility": "public"
-          },
-          {
-            "constant": false,
-            "id": 3800,
-            "name": "jobAddresses",
-            "nodeType": "VariableDeclaration",
-            "scope": 3835,
-            "src": "323:46:22",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_address_$_t_uint16_$",
-              "typeString": "mapping(address => uint16)"
-            },
-            "typeName": {
-              "id": 3799,
-              "keyType": {
-                "id": 3797,
-                "name": "address",
-                "nodeType": "ElementaryTypeName",
-                "src": "331:7:22",
-                "typeDescriptions": {
-                  "typeIdentifier": "t_address",
-                  "typeString": "address"
-                }
-              },
-              "nodeType": "Mapping",
-              "src": "323:26:22",
-              "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_address_$_t_uint16_$",
-                "typeString": "mapping(address => uint16)"
-              },
-              "valueType": {
-                "id": 3798,
-                "name": "uint16",
-                "nodeType": "ElementaryTypeName",
-                "src": "342:6:22",
-                "typeDescriptions": {
-                  "typeIdentifier": "t_uint16",
-                  "typeString": "uint16"
-                }
-              }
-            },
-            "value": null,
-            "visibility": "public"
-          },
-          {
             "body": null,
             "documentation": null,
-            "id": 3805,
+            "id": 3957,
             "implemented": false,
             "isConstructor": false,
-            "isDeclaredConst": true,
+            "isDeclaredConst": false,
             "modifiers": [],
-            "name": "cognitiveJobsCount",
+            "name": "provideResults",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3801,
+              "id": 3955,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3952,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3957,
+                  "src": "268:14:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3951,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "268:7:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3954,
+                  "name": "_ipfsResults",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3957,
+                  "src": "284:18:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 3953,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "284:5:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "267:36:23"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 3956,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "403:2:22"
+              "src": "312:0:23"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 3804,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 3803,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3805,
-                  "src": "427:7:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 3802,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "427:7:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "426:9:22"
-            },
-            "scope": 3835,
-            "src": "376:60:22",
-            "stateMutability": "view",
+            "scope": 3978,
+            "src": "244:69:23",
+            "stateMutability": "nonpayable",
             "superFunction": null,
-            "visibility": "public"
+            "visibility": "external"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 3812,
+            "id": 3966,
             "implemented": false,
             "isConstructor": false,
-            "isDeclaredConst": true,
+            "isDeclaredConst": false,
             "modifiers": [],
-            "name": "isActiveJob",
+            "name": "respondToJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3808,
+              "id": 3964,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3807,
-                  "name": "job",
+                  "id": 3959,
+                  "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3812,
-                  "src": "462:17:22",
+                  "scope": 3966,
+                  "src": "340:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                    "typeString": "contract IComputingJob"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 3806,
-                    "name": "IComputingJob",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1422,
-                    "src": "462:13:22",
+                    "id": 3958,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "340:7:23",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                      "typeString": "contract IComputingJob"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
-                }
-              ],
-              "src": "461:19:22"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 3811,
-              "nodeType": "ParameterList",
-              "parameters": [
+                },
                 {
                   "constant": false,
-                  "id": 3810,
-                  "name": "",
+                  "id": 3961,
+                  "name": "_responseType",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3812,
-                  "src": "502:4:22",
+                  "scope": 3966,
+                  "src": "356:19:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 3960,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "356:5:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3963,
+                  "name": "_response",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3966,
+                  "src": "377:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -458,10 +318,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3809,
+                    "id": 3962,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "502:4:22",
+                    "src": "377:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -471,117 +331,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "501:6:22"
+              "src": "339:53:23"
             },
-            "scope": 3835,
-            "src": "441:67:22",
-            "stateMutability": "view",
+            "payable": false,
+            "returnParameters": {
+              "id": 3965,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "401:0:23"
+            },
+            "scope": 3978,
+            "src": "318:84:23",
+            "stateMutability": "nonpayable",
             "superFunction": null,
-            "visibility": "public"
+            "visibility": "external"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 3827,
+            "id": 3973,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [],
-            "name": "createCognitiveJob",
+            "name": "commitProgress",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3821,
+              "id": 3971,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3814,
-                  "name": "kernel",
+                  "id": 3968,
+                  "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "551:14:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IKernel_$41",
-                    "typeString": "contract IKernel"
-                  },
-                  "typeName": {
-                    "contractScope": null,
-                    "id": 3813,
-                    "name": "IKernel",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 41,
-                    "src": "551:7:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IKernel_$41",
-                      "typeString": "contract IKernel"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 3816,
-                  "name": "dataset",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "575:16:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IDataset_$33",
-                    "typeString": "contract IDataset"
-                  },
-                  "typeName": {
-                    "contractScope": null,
-                    "id": 3815,
-                    "name": "IDataset",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 33,
-                    "src": "575:8:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IDataset_$33",
-                      "typeString": "contract IDataset"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 3818,
-                  "name": "comlexity",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "601:14:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 3817,
-                    "name": "uint",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "601:4:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 3820,
-                  "name": "description",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "625:19:22",
+                  "scope": 3973,
+                  "src": "431:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -589,10 +374,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 3819,
+                    "id": 3967,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "625:7:22",
+                    "src": "431:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -600,50 +385,14 @@
                   },
                   "value": null,
                   "visibility": "internal"
-                }
-              ],
-              "src": "541:104:22"
-            },
-            "payable": true,
-            "returnParameters": {
-              "id": 3826,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 3823,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "672:13:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                    "typeString": "contract IComputingJob"
-                  },
-                  "typeName": {
-                    "contractScope": null,
-                    "id": 3822,
-                    "name": "IComputingJob",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1422,
-                    "src": "672:13:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                      "typeString": "contract IComputingJob"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
                 },
                 {
                   "constant": false,
-                  "id": 3825,
-                  "name": "",
+                  "id": 3970,
+                  "name": "_percent",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "687:5:22",
+                  "scope": 3973,
+                  "src": "447:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -651,10 +400,10 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 3824,
+                    "id": 3969,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
-                    "src": "687:5:22",
+                    "src": "447:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint8",
                       "typeString": "uint8"
@@ -664,39 +413,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "671:22:22"
-            },
-            "scope": 3835,
-            "src": "514:180:22",
-            "stateMutability": "payable",
-            "superFunction": null,
-            "visibility": "external"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 3830,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "finishCognitiveJob",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 3828,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "726:2:22"
+              "src": "430:32:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 3829,
+              "id": 3972,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "737:0:22"
+              "src": "471:0:23"
             },
-            "scope": 3835,
-            "src": "699:39:22",
+            "scope": 3978,
+            "src": "407:65:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -704,66 +431,64 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 3834,
+            "id": 3977,
             "name": "CognitiveJobCreated",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 3833,
+              "id": 3976,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3832,
+                  "id": 3975,
                   "indexed": false,
-                  "name": "cognitiveJob",
+                  "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3834,
-                  "src": "770:26:22",
+                  "scope": 3977,
+                  "src": "504:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                    "typeString": "contract IComputingJob"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 3831,
-                    "name": "IComputingJob",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1422,
-                    "src": "770:13:22",
+                    "id": 3974,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "504:7:23",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                      "typeString": "contract IComputingJob"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "769:28:22"
+              "src": "503:16:23"
             },
-            "src": "744:54:22"
+            "src": "478:42:23"
           }
         ],
-        "scope": 3836,
-        "src": "192:608:22"
+        "scope": 3979,
+        "src": "181:341:23"
       }
     ],
-    "src": "0:801:22"
+    "src": "0:523:23"
   },
   "legacyAST": {
     "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
     "exportedSymbols": {
       "ICognitiveJobManager": [
-        3835
+        3978
       ]
     },
-    "id": 3836,
+    "id": 3979,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 3787,
+        "id": 3946,
         "literals": [
           "solidity",
           "^",
@@ -771,49 +496,49 @@
           ".23"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:24:22"
-      },
-      {
-        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
-        "file": "../../entities/IDataEntity.sol",
-        "id": 3788,
-        "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 26,
-        "src": "26:40:22",
-        "symbolAliases": [],
-        "unitAlias": ""
+        "src": "0:24:23"
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
         "file": "../../nodes/IWorkerNode.sol",
-        "id": 3789,
+        "id": 3947,
         "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 2031,
-        "src": "67:37:22",
+        "scope": 3979,
+        "sourceUnit": 813,
+        "src": "26:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/jobs/IComputingJob.sol",
-        "file": "../../jobs/IComputingJob.sol",
-        "id": 3790,
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
+        "file": "../../entities/IDataEntity.sol",
+        "id": 3948,
         "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 1423,
-        "src": "105:38:22",
+        "scope": 3979,
+        "sourceUnit": 150,
+        "src": "64:40:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
-        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/factories/CognitiveJobFactory.sol",
-        "file": "../factories/CognitiveJobFactory.sol",
-        "id": 3791,
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IKernel.sol",
+        "file": "../../entities/IKernel.sol",
+        "id": 3949,
         "nodeType": "ImportDirective",
-        "scope": 3836,
-        "sourceUnit": 2780,
-        "src": "144:46:22",
+        "scope": 3979,
+        "sourceUnit": 166,
+        "src": "105:36:23",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataset.sol",
+        "file": "../../entities/IDataset.sol",
+        "id": 3950,
+        "nodeType": "ImportDirective",
+        "scope": 3979,
+        "sourceUnit": 158,
+        "src": "142:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -823,237 +548,168 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 3835,
+        "id": 3978,
         "linearizedBaseContracts": [
-          3835
+          3978
         ],
         "name": "ICognitiveJobManager",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
-            "constant": false,
-            "id": 3793,
-            "name": "cognitiveJobFactory",
-            "nodeType": "VariableDeclaration",
-            "scope": 3835,
-            "src": "228:46:22",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_contract$_CognitiveJobFactory_$2779",
-              "typeString": "contract CognitiveJobFactory"
-            },
-            "typeName": {
-              "contractScope": null,
-              "id": 3792,
-              "name": "CognitiveJobFactory",
-              "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2779,
-              "src": "228:19:22",
-              "typeDescriptions": {
-                "typeIdentifier": "t_contract$_CognitiveJobFactory_$2779",
-                "typeString": "contract CognitiveJobFactory"
-              }
-            },
-            "value": null,
-            "visibility": "public"
-          },
-          {
-            "constant": false,
-            "id": 3796,
-            "name": "cognitiveJobs",
-            "nodeType": "VariableDeclaration",
-            "scope": 3835,
-            "src": "281:36:22",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_array$_t_contract$_IComputingJob_$1422_$dyn_storage",
-              "typeString": "contract IComputingJob[]"
-            },
-            "typeName": {
-              "baseType": {
-                "contractScope": null,
-                "id": 3794,
-                "name": "IComputingJob",
-                "nodeType": "UserDefinedTypeName",
-                "referencedDeclaration": 1422,
-                "src": "281:13:22",
-                "typeDescriptions": {
-                  "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                  "typeString": "contract IComputingJob"
-                }
-              },
-              "id": 3795,
-              "length": null,
-              "nodeType": "ArrayTypeName",
-              "src": "281:15:22",
-              "typeDescriptions": {
-                "typeIdentifier": "t_array$_t_contract$_IComputingJob_$1422_$dyn_storage_ptr",
-                "typeString": "contract IComputingJob[]"
-              }
-            },
-            "value": null,
-            "visibility": "public"
-          },
-          {
-            "constant": false,
-            "id": 3800,
-            "name": "jobAddresses",
-            "nodeType": "VariableDeclaration",
-            "scope": 3835,
-            "src": "323:46:22",
-            "stateVariable": true,
-            "storageLocation": "default",
-            "typeDescriptions": {
-              "typeIdentifier": "t_mapping$_t_address_$_t_uint16_$",
-              "typeString": "mapping(address => uint16)"
-            },
-            "typeName": {
-              "id": 3799,
-              "keyType": {
-                "id": 3797,
-                "name": "address",
-                "nodeType": "ElementaryTypeName",
-                "src": "331:7:22",
-                "typeDescriptions": {
-                  "typeIdentifier": "t_address",
-                  "typeString": "address"
-                }
-              },
-              "nodeType": "Mapping",
-              "src": "323:26:22",
-              "typeDescriptions": {
-                "typeIdentifier": "t_mapping$_t_address_$_t_uint16_$",
-                "typeString": "mapping(address => uint16)"
-              },
-              "valueType": {
-                "id": 3798,
-                "name": "uint16",
-                "nodeType": "ElementaryTypeName",
-                "src": "342:6:22",
-                "typeDescriptions": {
-                  "typeIdentifier": "t_uint16",
-                  "typeString": "uint16"
-                }
-              }
-            },
-            "value": null,
-            "visibility": "public"
-          },
-          {
             "body": null,
             "documentation": null,
-            "id": 3805,
+            "id": 3957,
             "implemented": false,
             "isConstructor": false,
-            "isDeclaredConst": true,
+            "isDeclaredConst": false,
             "modifiers": [],
-            "name": "cognitiveJobsCount",
+            "name": "provideResults",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3801,
+              "id": 3955,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3952,
+                  "name": "_jobId",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3957,
+                  "src": "268:14:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3951,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "268:7:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3954,
+                  "name": "_ipfsResults",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3957,
+                  "src": "284:18:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes_calldata_ptr",
+                    "typeString": "bytes"
+                  },
+                  "typeName": {
+                    "id": 3953,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "284:5:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "267:36:23"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 3956,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "403:2:22"
+              "src": "312:0:23"
             },
-            "payable": false,
-            "returnParameters": {
-              "id": 3804,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 3803,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3805,
-                  "src": "427:7:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 3802,
-                    "name": "uint256",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "427:7:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                }
-              ],
-              "src": "426:9:22"
-            },
-            "scope": 3835,
-            "src": "376:60:22",
-            "stateMutability": "view",
+            "scope": 3978,
+            "src": "244:69:23",
+            "stateMutability": "nonpayable",
             "superFunction": null,
-            "visibility": "public"
+            "visibility": "external"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 3812,
+            "id": 3966,
             "implemented": false,
             "isConstructor": false,
-            "isDeclaredConst": true,
+            "isDeclaredConst": false,
             "modifiers": [],
-            "name": "isActiveJob",
+            "name": "respondToJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3808,
+              "id": 3964,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3807,
-                  "name": "job",
+                  "id": 3959,
+                  "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3812,
-                  "src": "462:17:22",
+                  "scope": 3966,
+                  "src": "340:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                    "typeString": "contract IComputingJob"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 3806,
-                    "name": "IComputingJob",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1422,
-                    "src": "462:13:22",
+                    "id": 3958,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "340:7:23",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                      "typeString": "contract IComputingJob"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
-                }
-              ],
-              "src": "461:19:22"
-            },
-            "payable": false,
-            "returnParameters": {
-              "id": 3811,
-              "nodeType": "ParameterList",
-              "parameters": [
+                },
                 {
                   "constant": false,
-                  "id": 3810,
-                  "name": "",
+                  "id": 3961,
+                  "name": "_responseType",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3812,
-                  "src": "502:4:22",
+                  "scope": 3966,
+                  "src": "356:19:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 3960,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "356:5:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3963,
+                  "name": "_response",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3966,
+                  "src": "377:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1061,10 +717,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 3809,
+                    "id": 3962,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "502:4:22",
+                    "src": "377:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -1074,117 +730,42 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "501:6:22"
+              "src": "339:53:23"
             },
-            "scope": 3835,
-            "src": "441:67:22",
-            "stateMutability": "view",
+            "payable": false,
+            "returnParameters": {
+              "id": 3965,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "401:0:23"
+            },
+            "scope": 3978,
+            "src": "318:84:23",
+            "stateMutability": "nonpayable",
             "superFunction": null,
-            "visibility": "public"
+            "visibility": "external"
           },
           {
             "body": null,
             "documentation": null,
-            "id": 3827,
+            "id": 3973,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
             "modifiers": [],
-            "name": "createCognitiveJob",
+            "name": "commitProgress",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 3821,
+              "id": 3971,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3814,
-                  "name": "kernel",
+                  "id": 3968,
+                  "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "551:14:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IKernel_$41",
-                    "typeString": "contract IKernel"
-                  },
-                  "typeName": {
-                    "contractScope": null,
-                    "id": 3813,
-                    "name": "IKernel",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 41,
-                    "src": "551:7:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IKernel_$41",
-                      "typeString": "contract IKernel"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 3816,
-                  "name": "dataset",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "575:16:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IDataset_$33",
-                    "typeString": "contract IDataset"
-                  },
-                  "typeName": {
-                    "contractScope": null,
-                    "id": 3815,
-                    "name": "IDataset",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 33,
-                    "src": "575:8:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IDataset_$33",
-                      "typeString": "contract IDataset"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 3818,
-                  "name": "comlexity",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "601:14:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_uint256",
-                    "typeString": "uint256"
-                  },
-                  "typeName": {
-                    "id": 3817,
-                    "name": "uint",
-                    "nodeType": "ElementaryTypeName",
-                    "src": "601:4:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_uint256",
-                      "typeString": "uint256"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
-                },
-                {
-                  "constant": false,
-                  "id": 3820,
-                  "name": "description",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "625:19:22",
+                  "scope": 3973,
+                  "src": "431:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1192,10 +773,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 3819,
+                    "id": 3967,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "625:7:22",
+                    "src": "431:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1203,50 +784,14 @@
                   },
                   "value": null,
                   "visibility": "internal"
-                }
-              ],
-              "src": "541:104:22"
-            },
-            "payable": true,
-            "returnParameters": {
-              "id": 3826,
-              "nodeType": "ParameterList",
-              "parameters": [
-                {
-                  "constant": false,
-                  "id": 3823,
-                  "name": "",
-                  "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "672:13:22",
-                  "stateVariable": false,
-                  "storageLocation": "default",
-                  "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                    "typeString": "contract IComputingJob"
-                  },
-                  "typeName": {
-                    "contractScope": null,
-                    "id": 3822,
-                    "name": "IComputingJob",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1422,
-                    "src": "672:13:22",
-                    "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                      "typeString": "contract IComputingJob"
-                    }
-                  },
-                  "value": null,
-                  "visibility": "internal"
                 },
                 {
                   "constant": false,
-                  "id": 3825,
-                  "name": "",
+                  "id": 3970,
+                  "name": "_percent",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3827,
-                  "src": "687:5:22",
+                  "scope": 3973,
+                  "src": "447:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1254,10 +799,10 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 3824,
+                    "id": 3969,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
-                    "src": "687:5:22",
+                    "src": "447:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint8",
                       "typeString": "uint8"
@@ -1267,39 +812,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "671:22:22"
-            },
-            "scope": 3835,
-            "src": "514:180:22",
-            "stateMutability": "payable",
-            "superFunction": null,
-            "visibility": "external"
-          },
-          {
-            "body": null,
-            "documentation": null,
-            "id": 3830,
-            "implemented": false,
-            "isConstructor": false,
-            "isDeclaredConst": false,
-            "modifiers": [],
-            "name": "finishCognitiveJob",
-            "nodeType": "FunctionDefinition",
-            "parameters": {
-              "id": 3828,
-              "nodeType": "ParameterList",
-              "parameters": [],
-              "src": "726:2:22"
+              "src": "430:32:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 3829,
+              "id": 3972,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "737:0:22"
+              "src": "471:0:23"
             },
-            "scope": 3835,
-            "src": "699:39:22",
+            "scope": 3978,
+            "src": "407:65:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1307,59 +830,57 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 3834,
+            "id": 3977,
             "name": "CognitiveJobCreated",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 3833,
+              "id": 3976,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 3832,
+                  "id": 3975,
                   "indexed": false,
-                  "name": "cognitiveJob",
+                  "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 3834,
-                  "src": "770:26:22",
+                  "scope": 3977,
+                  "src": "504:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
-                    "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                    "typeString": "contract IComputingJob"
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
                   },
                   "typeName": {
-                    "contractScope": null,
-                    "id": 3831,
-                    "name": "IComputingJob",
-                    "nodeType": "UserDefinedTypeName",
-                    "referencedDeclaration": 1422,
-                    "src": "770:13:22",
+                    "id": 3974,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "504:7:23",
                     "typeDescriptions": {
-                      "typeIdentifier": "t_contract$_IComputingJob_$1422",
-                      "typeString": "contract IComputingJob"
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
                     }
                   },
                   "value": null,
                   "visibility": "internal"
                 }
               ],
-              "src": "769:28:22"
+              "src": "503:16:23"
             },
-            "src": "744:54:22"
+            "src": "478:42:23"
           }
         ],
-        "scope": 3836,
-        "src": "192:608:22"
+        "scope": 3979,
+        "src": "181:341:23"
       }
     ],
-    "src": "0:801:22"
+    "src": "0:523:23"
   },
   "compiler": {
     "name": "solc",
     "version": "0.4.24+commit.e67f0147.Emscripten.clang"
   },
   "networks": {},
-  "schemaVersion": "2.0.0",
-  "updatedAt": "2018-06-28T15:40:02.912Z"
+  "schemaVersion": "2.0.1",
+  "updatedAt": "2018-08-11T00:07:05.314Z"
 }

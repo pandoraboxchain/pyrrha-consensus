@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 
 import "../factories/WorkerNodeFactory.sol";
+import "../../nodes/IWorkerNode.sol";
 
 contract IWorkerNodeManager {
     WorkerNodeFactory public workerNodeFactory;

@@ -13,6 +13,8 @@
 ## Constructor
 
 
+**Attributes**: payable
+
 
 Params:
 
@@ -118,6 +120,8 @@ Returns:
 
 --- 
 ### renounceOwnership()
+>
+>Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
 >
 > Allows the current owner to relinquish control of the contract.
 
