@@ -1,15 +1,11 @@
 # Reputation
 
 
-**Execution cost**: less than 20542 gas
+**Execution cost**: less than 20494 gas
 
 **Deployment cost**: less than 182600 gas
 
-**Combined cost**: less than 203142 gas
-
-## Constructor
-
-
+**Combined cost**: less than 203094 gas
 
 
 ## Events
@@ -79,6 +75,8 @@ Returns:
 
 --- 
 ### renounceOwnership()
+>
+>Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
 >
 > Allows the current owner to relinquish control of the contract.
 

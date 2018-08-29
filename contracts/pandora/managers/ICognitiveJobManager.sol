@@ -1,25 +1,16 @@
 pragma solidity ^0.4.23;
 
-import "../../entities/IDataEntity.sol";
 import "../../nodes/IWorkerNode.sol";
-import "../../jobs/IComputingJob.sol";
-import "../factories/CognitiveJobFactory.sol";
+import "../../entities/IDataEntity.sol";
+import "../../entities/IKernel.sol";
+import "../../entities/IDataset.sol";
 
 contract ICognitiveJobManager {
-    CognitiveJobFactory public cognitiveJobFactory;
 
-    IComputingJob[] public cognitiveJobs;
-    mapping(address => uint16) public jobAddresses;
+    //workers interaction
+    function provideResults(bytes32 _jobId, bytes _ipfsResults) external;
+    function respondToJob(bytes32 _jobId, uint8 _responseType, bool _response) external;
+    function commitProgress(bytes32 _jobId, uint8 _percent) external;
 
-    function cognitiveJobsCount() view public returns (uint256);
-    function isActiveJob(IComputingJob job) view public returns (bool);
-
-    function createCognitiveJob(
-        IKernel kernel,
-        IDataset dataset,
-        uint comlexity,
-        bytes32 description) external payable returns (IComputingJob, uint8);
-    function finishCognitiveJob() external;
-
-    event CognitiveJobCreated(IComputingJob cognitiveJob);
+    event CognitiveJobCreated(bytes32 _jobId);
 }

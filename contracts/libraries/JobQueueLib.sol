@@ -11,6 +11,7 @@ library JobQueueLib {
     }
 
     struct QueuedJob {
+        bytes32 id;
         address kernel;
         address dataset;
         address customer;
@@ -19,7 +20,6 @@ library JobQueueLib {
         bytes32 description;
     }
 
-    event DebugEvent(uint value);
     /// @dev Returns depth of queue
     function queueDepth(
         Queue storage _queue
@@ -33,6 +33,7 @@ library JobQueueLib {
     /// @dev Inserts the specified element at the tail of the queue
     function put(
         Queue storage _queue,
+        bytes32 _id,
         address _kernel,
         address _dataset,
         address _customer,
@@ -42,11 +43,10 @@ library JobQueueLib {
         bytes32 _description
     )
     internal
-    returns(uint) {
+    {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        _queue.jobArray.push(QueuedJob(_kernel, _dataset, _customer, _batches, _complexity, _description));
+        _queue.jobArray.push(QueuedJob(_id, _kernel, _dataset, _customer, _batches, _complexity, _description));
         _queue.deposits.push(_value);
-        return queueDepth(_queue);
     }
 
     /// @notice Unsafe function -  should check queue depth before call this method with queueDepth()

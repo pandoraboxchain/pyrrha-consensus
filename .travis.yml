@@ -6,39 +6,46 @@ services:
   - docker
 branches:
   only:
-    - master
     - develop
-    - "/^v\\d+\\.\\d+\\.\\d+(-\\w+)?$/"
-stages:
-  - lint
-  - test
-  - coverage
-  - deploy
+    - /^v[0-9]+\.[0-9]+\.[0-9]+$/
+    - /^v[0-9]+\.[0-9]+\.[0-9]+-staging$/
 jobs:
   include:
     - stage: lint
+      if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       script:
         - set -e
         - npm link
         - npm run lint
         - set +e
     - stage: test
+      if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       script:
         - set -e
         - npm link
         - npm run test
         - set +e
     - stage: coverage
+      if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       script:
         - set -e
         - npm run test:coverage
         - cat ./coverage/lcov.info | npx coveralls
         - set +e
-    - stage: deploy
-      if: tag IS present
+    - stage: deploy_staging
+      if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+-staging$/
+      script:
+        - set -e
+        - npm link
+        - npx truffle migrate --network infura_rinkeby
+        - npx ghu issue -k "$GITHUB_API_TOKEN" -o pandoraboxchain -r pyrrha-webclient,pyrrha-pynode,pyrrha-boxproxy,pyrrha -t "Staging (!!!) contracts addresses update required" -b "Pandora:$(< ./build/addresses/Pandora.json), PandoraMarket:$(< ./build/addresses/PandoraMarket.json)"
+        - set +e
+    - stage: deploy_prod
+      if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
       script:
         - set -e
         - npm link
         - npx truffle migrate --network infura_rinkeby
         - npx ghu issue -k "$GITHUB_API_TOKEN" -o pandoraboxchain -r pyrrha-webclient,pyrrha-pynode,pyrrha-boxproxy,pyrrha -t "Contracts addresses update required" -b "Pandora:$(< ./build/addresses/Pandora.json), PandoraMarket:$(< ./build/addresses/PandoraMarket.json)"
         - set +e
+        

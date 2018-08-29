@@ -2,6 +2,7 @@ pragma solidity ^0.4.23;
 
 
 contract OnlyOnce {
+
     constructor() public { }
 
     /// @dev Internal private mapping storing flags indicating which of `onlyOnce` functions was already called.

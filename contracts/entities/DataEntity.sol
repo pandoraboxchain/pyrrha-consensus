@@ -27,13 +27,13 @@ contract DataEntity is IDataEntity {
     /// @dev Fired by `updatePrice` function
     event PriceUpdated(uint256 oldPrice, uint256 newPrice);
 
-
     constructor(
         bytes _ipfsAddress,
         uint256 _dataDim,
         uint256 _initialPrice
     )
-    public {
+    public
+    payable {
         dataDim = _dataDim;
         ipfsAddress = _ipfsAddress;
         currentPrice = _initialPrice;
