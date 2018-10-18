@@ -6,7 +6,13 @@ require('@babel/polyfill');
 const PrivateKeyProvider = require('truffle-privatekey-provider');
 
 const infura_apikey = process.env.INFURA_API_KEY;
-const privateKey = process.env.ACCOUNT_PRIVATE_KEY;
+let privateKey = process.env.ACCOUNT_PRIVATE_KEY;
+
+try {
+    privateKey = require('./localkeys').key;
+} catch(err) {
+    console.log('LocalKeys Error:', err);
+}
 
 const lowGas = 4712388;
 const highGas = 6700000;
@@ -41,6 +47,11 @@ module.exports = {
             port: 8545,
             network_id: '*',
             gas: highGas
+        },
+        rsk_test: {
+            provider: _ => new PrivateKeyProvider(privateKey, `http://localhost:4444`),
+            network_id: '*',
+            gasPrice: 0
         }
     },
     mocha: {

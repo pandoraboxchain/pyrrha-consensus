@@ -21,10 +21,12 @@ module.exports = (deployer, network, accounts) => {
     return checkBalance(accounts[0])
         .then(accountBalance => {
 
-            if (web3.fromWei(accountBalance, 'ether') < 3) {
+            console.log('Account balance:', accountBalance);
 
-                return Promise.reject(new Error('Your account is possibly has insufficient funds to make migrations'));
-            }
+            // if (web3.fromWei(accountBalance, 'ether') < 3) {
+
+            //     return Promise.reject(new Error('Your account is possibly has insufficient funds to make migrations'));
+            // }
 
             return Promise.resolve();
         })
