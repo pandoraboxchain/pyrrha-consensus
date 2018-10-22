@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 821800 gas
+**Deployment cost**: less than 828200 gas
 
 **Combined cost**: No bound available
 
@@ -19,17 +19,6 @@ Params:
 1. **_pandora** *of type `address`*
 
 ## Events
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
 ### OwnershipTransferred(address,address)
 
 
@@ -63,20 +52,19 @@ Params:
 
 
 ## Methods
-### assignJob(bytes32)
->
->Do not call
->
-> Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under the main Pandora contract
+### Offline()
 
 
-**Execution cost**: No bound available
+**Execution cost**: less than 567 gas
+
+**Attributes**: constant
 
 
-Params:
 
-1. **_jobId** *of type `bytes32`*
+Returns:
 
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### processToCognition()
@@ -160,7 +148,7 @@ Returns:
 ### Assigned()
 
 
-**Execution cost**: less than 875 gas
+**Execution cost**: less than 897 gas
 
 **Attributes**: constant
 
@@ -175,7 +163,7 @@ Returns:
 ### InsufficientStake()
 
 
-**Execution cost**: less than 853 gas
+**Execution cost**: less than 875 gas
 
 **Attributes**: constant
 
@@ -223,7 +211,7 @@ Returns:
 ### Destroyed()
 
 
-**Execution cost**: less than 809 gas
+**Execution cost**: less than 831 gas
 
 **Attributes**: constant
 
@@ -262,7 +250,7 @@ Returns:
 ### ReadyForDataValidation()
 
 
-**Execution cost**: less than 787 gas
+**Execution cost**: less than 809 gas
 
 **Attributes**: constant
 
@@ -272,6 +260,22 @@ Returns:
 
 
 1. **output_0** *of type `uint8`*
+
+--- 
+### assignJob(bytes32)
+>
+>Do not call
+>
+> Assigns cognitive job to the worker. Can be called only by one of active cognitive jobs listed under the main Pandora contract
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+
 
 --- 
 ### currentState()
@@ -293,27 +297,12 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### Offline()
-
-
-**Execution cost**: less than 567 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
 ### destroy()
 >
 >### External and public functions
 
 
-**Execution cost**: less than 31860 gas
+**Execution cost**: less than 31962 gas
 
 
 
@@ -330,6 +319,7 @@ Returns:
 
 Returns:
 
+> the address of the owner.
 
 1. **output_0** *of type `address`*
 
@@ -364,6 +354,22 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### isOwner()
+
+
+**Execution cost**: less than 954 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+> true if `msg.sender` is the owner of the contract.
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### declineAssignment()
 
 
@@ -376,7 +382,7 @@ Returns:
 ### Idle()
 
 
-**Execution cost**: less than 699 gas
+**Execution cost**: less than 721 gas
 
 **Attributes**: constant
 
@@ -425,7 +431,7 @@ Params:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22336 gas
+**Execution cost**: less than 22750 gas
 
 
 
@@ -457,12 +463,12 @@ Params:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23464 gas
+**Execution cost**: less than 23519 gas
 
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 
@@ -474,7 +480,7 @@ Params:
 > State transition function
 
 
-**Execution cost**: less than 22287 gas
+**Execution cost**: less than 22309 gas
 
 
 Params:

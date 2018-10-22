@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1975200 gas
+**Deployment cost**: less than 1980600 gas
 
 **Combined cost**: No bound available
 
@@ -81,17 +81,6 @@ Params:
 1. **jobId** *of type `bytes32`*
 2. **oldState** *of type `uint8`*
 3. **newState** *of type `uint8`*
-
---- 
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
 
 --- 
 ### OwnershipTransferred(address,address)
@@ -257,6 +246,7 @@ Returns:
 
 Returns:
 
+> the address of the owner.
 
 1. **output_0** *of type `address`*
 
@@ -284,7 +274,7 @@ Returns:
 > Returns total count of active jobs
 
 
-**Execution cost**: less than 714 gas
+**Execution cost**: less than 736 gas
 
 **Attributes**: constant
 
@@ -396,6 +386,22 @@ Returns:
 1. **output_0** *of type `bytes32`*
 
 --- 
+### isOwner()
+
+
+**Execution cost**: less than 756 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+> true if `msg.sender` is the owner of the contract.
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### renounceOwnership()
 >
 >Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
@@ -403,7 +409,7 @@ Returns:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22361 gas
+**Execution cost**: less than 22775 gas
 
 
 
@@ -433,12 +439,12 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23203 gas
+**Execution cost**: less than 23258 gas
 
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 
@@ -448,7 +454,7 @@ Params:
 ### transitionTable(uint8,uint256)
 
 
-**Execution cost**: less than 2786 gas
+**Execution cost**: less than 2808 gas
 
 **Attributes**: constant
 

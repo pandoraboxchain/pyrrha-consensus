@@ -4,11 +4,11 @@
 > Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
-**Execution cost**: less than 61619 gas
+**Execution cost**: less than 63259 gas
 
-**Deployment cost**: less than 547000 gas
+**Deployment cost**: less than 551000 gas
 
-**Combined cost**: less than 608619 gas
+**Combined cost**: less than 614259 gas
 
 ## Constructor
 
@@ -19,17 +19,6 @@ Params:
 1. **_nodeFactory** *of type `address`*
 
 ## Events
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
 ### OwnershipTransferred(address,address)
 
 
@@ -65,26 +54,19 @@ Params:
 
 
 ## Methods
-### blacklistWorkerOwner(address)
->
->Removes address from the whitelist of owners allowed to create WorkerNodes contracts
->
-> Can be called only by the owner of Pandora contract
+### initialize()
 
 
-**Execution cost**: less than 21095 gas
+**Execution cost**: less than 20593 gas
 
 
-Params:
-
-1. **_workerOwner** *of type `address`*
 
 
 --- 
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 917 gas
+**Execution cost**: less than 939 gas
 
 **Attributes**: constant
 
@@ -119,12 +101,12 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23120 gas
+**Execution cost**: less than 23175 gas
 
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 
@@ -165,9 +147,25 @@ Params:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22286 gas
+**Execution cost**: less than 22700 gas
 
 
+
+
+--- 
+### blacklistWorkerOwner(address)
+>
+>Removes address from the whitelist of owners allowed to create WorkerNodes contracts
+>
+> Can be called only by the owner of Pandora contract
+
+
+**Execution cost**: less than 21128 gas
+
+
+Params:
+
+1. **_workerOwner** *of type `address`*
 
 
 --- 
@@ -178,21 +176,12 @@ Params:
 > Can be called only by the owner of Pandora contract
 
 
-**Execution cost**: less than 20969 gas
+**Execution cost**: less than 21002 gas
 
 
 Params:
 
 1. **_workerOwner** *of type `address`*
-
-
---- 
-### initialize()
-
-
-**Execution cost**: less than 20593 gas
-
-
 
 
 --- 
@@ -222,14 +211,31 @@ Returns:
 
 Returns:
 
+> the address of the owner.
 
 1. **output_0** *of type `address`*
+
+--- 
+### isOwner()
+
+
+**Execution cost**: less than 786 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+> true if `msg.sender` is the owner of the contract.
+
+1. **output_0** *of type `bool`*
 
 --- 
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 886 gas
+**Execution cost**: less than 908 gas
 
 **Attributes**: constant
 

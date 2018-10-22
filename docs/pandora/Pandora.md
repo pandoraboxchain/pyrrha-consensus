@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 1788000 gas
+**Deployment cost**: less than 1791200 gas
 
 **Combined cost**: No bound available
 
@@ -52,17 +52,6 @@ Params:
 Params:
 
 1. **worker** *of type `address`*
-
---- 
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
 
 --- 
 ### OwnershipTransferred(address,address)
@@ -118,7 +107,7 @@ Returns:
 ### workerAddresses(address)
 
 
-**Execution cost**: less than 1203 gas
+**Execution cost**: less than 1225 gas
 
 **Attributes**: constant
 
@@ -151,7 +140,7 @@ Returns:
 ### deposits(address)
 
 
-**Execution cost**: less than 1166 gas
+**Execution cost**: less than 1188 gas
 
 **Attributes**: constant
 
@@ -242,12 +231,12 @@ Params:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 23384 gas
+**Execution cost**: less than 23439 gas
 
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 
@@ -261,7 +250,7 @@ Params:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22377 gas
+**Execution cost**: less than 22788 gas
 
 
 
@@ -274,7 +263,7 @@ Params:
 > Can be called only by the owner of Pandora contract
 
 
-**Execution cost**: less than 21183 gas
+**Execution cost**: less than 21216 gas
 
 
 Params:
@@ -316,7 +305,7 @@ Returns:
 > Can be called only by the owner of Pandora contract
 
 
-**Execution cost**: less than 20969 gas
+**Execution cost**: less than 21002 gas
 
 
 Params:
@@ -351,8 +340,25 @@ Returns:
 
 Returns:
 
+> the address of the owner.
 
 1. **output_0** *of type `address`*
+
+--- 
+### isOwner()
+
+
+**Execution cost**: less than 918 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+> true if `msg.sender` is the owner of the contract.
+
+1. **output_0** *of type `bool`*
 
 --- 
 ### checkJobQueue()
@@ -410,7 +416,7 @@ Params:
 ### REQUIRED_DEPOSIT()
 
 
-**Execution cost**: less than 709 gas
+**Execution cost**: less than 731 gas
 
 **Attributes**: constant
 
@@ -425,7 +431,7 @@ Returns:
 ### reputation()
 
 
-**Execution cost**: less than 1084 gas
+**Execution cost**: less than 1106 gas
 
 **Attributes**: constant
 
@@ -466,7 +472,7 @@ Returns:
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 1150 gas
+**Execution cost**: less than 1172 gas
 
 **Attributes**: constant
 

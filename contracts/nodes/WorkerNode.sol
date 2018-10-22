@@ -114,7 +114,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         emit WorkerDestroyed();
 
         /// Suiciding
-        selfdestruct(owner);
+        selfdestruct(owner());
     }
 
     function alive() external
@@ -233,7 +233,8 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         onlyOwner // Can be called only by the owner
         requireStates2(Idle, Offline)
     {
-        owner.transfer(address(this).balance);
+        address ownerAddr = owner();
+        ownerAddr.transfer(address(this).balance);
     }
 
     function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {

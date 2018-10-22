@@ -1,6 +1,6 @@
 pragma solidity ^0.4.23;
 
-import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
+import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
 
 /**
  * @title PAN Token Contract (Pandora Artificial Neuronetwork Token) for Pyrrha cognitive network
@@ -15,24 +15,25 @@ import "openzeppelin-solidity/contracts/token/ERC20/StandardToken.sol";
  * section "2. Economics Models".
  */
 
-contract PAN is StandardToken {
+contract PAN is ERC20 {
     // ERC20 standard variables
     string public constant name = "Pandora";
     string public constant symbol = "PAN";
-    uint public constant decimals = 18;
-    uint public totalSupply;
+    uint8 public constant decimals = 18;
+    uint256 public totalSupply;
 
     /// @dev Total token supply is equivalent to the initial supply and does not change with a time (Pyrrha network
     /// does not have cognitive mining). Thus, both initial ant total supply are the pre-mined tokens as described in
     /// the section "2.5. Token Emission" of
     /// [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
-    uint public constant INITIAL_SUPPLY = 5000000 * 100000000;
+    uint256 public constant INITIAL_SUPPLY = 5000000 * 100000000;
 
     constructor()
     public
     {
         totalSupply = INITIAL_SUPPLY;
-        balances[msg.sender] = INITIAL_SUPPLY;
+        //_balances[msg.sender] = INITIAL_SUPPLY;
+        _mint(msg.sender, INITIAL_SUPPLY);
 
         /// @todo Allocate distributed balances to the whitelisted nodes according to the specification
     }

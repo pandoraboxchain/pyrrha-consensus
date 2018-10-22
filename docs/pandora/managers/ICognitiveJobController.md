@@ -79,17 +79,6 @@ Params:
 3. **newState** *of type `uint8`*
 
 --- 
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
 ### OwnershipTransferred(address,address)
 
 
@@ -125,82 +114,12 @@ Params:
 
 
 ## Methods
-### activeJobsCount()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### commitProgress(bytes32,address,uint8)
+### renounceOwnership()
 
 
 **Execution cost**: No bound available
 
 
-Params:
-
-1. **_jobId** *of type `bytes32`*
-2. **_workerId** *of type `address`*
-3. **_percent** *of type `uint8`*
-
-
---- 
-### completeWork(bytes32,address,bytes)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-2. **_workerId** *of type `address`*
-3. **_ipfsResults** *of type `bytes`*
-
-Returns:
-
-
-1. **result** *of type `bool`*
-
---- 
-### completedJobsCount()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### createCognitiveJob(bytes32,address,address,address[],uint256,bytes32)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_id** *of type `bytes32`*
-2. **_kernel** *of type `address`*
-3. **_dataset** *of type `address`*
-4. **_assignedWorkers** *of type `address[]`*
-5. **_complexity** *of type `uint256`*
-6. **_description** *of type `bytes32`*
 
 
 --- 
@@ -228,6 +147,100 @@ Returns:
 7. **state** *of type `uint8`*
 
 --- 
+### createCognitiveJob(bytes32,address,address,address[],uint256,bytes32)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_id** *of type `bytes32`*
+2. **_kernel** *of type `address`*
+3. **_dataset** *of type `address`*
+4. **_assignedWorkers** *of type `address[]`*
+5. **_complexity** *of type `uint256`*
+6. **_description** *of type `bytes32`*
+
+
+--- 
+### completedJobsCount()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### activeJobsCount()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### completeWork(bytes32,address,bytes)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_workerId** *of type `address`*
+3. **_ipfsResults** *of type `bytes`*
+
+Returns:
+
+
+1. **result** *of type `bool`*
+
+--- 
+### commitProgress(bytes32,address,uint8)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_workerId** *of type `address`*
+3. **_percent** *of type `uint8`*
+
+
+--- 
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### owner()
 
 
@@ -241,15 +254,6 @@ Returns:
 
 
 1. **output_0** *of type `address`*
-
---- 
-### renounceOwnership()
-
-
-**Execution cost**: No bound available
-
-
-
 
 --- 
 ### respondToJob(bytes32,address,uint8,bool)
@@ -279,7 +283,7 @@ Returns:
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
 
 [Back to the top ↑](#icognitivejobcontroller)

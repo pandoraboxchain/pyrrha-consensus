@@ -9,17 +9,6 @@
 
 
 ## Events
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
 ### OwnershipTransferred(address,address)
 
 
@@ -90,6 +79,21 @@ Returns:
 1. **output_0** *of type `bytes`*
 
 --- 
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### owner()
 
 
@@ -122,7 +126,7 @@ Returns:
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
 
 --- 

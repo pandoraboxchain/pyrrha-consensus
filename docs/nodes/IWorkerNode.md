@@ -9,17 +9,6 @@
 
 
 ## Events
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
 ### OwnershipTransferred(address,address)
 
 
@@ -53,16 +42,19 @@ Params:
 
 
 ## Methods
-### assignJob(bytes32)
+### Offline()
 
 
 **Execution cost**: No bound available
 
+**Attributes**: constant
 
-Params:
 
-1. **_jobId** *of type `bytes32`*
 
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### processToCognition()
@@ -230,22 +222,19 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### currentState()
+### assignJob(bytes32)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
+Params:
 
+1. **_jobId** *of type `bytes32`*
 
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
-### Offline()
+### currentState()
 
 
 **Execution cost**: No bound available
@@ -312,6 +301,21 @@ Returns:
 
 
 1. **output_0** *of type `uint8`*
+
+--- 
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
 
 --- 
 ### Idle()
@@ -394,7 +398,7 @@ Params:
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
 
 --- 

@@ -6,7 +6,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 229600 gas
+**Deployment cost**: less than 244200 gas
 
 **Combined cost**: No bound available
 
@@ -23,17 +23,6 @@ Params:
 3. **_initialPrice** *of type `uint256`*
 
 ## Events
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
 ### OwnershipTransferred(address,address)
 
 
@@ -62,7 +51,7 @@ Params:
 ### currentPrice()
 
 
-**Execution cost**: less than 472 gas
+**Execution cost**: less than 494 gas
 
 **Attributes**: constant
 
@@ -77,7 +66,7 @@ Returns:
 ### dataDim()
 
 
-**Execution cost**: less than 494 gas
+**Execution cost**: less than 516 gas
 
 **Attributes**: constant
 
@@ -104,6 +93,22 @@ Returns:
 1. **output_0** *of type `bytes`*
 
 --- 
+### isOwner()
+
+
+**Execution cost**: less than 558 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+> true if `msg.sender` is the owner of the contract.
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### owner()
 
 
@@ -115,6 +120,7 @@ Returns:
 
 Returns:
 
+> the address of the owner.
 
 1. **output_0** *of type `address`*
 
@@ -126,7 +132,7 @@ Returns:
 > Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22094 gas
+**Execution cost**: less than 22508 gas
 
 
 
@@ -137,12 +143,12 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22902 gas
+**Execution cost**: less than 22969 gas
 
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
     > The address to transfer ownership to.
 
@@ -152,7 +158,7 @@ Params:
 ### updatePrice(uint256)
 
 
-**Execution cost**: less than 22044 gas
+**Execution cost**: less than 22077 gas
 
 
 Params:

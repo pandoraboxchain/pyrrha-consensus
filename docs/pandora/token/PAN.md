@@ -4,11 +4,11 @@
 > Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
-**Execution cost**: less than 40541 gas
+**Execution cost**: No bound available
 
-**Deployment cost**: less than 416200 gas
+**Deployment cost**: less than 364400 gas
 
-**Combined cost**: less than 456741 gas
+**Combined cost**: No bound available
 
 ## Constructor
 
@@ -43,9 +43,9 @@ Params:
 
 
 ## Methods
-### decreaseApproval(address,uint256)
+### increaseAllowance(address,uint256)
 >
-> Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol
+> Increase the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To increment allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol
 
 
 **Execution cost**: No bound available
@@ -53,13 +53,13 @@ Params:
 
 Params:
 
-1. **_spender** *of type `address`*
+1. **spender** *of type `address`*
 
     > The address which will spend the funds.
 
-2. **_subtractedValue** *of type `uint256`*
+2. **addedValue** *of type `uint256`*
 
-    > The amount of tokens to decrease the allowance by.
+    > The amount of tokens to increase the allowance by.
 
 
 Returns:
@@ -80,11 +80,11 @@ Returns:
 
 Params:
 
-1. **_owner** *of type `address`*
+1. **owner** *of type `address`*
 
     > address The address which owns the funds.
 
-2. **_spender** *of type `address`*
+2. **spender** *of type `address`*
 
     > address The address which will spend the funds.
 
@@ -116,16 +116,16 @@ Returns:
 > Approve the passed address to spend the specified amount of tokens on behalf of msg.sender. Beware that changing an allowance with this method brings the risk that someone may use both the old and the new allowance by unfortunate transaction ordering. One possible solution to mitigate this race condition is to first reduce the spender's allowance to 0 and set the desired value afterwards: https://github.com/ethereum/EIPs/issues/20#issuecomment-263524729
 
 
-**Execution cost**: less than 22354 gas
+**Execution cost**: less than 22458 gas
 
 
 Params:
 
-1. **_spender** *of type `address`*
+1. **spender** *of type `address`*
 
     > The address which will spend the funds.
 
-2. **_value** *of type `uint256`*
+2. **value** *of type `uint256`*
 
     > The amount of tokens to be spent.
 
@@ -148,9 +148,9 @@ Returns:
 
 Params:
 
-1. **_owner** *of type `address`*
+1. **owner** *of type `address`*
 
-    > The address to query the the balance of.
+    > The address to query the balance of.
 
 
 Returns:
@@ -163,7 +163,7 @@ Returns:
 ### decimals()
 
 
-**Execution cost**: less than 294 gas
+**Execution cost**: less than 303 gas
 
 **Attributes**: constant
 
@@ -172,12 +172,12 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `uint8`*
 
 --- 
-### increaseApproval(address,uint256)
+### decreaseAllowance(address,uint256)
 >
-> Increase the amount of tokens that an owner allowed to a spender. approve should be called when allowed[_spender] == 0. To increment allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol
+> Decrease the amount of tokens that an owner allowed to a spender. approve should be called when allowed_[_spender] == 0. To decrement allowed value is better to use this function to avoid 2 calls (and wait until the first transaction is mined) From MonolithDAO Token.sol
 
 
 **Execution cost**: No bound available
@@ -185,13 +185,13 @@ Returns:
 
 Params:
 
-1. **_spender** *of type `address`*
+1. **spender** *of type `address`*
 
     > The address which will spend the funds.
 
-2. **_addedValue** *of type `uint256`*
+2. **subtractedValue** *of type `uint256`*
 
-    > The amount of tokens to increase the allowance by.
+    > The amount of tokens to decrease the allowance by.
 
 
 Returns:
@@ -255,11 +255,11 @@ Returns:
 
 Params:
 
-1. **_to** *of type `address`*
+1. **to** *of type `address`*
 
     > The address to transfer to.
 
-2. **_value** *of type `uint256`*
+2. **value** *of type `uint256`*
 
     > The amount to be transferred.
 
@@ -280,15 +280,15 @@ Returns:
 
 Params:
 
-1. **_from** *of type `address`*
+1. **from** *of type `address`*
 
     > address The address which you want to send tokens from
 
-2. **_to** *of type `address`*
+2. **to** *of type `address`*
 
     > address The address which you want to transfer to
 
-3. **_value** *of type `uint256`*
+3. **value** *of type `uint256`*
 
     > uint256 the amount of tokens to be transferred
 
