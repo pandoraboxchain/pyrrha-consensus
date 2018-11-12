@@ -19,7 +19,7 @@ contract WorkerNodeFactory is IWorkerNodeFactory {
         WorkerNode o_workerNode /// Worker node created by the factory
     ) {
         // Creating node
-        o_workerNode = new WorkerNode(ICognitiveJobManager(owner));
+        o_workerNode = new WorkerNode(ICognitiveJobManager(owner()));
 
         // Checking that it was created correctly
         assert(o_workerNode != WorkerNode(0));

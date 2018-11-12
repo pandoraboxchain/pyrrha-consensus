@@ -9,28 +9,6 @@
 
 
 ## Events
-### DatasetAdded(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **dataset** *of type `address`*
-
---- 
-### DatasetRemoved(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **dataset** *of type `address`*
-
---- 
 ### KernelAdded(address)
 
 
@@ -40,6 +18,17 @@ Params:
 Params:
 
 1. **kernel** *of type `address`*
+
+--- 
+### DatasetAdded(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **dataset** *of type `address`*
 
 --- 
 ### KernelRemoved(address)
@@ -52,9 +41,20 @@ Params:
 
 1. **kernel** *of type `address`*
 
+--- 
+### DatasetRemoved(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **dataset** *of type `address`*
+
 
 ## Methods
-### addDataset(address)
+### removeDataset(address)
 
 
 **Execution cost**: No bound available
@@ -68,40 +68,6 @@ Returns:
 
 
 1. **output_0** *of type `uint8`*
-
---- 
-### addKernel(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_kernel** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
-### datasetMap(address)
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `uint32`*
 
 --- 
 ### datasets(uint256)
@@ -122,6 +88,21 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
+### kernelsCount()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
 ### datasetsCount()
 
 
@@ -135,6 +116,38 @@ Returns:
 
 
 1. **output_0** *of type `uint256`*
+
+--- 
+### addKernel(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_kernel** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### addDataset(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_dataset** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### kernelMap(address)
@@ -173,37 +186,6 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### kernelsCount()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
-
---- 
-### removeDataset(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_dataset** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
 ### removeKernel(address)
 
 
@@ -218,5 +200,23 @@ Returns:
 
 
 1. **output_0** *of type `uint8`*
+
+--- 
+### datasetMap(address)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `uint32`*
 
 [Back to the top ↑](#imarket)

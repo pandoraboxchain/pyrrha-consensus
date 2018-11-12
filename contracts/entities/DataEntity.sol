@@ -56,6 +56,7 @@ contract DataEntity is IDataEntity {
     ) external
         onlyOwner // Can be called only by the owner
     {
-        owner.transfer(address(this).balance);
+        address ownerAddr = owner();
+        ownerAddr.transfer(address(this).balance);
     }
 }

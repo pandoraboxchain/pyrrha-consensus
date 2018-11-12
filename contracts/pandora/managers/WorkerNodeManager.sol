@@ -173,8 +173,8 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     }
 
     function penaltizeWorkerNode(
-        IWorkerNode _guiltyWorker,
-        IWorkerNode.Penalties _reason
+        // IWorkerNode _guiltyWorker,
+        // IWorkerNode.Penalties _reason
     )
     external
         // @fixme Implement the modifier and uncomment

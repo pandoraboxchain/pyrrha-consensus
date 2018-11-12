@@ -15,6 +15,18 @@
 
 
 ## Methods
+### upgrade(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **new_address** *of type `address`*
+
+
+--- 
 ### last_completed_migration()
 
 
@@ -54,18 +66,6 @@ Returns:
 Params:
 
 1. **completed** *of type `uint256`*
-
-
---- 
-### upgrade(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **new_address** *of type `address`*
 
 
 [Back to the top ↑](#migrations)

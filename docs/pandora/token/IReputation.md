@@ -9,17 +9,6 @@
 
 
 ## Events
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
 ### OwnershipTransferred(address,address)
 
 
@@ -33,29 +22,30 @@ Params:
 
 
 ## Methods
-### decrReputation(address,uint256)
+### values(address)
 
 
 **Execution cost**: No bound available
 
+**Attributes**: constant
+
 
 Params:
 
-1. **account** *of type `address`*
-2. **amount** *of type `uint256`*
+1. **param_0** *of type `address`*
 
+Returns:
+
+
+1. **output_0** *of type `uint256`*
 
 --- 
-### incrReputation(address,uint256)
+### renounceOwnership()
 
 
 **Execution cost**: No bound available
 
 
-Params:
-
-1. **account** *of type `address`*
-2. **amount** *of type `uint256`*
 
 
 --- 
@@ -74,12 +64,31 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### renounceOwnership()
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
+### incrReputation(address,uint256)
 
 
 **Execution cost**: No bound available
 
 
+Params:
+
+1. **account** *of type `address`*
+2. **amount** *of type `uint256`*
 
 
 --- 
@@ -91,25 +100,20 @@ Returns:
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
 
 --- 
-### values(address)
+### decrReputation(address,uint256)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
-
 
 Params:
 
-1. **param_0** *of type `address`*
+1. **account** *of type `address`*
+2. **amount** *of type `uint256`*
 
-Returns:
-
-
-1. **output_0** *of type `uint256`*
 
 [Back to the top ↑](#ireputation)

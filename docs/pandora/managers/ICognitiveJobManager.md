@@ -34,19 +34,6 @@ Params:
 
 
 --- 
-### provideResults(bytes32,bytes)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-2. **_ipfsResults** *of type `bytes`*
-
-
---- 
 ### respondToJob(bytes32,uint8,bool)
 
 
@@ -58,6 +45,19 @@ Params:
 1. **_jobId** *of type `bytes32`*
 2. **_responseType** *of type `uint8`*
 3. **_response** *of type `bool`*
+
+
+--- 
+### provideResults(bytes32,bytes)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_jobId** *of type `bytes32`*
+2. **_ipfsResults** *of type `bytes`*
 
 
 [Back to the top ↑](#icognitivejobmanager)

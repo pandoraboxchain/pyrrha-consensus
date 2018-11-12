@@ -9,7 +9,7 @@
 
 
 ## Events
-### OwnershipRenounced(address)
+### WorkerNodeOwner(address)
 
 
 **Execution cost**: No bound available
@@ -17,7 +17,7 @@
 
 Params:
 
-1. **previousOwner** *of type `address`*
+1. **owner** *of type `address`*
 
 --- 
 ### OwnershipTransferred(address,address)
@@ -31,33 +31,15 @@ Params:
 1. **previousOwner** *of type `address`*
 2. **newOwner** *of type `address`*
 
---- 
-### WorkerNodeOwner(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **owner** *of type `address`*
-
 
 ## Methods
-### create(address)
+### renounceOwnership()
 
 
 **Execution cost**: No bound available
 
 
-Params:
 
-1. **_nodeOwner** *of type `address`*
-
-Returns:
-
-
-1. **o_workerNode** *of type `address`*
 
 --- 
 ### owner()
@@ -75,13 +57,35 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### renounceOwnership()
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
+### create(address)
 
 
 **Execution cost**: No bound available
 
 
+Params:
 
+1. **_nodeOwner** *of type `address`*
+
+Returns:
+
+
+1. **o_workerNode** *of type `address`*
 
 --- 
 ### transferOwnership(address)
@@ -92,7 +96,7 @@ Returns:
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
 
 [Back to the top ↑](#iworkernodefactory)

@@ -1,14 +1,11 @@
 # WorkerNodeManager
-> Pandora Smart Contract
->
-> Author: "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
 
 
-**Execution cost**: less than 61619 gas
+**Execution cost**: No bound available
 
-**Deployment cost**: less than 547000 gas
+**Deployment cost**: No bound available
 
-**Combined cost**: less than 608619 gas
+**Combined cost**: No bound available
 
 ## Constructor
 
@@ -19,29 +16,6 @@ Params:
 1. **_nodeFactory** *of type `address`*
 
 ## Events
-### OwnershipRenounced(address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-
---- 
-### OwnershipTransferred(address,address)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **previousOwner** *of type `address`*
-2. **newOwner** *of type `address`*
-
---- 
 ### WorkerNodeCreated(address)
 
 
@@ -63,16 +37,39 @@ Params:
 
 1. **workerNode** *of type `address`*
 
+--- 
+### OwnershipTransferred(address,address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **previousOwner** *of type `address`*
+2. **newOwner** *of type `address`*
+
 
 ## Methods
-### blacklistWorkerOwner(address)
->
->Removes address from the whitelist of owners allowed to create WorkerNodes contracts
->
-> Can be called only by the owner of Pandora contract
+### workerNodesCount()
 
 
-**Execution cost**: less than 21095 gas
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint256`*
+
+--- 
+### whitelistWorkerOwner(address)
+
+
+**Execution cost**: No bound available
 
 
 Params:
@@ -81,28 +78,10 @@ Params:
 
 
 --- 
-### workerAddresses(address)
-
-
-**Execution cost**: less than 917 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `address`*
-
-Returns:
-
-
-1. **output_0** *of type `uint16`*
-
---- 
 ### initialized()
 
 
-**Execution cost**: less than 503 gas
+**Execution cost**: No bound available
 
 **Attributes**: constant
 
@@ -114,19 +93,29 @@ Returns:
 1. **output_0** *of type `bool`*
 
 --- 
-### transferOwnership(address)
->
-> Allows the current owner to transfer control of the contract to a newOwner.
+### workerNodes(uint256)
 
 
-**Execution cost**: less than 23120 gas
+**Execution cost**: No bound available
+
+**Attributes**: constant
 
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **param_0** *of type `uint256`*
 
-    > The address to transfer ownership to.
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### penaltizeWorkerNode()
+
+
+**Execution cost**: No bound available
+
 
 
 
@@ -134,51 +123,47 @@ Params:
 ### penaltizeWorkerNode(address,uint8)
 
 
-**Execution cost**: less than 613 gas
-
-
-Params:
-
-1. **_guiltyWorker** *of type `address`*
-2. **_reason** *of type `uint8`*
-
-
---- 
-### destroyWorkerNode(address)
->
->Removes worker from the workers list and destroys it. Can be called only by the worker node owner and only for the idle workers
-
-
 **Execution cost**: No bound available
 
 
 Params:
 
-1. **_workerNode** *of type `address`*
+1. **guilty** *of type `address`*
+2. **reason** *of type `uint8`*
 
+
+--- 
+### workerNodeOwners(address)
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+Params:
+
+1. **param_0** *of type `address`*
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
 
 --- 
 ### renounceOwnership()
->
->Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
->
-> Allows the current owner to relinquish control of the contract.
 
 
-**Execution cost**: less than 22286 gas
+**Execution cost**: No bound available
 
 
 
 
 --- 
-### whitelistWorkerOwner(address)
->
->### Public and externalAdds address to the whitelist of owners allowed to create WorkerNodes contracts
->
-> Can be called only by the owner of Pandora contract
+### blacklistWorkerOwner(address)
 
 
-**Execution cost**: less than 20969 gas
+**Execution cost**: No bound available
 
 
 Params:
@@ -190,15 +175,13 @@ Params:
 ### initialize()
 
 
-**Execution cost**: less than 20593 gas
+**Execution cost**: No bound available
 
 
 
 
 --- 
 ### createWorkerNode()
->
->Creates, registers and returns a new worker node owned by the caller of the contract. Can be called only by the whitelisted node owner address.
 
 
 **Execution cost**: No bound available
@@ -214,7 +197,7 @@ Returns:
 ### owner()
 
 
-**Execution cost**: less than 831 gas
+**Execution cost**: No bound available
 
 **Attributes**: constant
 
@@ -224,12 +207,51 @@ Returns:
 
 
 1. **output_0** *of type `address`*
+
+--- 
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
+### destroyWorkerNode(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **_workerNode** *of type `address`*
+
+
+--- 
+### transferOwnership(address)
+
+
+**Execution cost**: No bound available
+
+
+Params:
+
+1. **newOwner** *of type `address`*
+
 
 --- 
 ### workerNodeFactory()
 
 
-**Execution cost**: less than 886 gas
+**Execution cost**: No bound available
 
 **Attributes**: constant
 
@@ -241,10 +263,10 @@ Returns:
 1. **output_0** *of type `address`*
 
 --- 
-### workerNodeOwners(address)
+### workerAddresses(address)
 
 
-**Execution cost**: less than 716 gas
+**Execution cost**: No bound available
 
 **Attributes**: constant
 
@@ -256,41 +278,6 @@ Params:
 Returns:
 
 
-1. **output_0** *of type `bool`*
-
---- 
-### workerNodes(uint256)
-
-
-**Execution cost**: less than 966 gas
-
-**Attributes**: constant
-
-
-Params:
-
-1. **param_0** *of type `uint256`*
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### workerNodesCount()
->
->Returns count of registered worker nodes
-
-
-**Execution cost**: less than 688 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint256`*
+1. **output_0** *of type `uint16`*
 
 [Back to the top ↑](#workernodemanager)

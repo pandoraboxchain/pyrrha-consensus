@@ -48,8 +48,13 @@ module.exports = {
             network_id: '*',
             gas: highGas
         },
-        rsk_test: {
+        rsk_test_local: {
             provider: _ => new PrivateKeyProvider(privateKey, `http://localhost:4444`),
+            network_id: '*',
+            gasPrice: 0
+        },
+        rsk_test: {
+            provider: _ => new PrivateKeyProvider(process.env.RSK_TESTNET_KEY, `http://node.rsk.pandora.network:4444`),
             network_id: '*',
             gasPrice: 0
         }

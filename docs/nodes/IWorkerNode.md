@@ -9,15 +9,12 @@
 
 
 ## Events
-### OwnershipRenounced(address)
+### WorkerDestroyed()
 
 
 **Execution cost**: No bound available
 
 
-Params:
-
-1. **previousOwner** *of type `address`*
 
 --- 
 ### OwnershipTransferred(address,address)
@@ -43,28 +40,8 @@ Params:
 1. **oldState** *of type `uint8`*
 2. **newState** *of type `uint8`*
 
---- 
-### WorkerDestroyed()
-
-
-**Execution cost**: No bound available
-
-
-
 
 ## Methods
-### assignJob(bytes32)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **_jobId** *of type `bytes32`*
-
-
---- 
 ### processToCognition()
 
 
@@ -72,6 +49,21 @@ Params:
 
 
 
+
+--- 
+### currentState()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
 ### declineValidData()
@@ -128,34 +120,25 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### Assigned()
+### reportInvalidData()
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
 
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
-### InsufficientStake()
+### provideResults(bytes)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
+Params:
 
+1. **_ipfsAddress** *of type `bytes`*
 
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### acceptValidData()
@@ -167,7 +150,7 @@ Returns:
 
 
 --- 
-### acceptAssignment()
+### withdrawBalance()
 
 
 **Execution cost**: No bound available
@@ -176,19 +159,13 @@ Returns:
 
 
 --- 
-### Destroyed()
+### renounceOwnership()
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
 
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### ValidatingData()
@@ -215,34 +192,25 @@ Returns:
 
 
 --- 
-### ReadyForDataValidation()
+### processToDataValidation()
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
 
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
-### currentState()
+### assignJob(bytes32)
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
+Params:
 
+1. **_jobId** *of type `bytes32`*
 
-Returns:
-
-
-1. **output_0** *of type `uint8`*
 
 --- 
 ### Offline()
@@ -314,6 +282,21 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### Idle()
 
 
@@ -347,7 +330,37 @@ Returns:
 
 
 --- 
-### processToDataValidation()
+### ReadyForDataValidation()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### Destroyed()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### acceptAssignment()
 
 
 **Execution cost**: No bound available
@@ -356,34 +369,34 @@ Returns:
 
 
 --- 
-### provideResults(bytes)
+### InsufficientStake()
 
 
 **Execution cost**: No bound available
 
+**Attributes**: constant
 
-Params:
 
-1. **_ipfsAddress** *of type `bytes`*
 
+Returns:
+
+
+1. **output_0** *of type `uint8`*
 
 --- 
-### renounceOwnership()
+### Assigned()
 
 
 **Execution cost**: No bound available
 
+**Attributes**: constant
 
 
 
---- 
-### reportInvalidData()
+Returns:
 
 
-**Execution cost**: No bound available
-
-
-
+1. **output_0** *of type `uint8`*
 
 --- 
 ### transferOwnership(address)
@@ -394,16 +407,7 @@ Params:
 
 Params:
 
-1. **_newOwner** *of type `address`*
-
-
---- 
-### withdrawBalance()
-
-
-**Execution cost**: No bound available
-
-
+1. **newOwner** *of type `address`*
 
 
 [Back to the top ↑](#iworkernode)

@@ -9,7 +9,7 @@
 
 
 ## Events
-### OwnershipRenounced(address)
+### PriceUpdated(uint256,uint256)
 
 
 **Execution cost**: No bound available
@@ -17,7 +17,8 @@
 
 Params:
 
-1. **previousOwner** *of type `address`*
+1. **oldPrice** *of type `uint256`*
+2. **newPrice** *of type `uint256`*
 
 --- 
 ### OwnershipTransferred(address,address)
@@ -31,8 +32,27 @@ Params:
 1. **previousOwner** *of type `address`*
 2. **newOwner** *of type `address`*
 
+
+## Methods
+### withdrawBalance()
+
+
+**Execution cost**: No bound available
+
+
+
+
 --- 
-### PriceUpdated(uint256,uint256)
+### renounceOwnership()
+
+
+**Execution cost**: No bound available
+
+
+
+
+--- 
+### updatePrice(uint256)
 
 
 **Execution cost**: No bound available
@@ -40,11 +60,40 @@ Params:
 
 Params:
 
-1. **oldPrice** *of type `uint256`*
-2. **newPrice** *of type `uint256`*
+1. **newPrice** *of type `uint256`*
 
 
-## Methods
+--- 
+### owner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `address`*
+
+--- 
+### isOwner()
+
+
+**Execution cost**: No bound available
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `bool`*
+
+--- 
 ### currentPrice()
 
 
@@ -90,30 +139,6 @@ Returns:
 1. **output_0** *of type `bytes`*
 
 --- 
-### owner()
-
-
-**Execution cost**: No bound available
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `address`*
-
---- 
-### renounceOwnership()
-
-
-**Execution cost**: No bound available
-
-
-
-
---- 
 ### transferOwnership(address)
 
 
@@ -122,28 +147,7 @@ Returns:
 
 Params:
 
-1. **_newOwner** *of type `address`*
-
-
---- 
-### updatePrice(uint256)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **newPrice** *of type `uint256`*
-
-
---- 
-### withdrawBalance()
-
-
-**Execution cost**: No bound available
-
-
+1. **newOwner** *of type `address`*
 
 
 [Back to the top ↑](#idataentity)

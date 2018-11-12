@@ -11,25 +11,10 @@
 
 
 ## Methods
-### UnderPenalty()
+### Uninitialized()
 
 
-**Execution cost**: less than 303 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
-### Assigned()
-
-
-**Execution cost**: less than 413 gas
+**Execution cost**: less than 193 gas
 
 **Attributes**: constant
 
@@ -56,25 +41,10 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### Destroyed()
+### ReadyForComputing()
 
 
-**Execution cost**: less than 369 gas
-
-**Attributes**: constant
-
-
-
-Returns:
-
-
-1. **output_0** *of type `uint8`*
-
---- 
-### Idle()
-
-
-**Execution cost**: less than 325 gas
+**Execution cost**: less than 237 gas
 
 **Attributes**: constant
 
@@ -86,10 +56,10 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### InsufficientStake()
+### ValidatingData()
 
 
-**Execution cost**: less than 391 gas
+**Execution cost**: less than 259 gas
 
 **Attributes**: constant
 
@@ -116,10 +86,25 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### ReadyForComputing()
+### UnderPenalty()
 
 
-**Execution cost**: less than 237 gas
+**Execution cost**: less than 303 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### Idle()
+
+
+**Execution cost**: less than 325 gas
 
 **Attributes**: constant
 
@@ -146,10 +131,10 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### Uninitialized()
+### Destroyed()
 
 
-**Execution cost**: less than 193 gas
+**Execution cost**: less than 369 gas
 
 **Attributes**: constant
 
@@ -161,10 +146,25 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### ValidatingData()
+### InsufficientStake()
 
 
-**Execution cost**: less than 259 gas
+**Execution cost**: less than 391 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+
+1. **output_0** *of type `uint8`*
+
+--- 
+### Assigned()
+
+
+**Execution cost**: less than 413 gas
 
 **Attributes**: constant
 

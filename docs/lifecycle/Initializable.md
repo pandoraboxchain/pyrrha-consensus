@@ -15,15 +15,6 @@
 
 
 ## Methods
-### initialize()
-
-
-**Execution cost**: less than 20376 gas
-
-
-
-
---- 
 ### initialized()
 
 
@@ -37,5 +28,14 @@ Returns:
 
 
 1. **output_0** *of type `bool`*
+
+--- 
+### initialize()
+
+
+**Execution cost**: less than 20376 gas
+
+
+
 
 [Back to the top ↑](#initializable)

@@ -3,7 +3,7 @@
 
 **Execution cost**: No bound available
 
-**Deployment cost**: less than 258400 gas
+**Deployment cost**: less than 273000 gas
 
 **Combined cost**: No bound available
 
@@ -21,7 +21,7 @@ Params:
 6. **_description** *of type `bytes32`*
 
 ## Events
-### OwnershipRenounced(address)
+### PriceUpdated(uint256,uint256)
 
 
 **Execution cost**: No bound available
@@ -29,7 +29,8 @@ Params:
 
 Params:
 
-1. **previousOwner** *of type `address`*
+1. **oldPrice** *of type `uint256`*
+2. **newPrice** *of type `uint256`*
 
 --- 
 ### OwnershipTransferred(address,address)
@@ -43,32 +44,8 @@ Params:
 1. **previousOwner** *of type `address`*
 2. **newOwner** *of type `address`*
 
---- 
-### PriceUpdated(uint256,uint256)
-
-
-**Execution cost**: No bound available
-
-
-Params:
-
-1. **oldPrice** *of type `uint256`*
-2. **newPrice** *of type `uint256`*
-
 
 ## Methods
-### updatePrice(uint256)
-
-
-**Execution cost**: less than 22110 gas
-
-
-Params:
-
-1. **_newPrice** *of type `uint256`*
-
-
---- 
 ### metadata()
 
 
@@ -84,19 +61,28 @@ Returns:
 1. **output_0** *of type `bytes32`*
 
 --- 
-### ipfsAddress()
+### withdrawBalance()
+>
+>Withdraws full balance to the owner account. Can be called only by the owner of the contract.
 
 
 **Execution cost**: No bound available
 
-**Attributes**: constant
 
 
 
-Returns:
+--- 
+### renounceOwnership()
+>
+>Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
+>
+> Allows the current owner to relinquish control of the contract.
 
 
-1. **output_0** *of type `bytes`*
+**Execution cost**: less than 22530 gas
+
+
+
 
 --- 
 ### description()
@@ -129,7 +115,51 @@ Returns:
 1. **output_0** *of type `uint8`*
 
 --- 
-### dataDim()
+### updatePrice(uint256)
+
+
+**Execution cost**: less than 22143 gas
+
+
+Params:
+
+1. **_newPrice** *of type `uint256`*
+
+
+--- 
+### owner()
+
+
+**Execution cost**: less than 669 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+> the address of the owner.
+
+1. **output_0** *of type `address`*
+
+--- 
+### isOwner()
+
+
+**Execution cost**: less than 624 gas
+
+**Attributes**: constant
+
+
+
+Returns:
+
+> true if `msg.sender` is the owner of the contract.
+
+1. **output_0** *of type `bool`*
+
+--- 
+### currentPrice()
 
 
 **Execution cost**: less than 560 gas
@@ -144,10 +174,10 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
-### currentPrice()
+### dataDim()
 
 
-**Execution cost**: less than 538 gas
+**Execution cost**: less than 582 gas
 
 **Attributes**: constant
 
@@ -159,10 +189,10 @@ Returns:
 1. **output_0** *of type `uint256`*
 
 --- 
-### owner()
+### ipfsAddress()
 
 
-**Execution cost**: less than 669 gas
+**Execution cost**: No bound available
 
 **Attributes**: constant
 
@@ -171,20 +201,7 @@ Returns:
 Returns:
 
 
-1. **output_0** *of type `address`*
-
---- 
-### renounceOwnership()
->
->Renouncing to ownership will leave the contract without an owner. It will not be possible to call the functions with the `onlyOwner` modifier anymore.
->
-> Allows the current owner to relinquish control of the contract.
-
-
-**Execution cost**: less than 22116 gas
-
-
-
+1. **output_0** *of type `bytes`*
 
 --- 
 ### transferOwnership(address)
@@ -192,25 +209,14 @@ Returns:
 > Allows the current owner to transfer control of the contract to a newOwner.
 
 
-**Execution cost**: less than 22968 gas
+**Execution cost**: less than 23035 gas
 
 
 Params:
 
-1. **_newOwner** *of type `address`*
+1. **newOwner** *of type `address`*
 
     > The address to transfer ownership to.
-
-
-
---- 
-### withdrawBalance()
->
->Withdraws full balance to the owner account. Can be called only by the owner of the contract.
-
-
-**Execution cost**: No bound available
-
 
 
 

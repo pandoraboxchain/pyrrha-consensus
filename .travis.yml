@@ -9,6 +9,7 @@ branches:
     - develop
     - /^v[0-9]+\.[0-9]+\.[0-9]+$/
     - /^v[0-9]+\.[0-9]+\.[0-9]+-staging$/
+    - /^v[0-9]+\.[0-9]+\.[0-9]+-rsk$/
 jobs:
   include:
     - stage: lint
@@ -17,13 +18,6 @@ jobs:
         - set -e
         - npm link
         - npm run lint
-        - set +e
-    - stage: test
-      if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
-      script:
-        - set -e
-        - npm link
-        - npm run test
         - set +e
     - stage: coverage
       if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+$/
@@ -47,5 +41,13 @@ jobs:
         - npm link
         - npx truffle migrate --network infura_rinkeby
         - npx ghu issue -k "$GITHUB_API_TOKEN" -o pandoraboxchain -r pyrrha-webclient,pyrrha-pynode,pyrrha-boxproxy,pyrrha -t "Contracts addresses update required" -b "Pandora:$(< ./build/addresses/Pandora.json), PandoraMarket:$(< ./build/addresses/PandoraMarket.json)"
+        - set +e
+    - stage: deploy_rsk
+      if: branch =~ /^v[0-9]+\.[0-9]+\.[0-9]+-rsk$/
+      script:
+        - set -e
+        - npm link
+        - npx truffle migrate --network rsk_test
+        - npx ghu issue -k "$GITHUB_API_TOKEN" -o pandoraboxchain -r pyrrha-webclient,pyrrha-pynode,pyrrha-boxproxy,pyrrha -t "RSK-version (!!!) contracts addresses update required" -b "Pandora:$(< ./build/addresses/Pandora.json), PandoraMarket:$(< ./build/addresses/PandoraMarket.json)"
         - set +e
         
