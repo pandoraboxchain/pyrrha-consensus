@@ -1,10 +1,13 @@
-pragma solidity ^0.4.23;
+pragma solidity 0.4.24;
 
 import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
+import "openzeppelin-solidity/contracts/access/roles/MinterRole.sol";
+import "../../lifecycle/FeatureInitializable.sol";
+
 
 /**
  * @title PAN Token Contract (Pandora Artificial Neuronetwork Token) for Pyrrha cognitive network
- * @author "Dr Maxim Orlovsky" <orlovsky@pandora.foundation>
+ * @author Kostiantyn Smyrnov <kostysh@gmail.com>
  *
  * @dev PAN Tokens is a ERC20-compliant contract, derived from OpenZeppelin StandardToken contract.
  * [Core Pandora contract](Pandora.sol) inherits this contract; so all token-related functionality is removed from it
@@ -13,32 +16,50 @@ import "openzeppelin-solidity/contracts/token/ERC20/ERC20.sol";
  * @dev You can read more on PAN Tokens in
  * [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain),
  * section "2. Economics Models".
+ * 
+ * @dev Total token supply is equivalent to the initial supply and does not change with a time (Pyrrha network
+ * does not have cognitive mining). Thus, both initial ant total supply are the pre-mined tokens as described in
+ * the section "2.5. Token Emission" of
+ * [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
  */
+contract Pan is ERC20, MinterRole, FeatureInitializable {
 
-contract PAN is ERC20 {
-    // ERC20 standard variables
-    string public constant name = "Pandora";
+    string public constant name = "Pandora AI Network Token";
     string public constant symbol = "PAN";
-    uint8 public constant decimals = 18;
-    uint256 public totalSupply;
+    uint public constant decimals = 18;
 
-    /// @dev Total token supply is equivalent to the initial supply and does not change with a time (Pyrrha network
-    /// does not have cognitive mining). Thus, both initial ant total supply are the pre-mined tokens as described in
-    /// the section "2.5. Token Emission" of
-    /// [Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
-    uint256 public constant INITIAL_SUPPLY = 5000000 * 100000000;
+    /**
+     * @dev Throws if called not initialized feature
+     */
+    modifier mintableInitialized() {
+        require(isFeatureInitialized(keccak256("mintable")), "ERROR_FEATURE_NOT_INITIALIZED");
+        _;
+    }
+    
+    /**
+     * @dev Initializing of mintable feature
+     * @param _minter Minter address
+     */
+    function initializeMintable(address _minter) public {
+        require(_minter != address(0), "ERROR_INVALID_ADDRESS");
+        _setFeatureInitialized(keccak256("mintable"));
 
-    constructor()
-    public
-    {
-        totalSupply = INITIAL_SUPPLY;
-        //_balances[msg.sender] = INITIAL_SUPPLY;
-        _mint(msg.sender, INITIAL_SUPPLY);
-
-        /// @todo Allocate distributed balances to the whitelisted nodes according to the specification
+        if (!isMinter(_minter)) {
+            _addMinter(_minter);
+        }        
     }
 
-    function totalSupply() public view returns (uint256) {
-        return totalSupply;
+    /**
+     * @dev Function to mint tokens
+     * @param to The address that will receive the minted tokens.
+     * @param value The amount of tokens to mint.
+     * @return A boolean that indicates if the operation was successful.
+     */
+    function mint(
+        address to,
+        uint256 value
+    ) public mintableInitialized onlyMinter returns(bool) {
+        _mint(to, value);
+        return true;
     }
 }

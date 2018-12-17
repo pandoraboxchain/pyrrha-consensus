@@ -9,7 +9,7 @@ contract('Pandora', accounts => {
         pandora = await Pandora.deployed();
     });
 
-    it('Account #0 should be whitelisted during deployment', async () => {
+    it.skip('Account #0 should be whitelisted during deployment', async () => {
 
         const result = await pandora.workerNodeOwners(accounts[0]);
         // console.log(result);

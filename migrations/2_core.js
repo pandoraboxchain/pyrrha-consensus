@@ -41,9 +41,10 @@ module.exports = (deployer, network, accounts) => {
         .then(_ => Pandora.deployed())
         .then(instance => {
             pandora = instance
-            return saveAddressToFile(deployer.basePath, 'Pandora.json', JSON.stringify(pandora.address));
+            return pandora.initializeMintable(accounts[0]);// adds deployer address as minter role
         })
-        .then(_ => pandora.whitelistWorkerOwner(accounts[0]))
+        .then(_ => pandora.mint(accounts[0], 5000000 * 1000000000000000000))
+        .then(_ => saveAddressToFile(deployer.basePath, 'Pandora.json', JSON.stringify(pandora.address)))        
         .then(_ => wnf.transferOwnership(pandora.address))
         .then(_ => cognitiveJobController.transferOwnership(pandora.address))
         .then(_ => reputation.transferOwnership(pandora.address))

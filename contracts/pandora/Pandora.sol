@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity 0.4.24;
 
 import "../lifecycle/OnlyOnce.sol";
 import "./factories/IWorkerNodeFactory.sol";
@@ -20,7 +20,7 @@ import "./token/PAN.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract Pandora is OnlyOnce, CognitiveJobManager {
+contract Pandora is OnlyOnce, Pan, CognitiveJobManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -28,7 +28,7 @@ contract Pandora is OnlyOnce, CognitiveJobManager {
 
     /// ### Public variables
 
-    bytes32 public constant version = "0.5.1";
+    bytes32 public constant version = "0.6.0";
 
 
     /*******************************************************************************************************************
