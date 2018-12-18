@@ -12,12 +12,11 @@ library LedgersLib {
 
     using SafeMath for uint256;
 
-    uint256 private constant minimumTokensAmount = 1;
+    uint256 private constant minimumTokensValue = 1;
 
     struct Ledger {
         address addr;
         uint256 balance;
-        uint256 blockedFunds;
     }
 
     struct LedgersStorage {
@@ -54,21 +53,6 @@ library LedgersLib {
         address addr
     ) internal view returns (uint256) {
         require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
-        return store.ledgers[addr].balance.sub(store.ledgers[addr].blockedFunds);
-    }
-
-    /**
-     * @dev Returns total balance of address (with blocked funds)
-     * @param store Ledgers storage
-     * @param addr Ledger address
-     * @return bool
-     * @notice Throws if ledger is not exists
-     */
-    function totalBalanceOf(
-        LedgersStorage storage store,
-        address addr
-    ) internal view returns (uint256) {
-        require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
         return store.ledgers[addr].balance;
     }
 
@@ -77,31 +61,13 @@ library LedgersLib {
      * @param store Ledgers storage
      * @return bool
      */
-    function totalFunds(LedgersStorage storage store) internal view returns (uint256) {
+    function totalBalance(LedgersStorage storage store) internal view returns (uint256) {
         uint256 balance = 0;
 
         for (uint256 i = 0; i <= store.count; i++) {
 
             if (store.addresses[i] != address(0)) {
                 balance = balance.add(balanceOf(store, store.addresses[i]));
-            }
-        }
-
-        return balance;
-    }
-
-    /**
-     * @dev Returns total blocked funds of all ledgers
-     * @param store Ledgers storage
-     * @return bool
-     */
-    function totalBlockedFunds(LedgersStorage storage store) internal view returns (uint256) {
-        uint256 balance = 0;
-
-        for (uint256 i = 0; i <= store.count; i++) {
-
-            if (store.addresses[i] != address(0)) {
-                balance = balance.add(store.ledgers[store.addresses[i]].blockedFunds);
             }
         }
 
@@ -121,86 +87,10 @@ library LedgersLib {
     ) internal {
         require(addr != address(0), "ERROR_INVALID_ADDRESS");
         require(!isLedgerExists(store, addr), "ERROR_LEDGER_ALREADY_EXISTS");
-        store.ledgers[addr] = Ledger(addr, 0, 0);
+        store.ledgers[addr] = Ledger(addr, 0);
         store.ids[addr] = store.count;
         store.addresses[store.count] = addr;
         store.count += 1;
-    }
-
-    /**
-     * @dev Deposits amount
-     * @param store Ledgers storage
-     * @param addr Ledger address
-     * @param amount Amount
-     * @notice Throws if ledger is not exists
-     * @notice Throws if amount is less then minimum amount
-     */
-    function deposit(
-        LedgersStorage storage store,
-        address addr,
-        uint256 amount
-    ) internal {
-        require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
-        require(amount >= minimumTokensAmount, "ERROR_INVALID_TOKENS_AMOUNT");
-        store.ledgers[addr].balance = store.ledgers[addr].balance.add(amount);
-    }
-
-    /**
-     * @dev Withdraws amount
-     * @param store Ledgers storage
-     * @param addr Ledger address
-     * @param amount Amount
-     * @notice Throws if ledger is not exists
-     * @notice Throws if spendable balance not enough to withdraw
-     */
-    function withdraw(
-        LedgersStorage storage store,
-        address addr,
-        uint256 amount
-    ) internal {
-        require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
-        require(balanceOf(store, addr) >= amount, "ERROR_INSUFFICIENT_FUNDS");
-        store.ledgers[addr].balance = store.ledgers[addr].balance.sub(amount);
-    }
-
-    /**
-     * @dev Blocks amount 
-     * @param store Ledgers storage
-     * @param addr Ledger address
-     * @param amount Amount
-     * @notice Throws if ledger is not exists
-     * @notice Throws if spendable balance not enough to withdraw
-     * @notice Throws if amount is less then minimum value
-     */
-    function blockFunds(
-        LedgersStorage storage store,
-        address addr,
-        uint256 amount
-    ) internal {
-        require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
-        require(balanceOf(store, addr) >= amount, "ERROR_INSUFFICIENT_FUNDS");
-        require(amount >= minimumTokensAmount, "ERROR_INVALID_TOKENS_AMOUNT");
-        store.ledgers[addr].blockedFunds = store.ledgers[addr].blockedFunds.add(amount);
-    }
-
-    /**
-     * @dev Unblocks amount 
-     * @param store Ledgers storage
-     * @param addr Ledger address
-     * @param amount Amount 
-     * @notice Throws if ledger is not exists
-     * @notice Thrpws if insufficient of blocked funds
-     * @notice Throws if amount is less then minimum value
-     */
-    function unblockFunds(
-        LedgersStorage storage store,
-        address addr,
-        uint256 amount
-    ) internal {
-        require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
-        require(store.ledgers[addr].blockedFunds >= amount, "ERROR_INSUFFICIENT_BLOCKED_FUNDS");
-        require(amount >= minimumTokensAmount, "ERROR_INVALID_TOKENS_AMOUNT");
-        store.ledgers[addr].blockedFunds = store.ledgers[addr].blockedFunds.sub(amount);
     }
 
     /**
@@ -208,17 +98,53 @@ library LedgersLib {
      * @param store Ledgers storage
      * @param addr Ledger address
      * @notice Throws if ledger is not exists
-     * @notice Thrpws if ledger has blocked funds
+     * @notice Thrpws if ledger has positive balance
      */
     function remove(
         LedgersStorage storage store,
         address addr
     ) internal {
         require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
-        require(store.ledgers[addr].blockedFunds == 0, "ERROR_BLOCKED_FUNDS_FOUND");
+        require(store.ledgers[addr].balance == 0, "ERROR_POSITIVE_BALANCE");
         uint256 id = store.ids[addr];
         delete store.ledgers[addr];        
         delete store.ids[addr];
         delete store.addresses[id];
     }
+
+    /**
+     * @dev Add value to address
+     * @param store Ledgers storage
+     * @param addr Ledger address
+     * @param value Value
+     * @notice Throws if ledger is not exists
+     * @notice Throws if value is less then minimum value
+     */
+    function add(
+        LedgersStorage storage store,
+        address addr,
+        uint256 value
+    ) internal {
+        require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
+        require(value >= minimumTokensValue, "ERROR_INVALID_TOKENS_AMOUNT");
+        store.ledgers[addr].balance = store.ledgers[addr].balance.add(value);
+    }
+
+    /**
+     * @dev Subtract value from address balance
+     * @param store Ledgers storage
+     * @param addr Ledger address
+     * @param value Value
+     * @notice Throws if ledger is not exists
+     * @notice Throws if spendable balance not enough to withdraw
+     */
+    function sub(
+        LedgersStorage storage store,
+        address addr,
+        uint256 value
+    ) internal {
+        require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
+        require(balanceOf(store, addr) >= value, "ERROR_INSUFFICIENT_FUNDS");
+        store.ledgers[addr].balance = store.ledgers[addr].balance.sub(value);
+    }    
 }
