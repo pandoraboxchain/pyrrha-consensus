@@ -10,6 +10,18 @@ import "../pandora/managers/TokensManager.sol";
 contract TokensManagerTests is TokensManager {
 
     /**
+     * @dev Block tokens 
+     * @param from Source address
+     * @param value Value
+     */
+    function testBlockTokensFrom(
+        address from,
+        uint256 value
+    ) public {
+        blockTokensFrom(from, value);
+    }
+
+    /**
      * @dev Unblock tokens and send to address
      * @param from Source address
      * @param to Destination address

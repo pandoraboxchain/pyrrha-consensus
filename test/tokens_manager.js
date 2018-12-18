@@ -3,6 +3,7 @@ require('chai')
     .use(require('chai-bignumber')(BigNumber))
     .should();
 const assertRevert = require('./helpers/assertRevert');
+
 const TokensManagerTests = artifacts.require('TokensManagerTests');
 
 contract('TokensManager', ([owner1, owner2, owner3, owner4]) => {
@@ -46,6 +47,25 @@ contract('TokensManager', ([owner1, owner2, owner3, owner4]) => {
     
         it('should fail if sender has insufficient amount of tokens', async () => {
             await assertRevert(tm.blockTokens(250 * 1000000000000000000, { from: owner2 }));
+        });
+    });
+
+    describe('#testBlockTokensFrom', () => {
+
+        it('should block tokens on address', async () => {
+            const tokensToBlock = 100 * 1000000000000000000;
+            const result = await tm.testBlockTokensFrom(owner2, tokensToBlock, { from: owner1 });
+            
+            let events = result.logs.filter(l => (
+                l.event === 'BlockedTokens' && result.tx === l.transactionHash
+            ));
+            (events.length).should.equal(1);
+            (events[0].args.owner).should.equal(owner2);
+            (events[0].args.value).should.be.bignumber.equal(tokensToBlock);
+    
+            (await tm.balanceOf(owner2)).should.be.bignumber.equal(initialFunds2-tokensToBlock);
+            (await tm.getAvailableBalance(owner2)).should.be.bignumber.equal(tokensToBlock);
+            (await tm.hasAvailableFunds(owner2)).should.equal(true);
         });
     });
 

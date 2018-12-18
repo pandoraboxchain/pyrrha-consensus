@@ -5,6 +5,7 @@ import "./factories/IWorkerNodeFactory.sol";
 import "./managers/CognitiveJobManager.sol";
 import "./managers/ICognitiveJobController.sol";
 import "./token/PAN.sol";
+import "./managers/TokensManager.sol";
 
 /**
  * @title Pandora Smart Contract
@@ -20,7 +21,7 @@ import "./token/PAN.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract Pandora is OnlyOnce, Pan, CognitiveJobManager {
+contract Pandora is OnlyOnce, Pan, CognitiveJobManager, TokensManager {
 
     /*******************************************************************************************************************
      * ## Storage

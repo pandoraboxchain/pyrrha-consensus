@@ -2,6 +2,8 @@ pragma solidity ^0.4.23;
 
 import "../../lifecycle/Initializable.sol";
 import "./IWorkerNodeManager.sol";
+import "./ITokensManager.sol";
+
 
 /**
  * @title Pandora Smart Contract
@@ -17,7 +19,7 @@ import "./IWorkerNodeManager.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
+contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, ITokensManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -118,6 +120,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     external {
         // Whitelist is organised in a form of mapping with whitelisted addresses set to "true"
         workerNodeOwners[_workerOwner] = true;
+        blockTokensFrom(_workerOwner, minimumWorkerNodeStake);
     }
 
     /// @notice Removes address from the whitelist of owners allowed to create WorkerNodes contracts

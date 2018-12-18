@@ -2,6 +2,7 @@ pragma solidity 0.4.24;
 
 import "../token/PAN.sol";
 import "../../libraries/LedgersLib.sol";
+import "./ITokensManager.sol";
 
 
 /**
@@ -9,38 +10,14 @@ import "../../libraries/LedgersLib.sol";
  * @dev This contract represents tokens management logic
  * @author Kostiantyn Smyrnov <kostysh@gmail.com>
  */
-contract TokensManager is Pan {
+contract TokensManager is ITokensManager, Pan {
 
-    using LedgersLib for LedgersLib.LedgersStorage;
-
-    uint256 public constant minimumWorkerNodeStake = 100 * 1000000000000000000;// 100 PAN
+    using LedgersLib for LedgersLib.LedgersStorage;    
 
     /**
      * @dev Internal ledgers storage    
      */
     LedgersLib.LedgersStorage internal ledgers;
-
-    /**
-     * @dev This event will be emitted every time tokens are blocked
-     * @param owner Tokens owner address
-     * @param value Tokens value
-     */
-    event BlockedTokens(
-        address indexed owner, 
-        uint256 indexed value
-    );
-
-    /**
-     * @dev This event will be emitted every time tokens are unblocked and transfered to address
-     * @param from Blocked funds owner address
-     * @param to Destination address
-     * @param value Tokens value
-     */
-    event UnblockedTokens(
-        address from,
-        address to,
-        uint256 value
-    );
 
     function blockTokens(uint256 value) public {
         require(balanceOf(msg.sender) >= value, "ERROR_INSUFFICIENT_TOKENS");
@@ -52,6 +29,21 @@ contract TokensManager is Pan {
         
         ledgers.add(msg.sender, value);
         emit BlockedTokens(msg.sender, value);
+    }
+
+    function blockTokensFrom(
+        address from,
+        uint256 value
+    ) internal {
+        require(balanceOf(from) >= value, "ERROR_INSUFFICIENT_TOKENS");
+        _transfer(from, address(this), value);
+
+        if (!ledgers.isLedgerExists(from)) {
+            ledgers.put(from);
+        }
+        
+        ledgers.add(from, value);
+        emit BlockedTokens(from, value);
     }
 
     function blockWorkerNodeStake(uint256 tokensToStake) public {
