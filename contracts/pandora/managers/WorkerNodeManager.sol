@@ -119,8 +119,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, IToken
     onlyOwner // Only by owner of Pandora contract
     external {
         // Whitelist is organised in a form of mapping with whitelisted addresses set to "true"
-        workerNodeOwners[_workerOwner] = true;
-        blockTokensFrom(_workerOwner, minimumWorkerNodeStake);
+        workerNodeOwners[_workerOwner] = true;        
     }
 
     /// @notice Removes address from the whitelist of owners allowed to create WorkerNodes contracts
@@ -147,7 +146,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, IToken
 
     /// @notice Creates, registers and returns a new worker node owned by the caller of the contract.
     /// Can be called only by the whitelisted node owner address.
-    function createWorkerNode()
+    function createWorkerNode(uint256 computingPrice)
     external
     onlyInitialized
     onlyWhitelistedOwners
@@ -160,10 +159,13 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, IToken
         /// Check that we do not reach limits in the node count
         require(workerNodes.length < 2 ^ 16 - 1);
 
-        // @todo Check the stake and bind it
+        require(computingPrice >= 1, "ERROR_INVALID_COMPUTING_PRICE");
+
+        // Check the stake and bind it
+        blockTokensFrom(msg.sender, minimumWorkerNodeStake);
 
         // Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
-        IWorkerNode workerNode = workerNodeFactory.create(msg.sender);
+        IWorkerNode workerNode = workerNodeFactory.create(msg.sender, computingPrice);
         // We do not check the created `workerNode` since all checks are done by the factory class
         workerNodes.push(workerNode);
         // Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)

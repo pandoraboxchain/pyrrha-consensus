@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity 0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../../lifecycle/Initializable.sol";
@@ -7,6 +7,8 @@ import "./ICognitiveJobManager.sol";
 import "./WorkerNodeManager.sol";
 import "../token/Reputation.sol";
 import "./ICognitiveJobController.sol";
+import "./ITokensManager.sol";
+import "../../nodes/IWorkerNode.sol";
 
 import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
 
@@ -21,7 +23,7 @@ import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
  * for more details.
  */
 
-contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
+contract CognitiveJobManager is ICognitiveJobManager, ITokensManager, WorkerNodeManager  {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -68,6 +70,12 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
 
     /// @dev Event firing when a new cognitive job queued
     event CognitiveJobQueued(bytes32 jobId);
+
+    modifier onlyPositiveStake() {
+        IWorkerNode workerNode = IWorkerNode(msg.sender);
+        hasAvailableFunds(workerNode.owner());
+        _;
+    }
 
     /*******************************************************************************************************************
      * ## Constructor and initialization
@@ -253,11 +261,18 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         return jobQueue.queueDepth();
     }
 
+    /**
+     * @dev Provide job result by worker
+     * @param _jobId Job Id
+     * @param _ipfsResults IPFS link to job result
+     * @notice Throw if worker has no funds on stake balance
+     */
     function provideResults(
         bytes32 _jobId,
         bytes _ipfsResults
     )
-    external {
+    external     
+    {
         //todo get workerId with workerController in new v.
         if (jobController.completeWork(_jobId, msg.sender, _ipfsResults)) {
             // Increase reputation of workers involved to computation
@@ -276,16 +291,25 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     function respondToJob(
         bytes32 _jobId,
         uint8 _responseType,
-        bool _response)
-    external {
+        bool _response) 
+    external 
+    onlyPositiveStake 
+    {
         //todo implement get workerId with worker controller in new version
         jobController.respondToJob(_jobId, msg.sender, _responseType, _response);
     }
 
+    /**
+     * @dev Commit progress of job by worker
+     * @param _jobId Job Id
+     * @param _percent Prcesnt of job to finish
+     * @notice Throw if worker has no funds on stake balance
+     */
     function commitProgress(
         bytes32 _jobId,
         uint8 _percent)
-    external {
+    external     
+    {
         //todo implement get workerId with worker controller in new version
         jobController.commitProgress(_jobId, msg.sender, _percent);
     }

@@ -10,7 +10,8 @@ contract IWorkerNodeFactory is Ownable{
     /// @dev Creates worker node contract for the main Pandora contract and does necessary preparations of it
     /// (transferring ownership). Can be called only by a Pandora contract (Pandora is the owner of the factory)
     function create(
-        address _nodeOwner /// Worker node owner. Contract ownership will be transferred to this owner upon creation
+        address _nodeOwner, /// Worker node owner. Contract ownership will be transferred to this owner upon creation
+        uint256 _computingPrice /// minimum computing work price
     )
     external
     returns (

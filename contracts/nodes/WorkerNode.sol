@@ -57,7 +57,6 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         // Initializing state machine via base contract code
         super._initStateMachine();
 
-        // Going into initial state (Offline)
         stateMachine.currentState = Offline;
     }
 
@@ -73,6 +72,8 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
     /// Initialy set from the address supplied to the constructor and can"t be changed after.
     ICognitiveJobManager public pandora;
 
+    uint256 public computingPrice;
+
     /// @notice Active cognitive job reference. Zero when there is no active cognitive job assigned or performed
     /// @dev Valid (non-zero) only for active states (see `activeStates` modified for the list of such states)
     bytes32 public activeJob;
@@ -85,11 +86,13 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
     /// ### Constructor and destructor
 
     constructor(
-        ICognitiveJobManager _pandora /// Reference to the main Pandora contract that creates Worker Node
+        ICognitiveJobManager _pandora, /// Reference to the main Pandora contract that creates Worker Node
+        uint256 _computingPrice
     )
     public {
         require(_pandora != address(0));
         pandora = _pandora;
+        computingPrice = _computingPrice;
 
         // Initialize state machine (state transition table and initial state). Always must be performed at the very
         // end of contract constructor code.
@@ -121,14 +124,22 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         onlyOwner
         requireState(Offline)
     {
-        _transitionToState(Idle);
+        // @todo Check for UnderPenalty state
+        _transitionToState(Idle);   
+    }
+
+    function offline() external
+        onlyOwner
+    {
+        // @todo Check for UnderPenalty state
+        _transitionToState(Offline);   
     }
 
     function reportProgress(uint8 _percent) external
         onlyOwner
     {
         jobProgress = _percent;
-        pandora.commitProgress(activeJob, _percent);
+        pandora.commitProgress(activeJob, _percent);        
     }
 
     /// @notice Do not call
@@ -239,5 +250,13 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
 
     function _transitionToState(uint8 _newState) private requireAllowedTransition(_newState)  {
         transitionToState(_newState);
+    }
+
+    function updateComputingPrice(uint256 _newPrice) external
+        onlyOwner // Can be called only by the owner
+        requireStates2(Idle, Offline) {
+        
+        require(_newPrice >= 1, "ERROR_INVALID_COMPUTING_PRICE");
+        computingPrice = _newPrice;
     }
 }
