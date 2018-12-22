@@ -4,8 +4,7 @@ import "../lifecycle/OnlyOnce.sol";
 import "./factories/IWorkerNodeFactory.sol";
 import "./managers/CognitiveJobManager.sol";
 import "./managers/ICognitiveJobController.sol";
-import "./token/PAN.sol";
-import "./managers/TokensManager.sol";
+
 
 /**
  * @title Pandora Smart Contract
@@ -21,7 +20,7 @@ import "./managers/TokensManager.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract Pandora is OnlyOnce, Pan, CognitiveJobManager, TokensManager {
+contract Pandora is OnlyOnce, CognitiveJobManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -46,10 +45,11 @@ contract Pandora is OnlyOnce, Pan, CognitiveJobManager, TokensManager {
     /// of worker nodes contracts
     constructor(
         ICognitiveJobController _jobController,
+        IEconomicController _economicController,
         IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
         IReputation _reputation
     ) public
-    CognitiveJobManager(_jobController, _nodeFactory, _reputation)
+    CognitiveJobManager(_jobController, _economicController, _nodeFactory, _reputation)
     // Ensure that the contract is still uninitialized and `initialize` function be called to check the proper
     // setup of class factories
     Initializable()

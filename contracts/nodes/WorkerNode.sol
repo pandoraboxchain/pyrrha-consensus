@@ -124,14 +124,16 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         onlyOwner
         requireState(Offline)
     {
-        // @todo Check for UnderPenalty state
-        _transitionToState(Idle);   
+        if (pandora.hasAvailableFunds(owner())) {
+            _transitionToState(Idle);
+        } else {
+            _transitionToState(InsufficientStake);
+        }           
     }
 
     function offline() external
         onlyOwner
     {
-        // @todo Check for UnderPenalty state
         _transitionToState(Offline);   
     }
 

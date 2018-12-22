@@ -4,8 +4,9 @@ import "../../nodes/IWorkerNode.sol";
 import "../../entities/IDataEntity.sol";
 import "../../entities/IKernel.sol";
 import "../../entities/IDataset.sol";
+import "./IEconomicManager.sol";
 
-contract ICognitiveJobManager {
+contract ICognitiveJobManager is IEconomicManager {
 
     //workers interaction
     function provideResults(bytes32 _jobId, bytes _ipfsResults) external;

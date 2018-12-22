@@ -2,7 +2,7 @@ pragma solidity ^0.4.23;
 
 import "../../lifecycle/Initializable.sol";
 import "./IWorkerNodeManager.sol";
-import "./ITokensManager.sol";
+import "./IEconomicManager.sol";
 
 
 /**
@@ -19,7 +19,7 @@ import "./ITokensManager.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, ITokensManager {
+contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, IEconomicManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -185,7 +185,8 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, IToken
         // @fixme Implement the modifier and uncomment
     onlyInitialized {
         /// Can be called only by the assigned cognitive job
-        /// @todo Implement penalties from the bound worker node stakes
+        
+        // applyPenalty(_reason, _guiltyWorker.owner());
     }
 
     /// @notice Removes worker from the workers list and destroys it. Can be called only by the worker node owner

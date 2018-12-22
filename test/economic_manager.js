@@ -4,26 +4,41 @@ require('chai')
     .should();
 const assertRevert = require('./helpers/assertRevert');
 
-const TokensManagerTests = artifacts.require('TokensManagerTests');
+const EconomicManagerTests = artifacts.require('EconomicManagerTests');
+const EconomicController = artifacts.require('EconomicController');
+const TestOwnable = artifacts.require('TestOwnable');
 
-contract('TokensManager', ([owner1, owner2, owner3, owner4]) => {
+contract('EconomicManager', ([owner1, owner2, owner3, owner4]) => {
 
     let tm;
+    let controller;
+    let nodeOwnable;
     const initialFunds2 = 200 * 1000000000000000000;
     const initialFunds3 = 200 * 1000000000000000000;
 
     beforeEach('setup', async () => {
-        tm = await TokensManagerTests.new({ from: owner1 });
-        await tm.initializeMintable(owner1);
+        controller = await EconomicController.new({ from: owner1 });
+        nodeOwnable = await TestOwnable.new({ from: owner4 });
+        tm = await EconomicManagerTests.new(controller.address, { from: owner1 });
+        await controller.transferOwnership(tm.address, { from: owner1 });
+        await tm.initializeMintable(owner1, { from: owner1 });
         await tm.mint(owner1, 5000000 * 1000000000000000000, { from: owner1 });
         await tm.transfer(owner2, initialFunds2, { from: owner1 });        
         await tm.transfer(owner3, initialFunds3, { from: owner1 });
+        await tm.transfer(owner4, initialFunds2, { from: owner1 });
     });
 
-    describe('#hasWorkerNodeStake', () => {
+    describe('#hasEnoughFunds', () => {
 
         it('should fail to get worker node stake if stake was never added before', async () => {
-            await assertRevert(tm.hasAvailableFunds(owner2));
+            await assertRevert(tm.hasEnoughFunds(owner2, initialFunds2 * 2));
+        });
+
+        it('should return true if stake enough and otherwise', async () => {
+            const tokensToBlock = 100 * 1000000000000000000;
+            await tm.blockTokens(tokensToBlock, { from: owner2 });
+            (await tm.hasEnoughFunds(owner2, tokensToBlock / 2)).should.equal(true);
+            (await tm.hasEnoughFunds(owner2, tokensToBlock * 2)).should.equal(false);
         });
     });
 
@@ -119,7 +134,7 @@ contract('TokensManager', ([owner1, owner2, owner3, owner4]) => {
             await tm.blockTokens(tokensToBlock, { from: owner2 });
     
             const tokensToUnBlock = 250 * 1000000000000000000;
-            await assertRevert(tm.testUnblockTokensFrom(owner2, owner2, tokensToUnBlock, { from: owner2 }));      
+            await assertRevert(tm.testUnblockTokensFrom(owner2, owner2, tokensToUnBlock));      
         });
     });
 
@@ -130,7 +145,7 @@ contract('TokensManager', ([owner1, owner2, owner3, owner4]) => {
             await tm.blockTokens(tokensToBlock, { from: owner2 });
             (await tm.hasAvailableFunds(owner2)).should.equal(true);
     
-            await tm.testUnblockTokensFrom(owner2, owner2, tokensToBlock, { from: owner2 });
+            await tm.testUnblockTokensFrom(owner2, owner2, tokensToBlock);
             (await tm.hasAvailableFunds(owner2)).should.equal(false);
         });
     
@@ -139,16 +154,16 @@ contract('TokensManager', ([owner1, owner2, owner3, owner4]) => {
         });
     });
 
-    describe('#hasWorkerNodeStake', () => {
+    describe('#hasWorkerNodeAvailableFunds', () => {
         
         it('should return true if owner (worker node) has blocked tokens and otherwise', async () => {
             const tokensToBlock = 150 * 1000000000000000000;
-            await tm.blockTokens(tokensToBlock, { from: owner2 });
-            (await tm.hasWorkerNodeStake(owner2)).should.equal(true);
+            await tm.blockTokens(tokensToBlock, { from: owner4 });
+            (await tm.hasWorkerNodeAvailableFunds(nodeOwnable.address)).should.equal(true);
     
-            const tokensToUnBlock = 90 * 1000000000000000000;
-            await tm.testUnblockTokensFrom(owner2, owner2, tokensToUnBlock, { from: owner2 });
-            (await tm.hasWorkerNodeStake(owner2)).should.equal(false);
+            const tokensToUnBlock = 150 * 1000000000000000000;
+            await tm.testUnblockTokensFrom(owner4, owner4, tokensToUnBlock);
+            (await tm.hasWorkerNodeAvailableFunds(nodeOwnable.address)).should.equal(false);            
         });
     });
 

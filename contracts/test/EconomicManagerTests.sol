@@ -1,13 +1,17 @@
 pragma solidity 0.4.24;
 
-import "../pandora/managers/TokensManager.sol";
+import "../pandora/token/PAN.sol";
+import "../pandora/managers/IEconomicController.sol";
 
 /**
- * @title TokensManager
+ * @title EconomicManagerTests
  * @dev This contract represents tokens management logic
  * @author Kostiantyn Smyrnov <kostysh@gmail.com>
  */
-contract TokensManagerTests is TokensManager {
+contract EconomicManagerTests is Pan {
+
+    constructor(IEconomicController _economicController)
+    Pan(_economicController) {}
 
     /**
      * @dev Block tokens 

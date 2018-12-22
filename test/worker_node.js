@@ -81,7 +81,7 @@ contract('WorkerNode', ([owner1, owner2, owner3, owner4, owner5, owner6, owner7]
         });
     });
 
-    describe("Full cycle", () => {
+    describe("Full workflow", () => {
 
         it("should transit thru all states", async () => {
             const workerNode = await createWorkerNode(pandora, owner5, computingPrice);

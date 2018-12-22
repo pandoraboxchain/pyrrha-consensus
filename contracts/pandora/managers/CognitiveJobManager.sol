@@ -7,8 +7,9 @@ import "./ICognitiveJobManager.sol";
 import "./WorkerNodeManager.sol";
 import "../token/Reputation.sol";
 import "./ICognitiveJobController.sol";
-import "./ITokensManager.sol";
 import "../../nodes/IWorkerNode.sol";
+import "../token/PAN.sol";
+import "./IEconomicController.sol";
 
 import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
 
@@ -23,7 +24,7 @@ import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
  * for more details.
  */
 
-contract CognitiveJobManager is ICognitiveJobManager, ITokensManager, WorkerNodeManager  {
+contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager, Pan  {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -71,12 +72,6 @@ contract CognitiveJobManager is ICognitiveJobManager, ITokensManager, WorkerNode
     /// @dev Event firing when a new cognitive job queued
     event CognitiveJobQueued(bytes32 jobId);
 
-    modifier onlyPositiveStake() {
-        IWorkerNode workerNode = IWorkerNode(msg.sender);
-        hasAvailableFunds(workerNode.owner());
-        _;
-    }
-
     /*******************************************************************************************************************
      * ## Constructor and initialization
      */
@@ -86,11 +81,14 @@ contract CognitiveJobManager is ICognitiveJobManager, ITokensManager, WorkerNode
     /// of worker nodes contracts
     constructor(
         ICognitiveJobController _jobController, /// Controller with all cognitive job logic and storage
+        IEconomicController _economicController, 
         IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
         IReputation _reputation
     )
     public
-    WorkerNodeManager(_nodeFactory) {
+    WorkerNodeManager(_nodeFactory) 
+    Pan(_economicController)    
+    {
 
         jobController = _jobController;
         // Init reputation storage contract
@@ -292,10 +290,9 @@ contract CognitiveJobManager is ICognitiveJobManager, ITokensManager, WorkerNode
         bytes32 _jobId,
         uint8 _responseType,
         bool _response) 
-    external 
-    onlyPositiveStake 
+    external     
     {
-        //todo implement get workerId with worker controller in new version
+        require(hasWorkerNodeAvailableFunds(msg.sender), "ERROR_NEGATIVE_WORKER_NODE_STAKE");
         jobController.respondToJob(_jobId, msg.sender, _responseType, _response);
     }
 
