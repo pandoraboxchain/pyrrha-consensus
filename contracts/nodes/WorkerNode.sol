@@ -133,6 +133,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
 
     function offline() external
         onlyOwner
+        requireState(Idle)
     {
         _transitionToState(Offline);   
     }

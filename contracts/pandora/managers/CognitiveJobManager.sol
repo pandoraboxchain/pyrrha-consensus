@@ -421,7 +421,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager, Pan  {
         IWorkerNode[] memory idleWorkers = new IWorkerNode[](_estimatedSize);
         uint256 actualSize = 0;
         for (uint j = 0; j < workerNodes.length; j++) {
-            if (workerNodes[j].currentState() == workerNodes[j].Idle()) {
+
+            if (workerNodes[j].currentState() == workerNodes[j].Idle()) {// && hasWorkerNodeAvailableFunds(workerNodes[j])
+
                 idleWorkers[actualSize++] = workerNodes[j];
             }
         }
