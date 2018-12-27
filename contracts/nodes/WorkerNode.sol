@@ -1,7 +1,8 @@
-pragma solidity ^0.4.23;
+pragma solidity 0.4.24;
 
 import "../libraries/StateMachine.sol";
 import "../pandora/managers/ICognitiveJobManager.sol";
+import "../pandora/managers/IEconomicController.sol";
 import "./IWorkerNode.sol";
 
 /**
@@ -72,6 +73,8 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
     /// Initialy set from the address supplied to the constructor and can"t be changed after.
     ICognitiveJobManager public pandora;
 
+    IEconomicController public economicController;
+
     uint256 public computingPrice;
 
     /// @notice Active cognitive job reference. Zero when there is no active cognitive job assigned or performed
@@ -87,11 +90,14 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
 
     constructor(
         ICognitiveJobManager _pandora, /// Reference to the main Pandora contract that creates Worker Node
+        IEconomicController _economicController,
         uint256 _computingPrice
     )
     public {
-        require(_pandora != address(0));
+        require(_pandora != address(0), "ERROR_INVALID_ADDRESS");
+        require(_economicController != address(0), "ERROR_INVALID_ADDRESS");
         pandora = _pandora;
+        economicController = _economicController;
         computingPrice = _computingPrice;
 
         // Initialize state machine (state transition table and initial state). Always must be performed at the very
@@ -124,7 +130,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         onlyOwner
         requireState(Offline)
     {
-        if (pandora.hasAvailableFunds(owner())) {
+        if (economicController.hasAvailableFunds(owner())) {
             _transitionToState(Idle);
         } else {
             _transitionToState(InsufficientStake);

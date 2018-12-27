@@ -1,28 +1,19 @@
 pragma solidity 0.4.24;
 
-import "../pandora/token/PAN.sol";
+import "../pandora/managers/ICognitiveJobManager.sol";
 import "../pandora/managers/IEconomicController.sol";
 
 /**
- * @title EconomicManagerTests
+ * @title EconomicControllerTests
  * @dev This contract represents tokens management logic
  * @author Kostiantyn Smyrnov <kostysh@gmail.com>
  */
-contract EconomicManagerTests is Pan {
+contract EconomicControllerTests {
 
-    constructor(IEconomicController _economicController)
-    Pan(_economicController) {}
+    address public economicController;
 
-    /**
-     * @dev Block tokens 
-     * @param from Source address
-     * @param value Value
-     */
-    function testBlockTokensFrom(
-        address from,
-        uint256 value
-    ) public {
-        blockTokensFrom(from, value);
+    constructor (address _economicController) public {
+        economicController = _economicController;
     }
 
     /**
@@ -36,6 +27,6 @@ contract EconomicManagerTests is Pan {
         address to,
         uint256 value
     ) public {
-        unblockTokensFrom(from, to, value);
+        IEconomicController(economicController).unblockTokens(from, to, value);
     }
 }

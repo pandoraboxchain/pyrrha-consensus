@@ -1,8 +1,8 @@
-pragma solidity ^0.4.23;
+pragma solidity 0.4.24;
 
 import "../../lifecycle/Initializable.sol";
 import "./IWorkerNodeManager.sol";
-import "./IEconomicManager.sol";
+import "./ICognitiveJobManager.sol";
 
 
 /**
@@ -19,7 +19,7 @@ import "./IEconomicManager.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, IEconomicManager {
+contract WorkerNodeManager is Initializable, Ownable, ICognitiveJobManager, IWorkerNodeManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -162,10 +162,10 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager, IEcono
         require(computingPrice >= 1, "ERROR_INVALID_COMPUTING_PRICE");
 
         // Check the stake and bind it
-        blockTokensFrom(msg.sender, minimumWorkerNodeStake);
+        economicController.blockWorkerNodeStake();
 
         // Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
-        IWorkerNode workerNode = workerNodeFactory.create(msg.sender, computingPrice);
+        IWorkerNode workerNode = workerNodeFactory.create(msg.sender, address(economicController), computingPrice);
         // We do not check the created `workerNode` since all checks are done by the factory class
         workerNodes.push(workerNode);
         // Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)

@@ -1,12 +1,15 @@
-pragma solidity ^0.4.23;
+pragma solidity 0.4.24;
 
 import "../../nodes/IWorkerNode.sol";
 import "../../entities/IDataEntity.sol";
 import "../../entities/IKernel.sol";
 import "../../entities/IDataset.sol";
-import "./IEconomicManager.sol";
+import "./IEconomicController.sol";
 
-contract ICognitiveJobManager is IEconomicManager {
+contract ICognitiveJobManager {
+
+    // Controller for economic
+    IEconomicController public economicController;
 
     //workers interaction
     function provideResults(bytes32 _jobId, bytes _ipfsResults) external;

@@ -8,7 +8,6 @@ import "./WorkerNodeManager.sol";
 import "../token/Reputation.sol";
 import "./ICognitiveJobController.sol";
 import "../../nodes/IWorkerNode.sol";
-import "../token/PAN.sol";
 import "./IEconomicController.sol";
 
 import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
@@ -24,7 +23,7 @@ import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
  * for more details.
  */
 
-contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager, Pan  {
+contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -86,11 +85,11 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager, Pan  {
         IReputation _reputation
     )
     public
-    WorkerNodeManager(_nodeFactory) 
-    Pan(_economicController)    
+    WorkerNodeManager(_nodeFactory)
     {
-
         jobController = _jobController;
+        economicController = _economicController;
+
         // Init reputation storage contract
         reputation = _reputation;
 
@@ -292,7 +291,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager, Pan  {
         bool _response) 
     external     
     {
-        require(hasWorkerNodeAvailableFunds(msg.sender), "ERROR_NEGATIVE_WORKER_NODE_STAKE");
+        require(economicController.positiveWorkerNodeStake(msg.sender), "ERROR_NEGATIVE_WORKER_NODE_STAKE");
         jobController.respondToJob(_jobId, msg.sender, _responseType, _response);
     }
 
@@ -422,7 +421,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager, Pan  {
         uint256 actualSize = 0;
         for (uint j = 0; j < workerNodes.length; j++) {
 
-            if (workerNodes[j].currentState() == workerNodes[j].Idle()) {// && hasWorkerNodeAvailableFunds(workerNodes[j])
+            if (workerNodes[j].currentState() == workerNodes[j].Idle()) {// && economicController.positiveWorkerNodeStake(workerNodes[j])
 
                 idleWorkers[actualSize++] = workerNodes[j];
             }

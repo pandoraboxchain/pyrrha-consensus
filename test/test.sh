@@ -44,5 +44,5 @@ fi
 if [ "$SOLIDITY_COVERAGE" = true ]; then
   npx solidity-coverage  
 else
-  npx --node-arg=--max-old-space-size=4096 truffle test ./test/worker_node.js --network ganache_cli #./test/tokens_manager.js
+  npx --node-arg=--max-old-space-size=4096 truffle test ./test/economic_controller.js --network ganache_cli #./test/tokens_manager.js
 fi
