@@ -94,6 +94,30 @@ contract EconomicController is IEconomicController, Ownable {
         }        
     }
 
+    function makeRewards() external {
+        // get maximum worker price: maximumWorkerPrice
+        // get job creator: jobCreator
+        // get worker nodes owners: workerNodesOwners[]
+        // get dataset owner: datasetOwner
+        // get kernel owner: kernelOwner
+        // get dataset batches count: batchesCount
+        // get dataset price: datasetPrice
+        // get kernel price: kernelPrice
+        // get each worker price: workersPrices[]
+        // get system commission value: systemCommission
+        
+        // calculate total job price: totalJobPrice = datasetPrice + kernelPrice + maximumWorkerPrice * batchesCount
+        // calculate tokens amount for mining: tokensMiningAmount = sum(maximumWorkerPrice - workersPrices[i])
+        // mint tokensMiningAmount: panToken.mint(tokensMiningAmount, economicController)
+        // calculate system commission amount: systemCommissionAmount = totalJobPrice * systemCommission / 10
+
+        // transfer systemCommissionAmount to economicController
+        // transfer datasetPrice minus (datasetPrice * systemCommission / 10) to datasetOwner
+        // transfer kernelPrice minus (kernelPrice * systemCommission / 10) to kernelOwner
+        // transfer maximumWorkerPrice minus (maximumWorkerPrice * systemCommission / 10) to workerNodesOwners[i]
+        // clear job creator blocked balance
+    }
+
     function blockTokens(uint256 value) public {
         blockTokensFrom(msg.sender, value);
     }

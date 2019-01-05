@@ -45,8 +45,8 @@ contract('WorkerNode', (
         await pan.initializeMintable(owner1, {from: owner1});
         await pan.mint(owner1, 5000000 * 1000000000000000000, {from: owner1});
         controller = await EconomicController.new(pan.address, {from: owner1});
-        await pan.addMinter(controller.address, {from: owner1});
-        const jobController = await CognitiveJobController.new({from: owner1});
+        await pan.addMinter(controller.address, {from: owner1});        
+        const jobController = await CognitiveJobController.new(controller.address, {from: owner1});
         const nodeFactory = await WorkerNodeFactory.new({from: owner1});
         const reputation = await Reputation.new({from: owner1});
         pandora = await Pandora.new(jobController.address, controller.address, nodeFactory.address, reputation.address, {from: owner1});
@@ -194,11 +194,6 @@ contract('WorkerNode', (
             const stakeBefore = await controller.balanceOf(owner9);
 
             await createCognitiveJob(pandora, 2, {}, owner10, pan, controller);// owner7 should be penalized and loss a stake in amount of computingPrice
-
-            const datasetPrice = toPan(5);
-            const kernelPrice = toPan(3);
-            const batchPrice = await pandora.getMaximumWorkerPrice({from: owner9}); 
-            const totalJobPrice = Math.ceil(datasetPrice + kernelPrice + batchPrice.toNumber() * 2);
 
             (await controller.balanceOf(owner9)).should.be.bignumber.equal(stakeBefore.toNumber() - computingPrice);
             

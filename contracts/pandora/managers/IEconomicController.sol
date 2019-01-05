@@ -56,6 +56,7 @@ contract IEconomicController {
     function positiveWorkerNodeStake(address workerNodeAddr) external view returns (bool) {}
     function applyPenalty(address workerNodeAddr, IWorkerNode.Penalties reason) external {}
     function balanceOf(address addr) external view returns (uint256) {}
+    function makeRewards() external {}
 
     function blockTokens(uint256 value) public {}// block tokens from sender
     function blockTokensFrom(address from, uint256 value) public {}

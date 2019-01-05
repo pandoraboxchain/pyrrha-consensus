@@ -1,6 +1,7 @@
-pragma solidity ^0.4.24;
+pragma solidity 0.4.24;
 
 import "./ICognitiveJobController.sol";
+import "./IEconomicController.sol";
 
 
 // Contract implement main cognitive job functionality
@@ -60,7 +61,11 @@ contract CognitiveJobController is ICognitiveJobController{
 
     //        uint8 WORKER_TIMEOUT = 30 minutes;
 
-    constructor() public {
+    // Controller for economic
+    IEconomicController public economicController;
+
+    constructor(IEconomicController _economicController) public {
+        economicController = _economicController;
         //state machine initialization should be performed only once with filling transitionTable
         _initStateMachine();
     }
@@ -378,6 +383,9 @@ contract CognitiveJobController is ICognitiveJobController{
         delete activeJobs[activeJobs.length - 1];
         activeJobsIndexes[_jobId] = 0;
         activeJobs.length--;
+
+        // economic calculations and rewards assignment
+        economicController.makeRewards();
     }
 
     /// @dev Checks that job with given id is active or not (tx will fail if job is not existed)

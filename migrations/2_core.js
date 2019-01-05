@@ -38,7 +38,7 @@ module.exports = (deployer, network, accounts) => {
             economicController = instance;
             return pan.addMinter(economicController.address, {from: accounts[0]});// for "mining" purposes
         })
-        .then(_ => deployer.deploy(CognitiveJobController))
+        .then(_ => deployer.deploy(CognitiveJobController, economicController.address))
         .then(_ => CognitiveJobController.deployed())
         .then(instance => {
             cognitiveJobController = instance;
