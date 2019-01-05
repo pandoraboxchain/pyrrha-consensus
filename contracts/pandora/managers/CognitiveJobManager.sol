@@ -103,6 +103,23 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
 
     /// ### Public
 
+    /**
+     * @dev Gets a maximum worker price value
+     */
+    function getMaximumWorkerPrice() public view returns (uint256 maximumPrice) {
+        maximumPrice = 0;
+
+        for (uint i = 0; i < workerNodes.length; i++) {
+
+            if (workerNodes[i].computingPrice() > maximumPrice) {
+                maximumPrice = workerNodes[i].computingPrice();
+            }
+        }
+
+        return maximumPrice;
+    }
+
+
     /// @notice Public function which checks queue of jobs and create new jobs
     /// #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address)
     /// to unlock worker's idle state and allocate newly freed WorkerNodes to perform cognitive jobs from the queue.
@@ -207,6 +224,10 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
         // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
         require(msg.value >= REQUIRED_DEPOSIT);
 
+        // Block required amount of tokens
+        uint256 jobPrice = _dataset.currentPrice() + _kernel.currentPrice() + getMaximumWorkerPrice() * batchesCount;
+        economicController.blockTokensFrom(msg.sender, jobPrice);
+
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
@@ -292,6 +313,12 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
     external     
     {
         require(economicController.positiveWorkerNodeStake(msg.sender), "ERROR_NEGATIVE_WORKER_NODE_STAKE");
+
+        // Apply penalty to worker node if assigned job has been declined
+        if (_responseType == 0 && _response == false) {
+            economicController.applyPenalty(msg.sender, IWorkerNode.Penalties.DeclinesJob);            
+        }
+
         jobController.respondToJob(_jobId, msg.sender, _responseType, _response);
     }
 
@@ -381,6 +408,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
     ) {
         assignedWorkers = new IWorkerNode[](_numberWorkersRequired);
         uint no = workerLotteryEngine.getRandom(assignedWorkers.length);
+
         for (uint i = 0; i < assignedWorkers.length; i++) {
             assignedWorkers[i] = _idleWorkers[no];
             no = (no == assignedWorkers.length - 1) ? 0 : no + 1;
@@ -398,11 +426,20 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
         uint o_estimatedSize /// Amount of currently available (Idle) WorkerNodes
     ) {
         o_estimatedSize = 0;
+
         for (uint i = 0; i < workerNodes.length; i++) {
-            if (workerNodes[i].currentState() == workerNodes[i].Idle()) {
+
+            if (workerNodes[i].currentState() == workerNodes[i].Offline()) {
+                economicController.applyPenalty(workerNodes[i], IWorkerNode.Penalties.OfflineWhileGathering);                
+            }
+
+            if (workerNodes[i].currentState() == workerNodes[i].Idle() && 
+                economicController.positiveWorkerNodeStake(workerNodes[i])) {
+
                 o_estimatedSize++;
             }
         }
+
         return o_estimatedSize;
     }
 
@@ -421,7 +458,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
         uint256 actualSize = 0;
         for (uint j = 0; j < workerNodes.length; j++) {
 
-            if (workerNodes[j].currentState() == workerNodes[j].Idle()) {// && economicController.positiveWorkerNodeStake(workerNodes[j])
+            // Choose idle workers with positive stake
+            if (workerNodes[j].currentState() == workerNodes[j].Idle() && 
+                economicController.positiveWorkerNodeStake(workerNodes[j])) {
 
                 idleWorkers[actualSize++] = workerNodes[j];
             }

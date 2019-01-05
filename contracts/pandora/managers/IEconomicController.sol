@@ -5,7 +5,16 @@ import "../../nodes/IWorkerNode.sol";
 
 contract IEconomicController {
 
+    uint256 public constant systemCommission = 5;// value in percents
     uint256 public constant minimumWorkerNodeStake = 100 * 1000000000000000000;// 100 PAN
+
+    /**
+     * @dev This event will be emitted when controller is initialized
+     * @param initializer Initializer address
+     */
+    event EconomicInitialized(
+        address indexed initializer
+    );
 
     /**
      * @dev This event will be emitted every time tokens are blocked
@@ -14,7 +23,7 @@ contract IEconomicController {
      */
     event BlockedTokens(
         address indexed owner, 
-        uint256 indexed value
+        uint256 value
     );
 
     /**
@@ -35,20 +44,22 @@ contract IEconomicController {
      * @param value Penalty value
      */
     event PenaltyApplied(
-        IWorkerNode.Penalties reason,
         address indexed owner,
+        IWorkerNode.Penalties reason,
         uint256 value
     );
 
     function blockWorkerNodeStake() external {}// block tokens from sender with worker node stake amount control
+    function blockWorkerNodeStakeFrom(address from) external {}
     function hasAvailableFunds(address addr) external view returns (bool) {}
     function hasEnoughFunds(address addr, uint256 funds) external view returns (bool) {}
     function positiveWorkerNodeStake(address workerNodeAddr) external view returns (bool) {}
-    function unblockTokens(address from, address to, uint256 value) external {}
-    function applyPenalty(IWorkerNode.Penalties reason, address owner) external {}
+    function applyPenalty(address workerNodeAddr, IWorkerNode.Penalties reason) external {}
     function balanceOf(address addr) external view returns (uint256) {}
 
     function blockTokens(uint256 value) public {}// block tokens from sender
+    function blockTokensFrom(address from, uint256 value) public {}
+    function unblockTokens(address from, address to, uint256 value) public {}
 
     function _add(address addr, uint256 value) private {}
     function _sub(address from, uint256 value) private {}

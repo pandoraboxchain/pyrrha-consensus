@@ -39,10 +39,15 @@ contract EconomicController is IEconomicController, Ownable {
         require(_pandora != address(0), "ERR0R_INVALID_ADDRESS");
         require(pandora == address(0), "ERROR_ALREADY_INITIALIZED");
         pandora = _pandora;
+        emit EconomicInitialized(msg.sender);
     }
 
     function blockWorkerNodeStake() external {
         blockTokens(minimumWorkerNodeStake);
+    }
+
+    function blockWorkerNodeStakeFrom(address from) external {
+        blockTokensFrom(from, minimumWorkerNodeStake);
     }
 
     function hasAvailableFunds(address addr) external view returns (bool) {
@@ -61,40 +66,49 @@ contract EconomicController is IEconomicController, Ownable {
         return ledgers.balanceOf(addr);
     }
 
+    function applyPenalty(
+        address workerNodeAddr,
+        IWorkerNode.Penalties reason
+    ) external onlyPandora {        
+        IWorkerNode workerNode = IWorkerNode(workerNodeAddr);
+        uint256 penaltyValue;
+
+        if (reason == IWorkerNode.Penalties.OfflineWhileGathering) {
+            penaltyValue = workerNode.computingPrice();
+        } else if (reason == IWorkerNode.Penalties.DeclinesJob) {
+            penaltyValue = workerNode.computingPrice();
+        } else if (reason == IWorkerNode.Penalties.OfflineWhileDataValidation) {
+            // ???
+        } else if (reason == IWorkerNode.Penalties.FalseReportInvalidData) {
+            penaltyValue = ledgers.balanceOf(workerNode.owner());// expropriate a whole worker node stake
+        } else if (reason == IWorkerNode.Penalties.OfflineWhileCognition) {
+            // ???
+        } else {
+            revert("ERROR_UNKNOWN_PENALTY_REASON");
+        }
+
+        if (penaltyValue > 0) {
+            _unblock(workerNode.owner(), address(this), penaltyValue);
+            workerNode.penalized();
+            emit PenaltyApplied(workerNode.owner(), reason, penaltyValue);
+        }        
+    }
+
+    function blockTokens(uint256 value) public {
+        blockTokensFrom(msg.sender, value);
+    }
+
+    function blockTokensFrom(address from, uint256 value) public {
+        require(panToken.balanceOf(from) >= value, "ERROR_INSUFFICIENT_TOKENS");
+        _block(from, value);
+    }
+
     function unblockTokens(
         address from, 
         address to,
         uint256 value
-    ) external onlyPandora {
-        require(to != address(0), "ERROR_INVALID_ADDRESS");
-        panToken.transfer(to, value);
-        _sub(from, value);
-        emit UnblockedTokens(from, to, value);
-    }
-
-    function applyPenalty(
-        IWorkerNode.Penalties reason, 
-        address owner
-    ) external onlyPandora {
-
-        if (reason == IWorkerNode.Penalties.OfflineWhileGathering) {
-
-        } else if (reason == IWorkerNode.Penalties.DeclinesJob) {
-
-        } else if (reason == IWorkerNode.Penalties.OfflineWhileDataValidation) {
-            
-        } else if (reason == IWorkerNode.Penalties.FalseReportInvalidData) {
-            
-        } else if (reason == IWorkerNode.Penalties.OfflineWhileCognition) {
-            
-        } else {
-            revert("ERROR_UNKNOWN_PENALTY_REASON");
-        }
-    }
-
-    function blockTokens(uint256 value) public {
-        require(panToken.balanceOf(msg.sender) >= value, "ERROR_INSUFFICIENT_TOKENS");
-        _block(msg.sender, value);
+    ) public onlyPandora {
+        _unblock(from, to, value);
     }
 
     function _add(
@@ -122,6 +136,17 @@ contract EconomicController is IEconomicController, Ownable {
     ) private onlyInitiazed {
         panToken.transferFrom(from, address(this), value);
         _add(from, value);
-        emit BlockedTokens(msg.sender, value);
+        emit BlockedTokens(from, value);
+    }
+
+    function _unblock(
+        address from, 
+        address to,
+        uint256 value
+    ) private onlyInitiazed {
+        require(to != address(0), "ERROR_INVALID_ADDRESS");
+        panToken.transfer(to, value);
+        _sub(from, value);
+        emit UnblockedTokens(from, to, value);
     }
 }

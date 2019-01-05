@@ -31,7 +31,7 @@ module.exports = (deployer, network, accounts) => {
             pan = instance;
             return pan.initializeMintable(accounts[0]);// add accounts[0] as minter role
         })
-        .then(_ => pan.mint(accounts[0], 5000000 * 1000000000000000000), {from: accounts[0]})// initial tokens emission
+        .then(_ => pan.mint(accounts[0], 5000000 * 1000000000000000000, {from: accounts[0]}))// initial tokens emission
         .then(_ => deployer.deploy(EconomicController, pan.address))
         .then(_ => EconomicController.deployed())
         .then(instance => {

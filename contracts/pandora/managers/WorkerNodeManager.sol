@@ -162,7 +162,7 @@ contract WorkerNodeManager is Initializable, Ownable, ICognitiveJobManager, IWor
         require(computingPrice >= 1, "ERROR_INVALID_COMPUTING_PRICE");
 
         // Check the stake and bind it
-        economicController.blockWorkerNodeStake();
+        economicController.blockWorkerNodeStakeFrom(msg.sender);
 
         // Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
         IWorkerNode workerNode = workerNodeFactory.create(msg.sender, address(economicController), computingPrice);

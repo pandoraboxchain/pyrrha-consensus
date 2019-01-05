@@ -16,5 +16,5 @@ contract ICognitiveJobManager {
     function respondToJob(bytes32 _jobId, uint8 _responseType, bool _response) external;
     function commitProgress(bytes32 _jobId, uint8 _percent) external;
 
-    event CognitiveJobCreated(bytes32 _jobId);
+    event CognitiveJobCreated(bytes32 jobId);
 }

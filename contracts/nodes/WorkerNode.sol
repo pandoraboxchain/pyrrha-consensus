@@ -45,7 +45,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         // Creating table of possible state transitions
         mapping(uint8 => uint8[]) transitions = stateMachine.transitionTable;
         transitions[Uninitialized] = [Idle, Offline, InsufficientStake];
-        transitions[Offline] = [Idle];
+        transitions[Offline] = [Idle, InsufficientStake, UnderPenalty];// [Idle]  ???
         transitions[Idle] = [Offline, UnderPenalty, Assigned, Destroyed];
         transitions[Assigned] = [Offline, UnderPenalty, ReadyForDataValidation];
         transitions[ReadyForDataValidation] = [ValidatingData, Offline, UnderPenalty, Idle];
@@ -113,6 +113,11 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         _;
     }
 
+    modifier onlyEconomicController() {
+        require(msg.sender == address(economicController));
+        _;
+    }
+
     /// ### External and public functions
 
     function destroy()
@@ -176,6 +181,14 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
     {
         activeJob = bytes32(0);
         _transitionToState(Idle);
+    }
+
+    function penalized()
+        onlyEconomicController
+        external
+    {
+        activeJob = bytes32(0);
+        _transitionToState(UnderPenalty);
     }
 
     function acceptAssignment() external

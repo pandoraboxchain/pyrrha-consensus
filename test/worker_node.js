@@ -3,42 +3,81 @@ require('chai')
     .use(require('chai-bignumber')(BigNumber))
     .should();
 
-const { assertRevert } = require('./helpers');
+const { assertRevert, eventFired } = require('./helpers');
 const { createWorkerNode } =  require("./helpers/worker_node_manager");
 const {
     finishActiveJob,
     createCognitiveJob,
 } = require("./helpers/cognitive_job_manager");
 const { aliveWorker } = require("./helpers/worker_node");
+const toPan = require('./helpers/toPan');
 
 const Pandora = artifacts.require('Pandora');
+const Pan = artifacts.require('Pan');
+const Reputation = artifacts.require('Reputation');
+const CognitiveJobController = artifacts.require('CognitiveJobController');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
+const WorkerNodeFactory = artifacts.require('WorkerNodeFactory');
 const WorkerNode = artifacts.require('WorkerNode');
+const EconomicController = artifacts.require('EconomicController');
 
 
-contract('WorkerNode', ([owner1, owner2, owner3, owner4, owner5, owner6, owner7]) => {
+contract('WorkerNode', (
+    [owner1, owner2, owner3, owner4, owner5, 
+    owner6, owner7, owner8, owner9, owner10,
+    owner11, owner12, owner13, owner14, owner15]
+) => {
 
-    const funds200 = 200 * 1000000000000000000;
     const funds50 = 50 * 1000000000000000000;
+    const funds100 = 100 * 1000000000000000000;
+    const funds200 = 200 * 1000000000000000000;
     const computingPrice = 1 * 1000000000000000000;
+    
     let pandora;
+    let pan;
+    let controller;
+    let minStake;
 
-    before('setup', async () => {
-        pandora = await Pandora.deployed();
-        await pandora.transfer(owner2, funds200, { from: owner1 });
-        await pandora.transfer(owner3, funds200, { from: owner1 });
-        await pandora.transfer(owner4, funds50, { from: owner1 });
-        await pandora.transfer(owner5, funds200, { from: owner1 });
-        await pandora.transfer(owner6, funds200, { from: owner1 });
-        await pandora.transfer(owner7, funds200, { from: owner1 });
+    beforeEach('setup', async () => {
+
+        pan = await Pan.new({from: owner1});
+        await pan.initializeMintable(owner1, {from: owner1});
+        await pan.mint(owner1, 5000000 * 1000000000000000000, {from: owner1});
+        controller = await EconomicController.new(pan.address, {from: owner1});
+        await pan.addMinter(controller.address, {from: owner1});
+        const jobController = await CognitiveJobController.new({from: owner1});
+        const nodeFactory = await WorkerNodeFactory.new({from: owner1});
+        const reputation = await Reputation.new({from: owner1});
+        pandora = await Pandora.new(jobController.address, controller.address, nodeFactory.address, reputation.address, {from: owner1});
+        await nodeFactory.transferOwnership(pandora.address);
+        await jobController.transferOwnership(pandora.address);
+        await controller.transferOwnership(pandora.address);
+        await reputation.transferOwnership(pandora.address);
+        await pandora.initialize();
+        await controller.initialize(pandora.address);
+
+        minStake = await controller.minimumWorkerNodeStake();
+        await pan.transfer(owner2, funds200, { from: owner1 });
+        await pan.transfer(owner3, funds200, { from: owner1 });
+        await pan.transfer(owner4, funds50, { from: owner1 });
+        await pan.transfer(owner5, funds200, { from: owner1 });
+        await pan.transfer(owner6, funds200, { from: owner1 });
+        await pan.transfer(owner7, funds200, { from: owner1 });
+        await pan.transfer(owner8, funds200, { from: owner1 });
+        await pan.transfer(owner9, funds200, { from: owner1 });
+        await pan.transfer(owner10, funds200, { from: owner1 });
+        await pan.transfer(owner11, funds200, { from: owner1 });
+        await pan.transfer(owner12, funds200, { from: owner1 });
+        await pan.transfer(owner13, funds200, { from: owner1 });
+        await pan.transfer(owner14, funds200, { from: owner1 });
+        await pan.transfer(owner15, funds200, { from: owner1 });
     });
 
     describe('#updateComputingPrice', () => {
 
         it('should update computing price', async () => {
-            await pandora.whitelistWorkerOwner(owner7);
-            const workerNode = await createWorkerNode(pandora, owner7, computingPrice);
+            const workerNode = await createWorkerNode(pandora, owner7, computingPrice, pan, controller);
             (await workerNode.computingPrice()).should.be.bignumber.equal(computingPrice);
             const newPrice = computingPrice * 2;
             await workerNode.updateComputingPrice(newPrice, {from: owner7});
@@ -51,30 +90,34 @@ contract('WorkerNode', ([owner1, owner2, owner3, owner4, owner5, owner6, owner7]
         it('should create a workerNode instance', async () => {
             await pandora.whitelistWorkerOwner(owner3);
             const nodeId = await pandora.workerNodesCount();
+            await pan.approve(controller.address, minStake, {from: owner3});
             await pandora.createWorkerNode(computingPrice, {from: owner3});
             const wnAddress = await pandora.workerNodes(nodeId.toNumber());
             (await WorkerNode.at(wnAddress).currentState()).should.be.bignumber.equal(1);
         });
 
         it('should fail if worker not whitelisted', async () => {
-            await assertRevert(pandora.createWorkerNode(computingPrice, {from: owner4}));
+            await pan.approve(controller.address, minStake, {from: owner5});
+            await assertRevert(pandora.createWorkerNode(computingPrice, {from: owner5}));
         });
 
         it('should fail if worker has insufficient stake', async () => {
             await pandora.whitelistWorkerOwner(owner4);
+            await pan.approve(controller.address, minStake, {from: owner4});
             await assertRevert(pandora.createWorkerNode(computingPrice, {from: owner4}));
         });
 
         it('should fail if computingPrice less then 1', async () => {
-            await pandora.whitelistWorkerOwner(owner4);
-            await assertRevert(pandora.createWorkerNode(0, {from: owner4}));
+            await pandora.whitelistWorkerOwner(owner5);
+            await pan.approve(controller.address, minStake, {from: owner5});
+            await assertRevert(pandora.createWorkerNode(0, {from: owner5}));
         });
     });
 
     describe('#aliveWorker', () => {
 
         it('should move worker to iddle state', async () => {
-            const workerNode = await createWorkerNode(pandora, owner2, computingPrice);
+            const workerNode = await createWorkerNode(pandora, owner2, computingPrice, pan, controller);
             await workerNode.alive({from: owner2});
             (await workerNode.currentState()).should.be.bignumber.equal(2);
             await workerNode.offline({from: owner2});// back to offline
@@ -84,12 +127,12 @@ contract('WorkerNode', ([owner1, owner2, owner3, owner4, owner5, owner6, owner7]
     describe("Full workflow", () => {
 
         it("should transit thru all states", async () => {
-            const workerNode = await createWorkerNode(pandora, owner5, computingPrice);
+            const workerNode = await createWorkerNode(pandora, owner5, computingPrice, pan, controller);
             
             // transit to state Alive
             await workerNode.alive({from: owner5});
-            await createCognitiveJob(pandora, 1);
-
+            await createCognitiveJob(pandora, 1, {}, owner5, pan, controller);
+            
             // state should be Assigned after job creation
             (await workerNode.currentState()).should.be.bignumber.equal(3);
 
@@ -138,6 +181,53 @@ contract('WorkerNode', ([owner1, owner2, owner3, owner4, owner5, owner6, owner7]
             //     console.log('>>>', await wn.currentState());
             // }
         });        
+    });
+
+    describe('Worker node penalties', () => {
+
+        it('OfflineWhileGathering', async () => {
+            const workerNode1 = await createWorkerNode(pandora, owner8, computingPrice, pan, controller);
+            const workerNode2 = await createWorkerNode(pandora, owner9, computingPrice, pan, controller);
+            
+            await workerNode1.alive({from: owner8});
+
+            const stakeBefore = await controller.balanceOf(owner9);
+
+            await createCognitiveJob(pandora, 2, {}, owner10, pan, controller);// owner7 should be penalized and loss a stake in amount of computingPrice
+
+            const datasetPrice = toPan(5);
+            const kernelPrice = toPan(3);
+            const batchPrice = await pandora.getMaximumWorkerPrice({from: owner9}); 
+            const totalJobPrice = Math.ceil(datasetPrice + kernelPrice + batchPrice.toNumber() * 2);
+
+            (await controller.balanceOf(owner9)).should.be.bignumber.equal(stakeBefore.toNumber() - computingPrice);
+            
+            const result = await eventFired(controller, 'PenaltyApplied');
+            const penaltyEvent = result.filter(l => (
+                l.args.owner === owner9 
+            ));  
+            (penaltyEvent.length).should.equal(1);
+            (penaltyEvent[0].args.reason).should.be.bignumber.equal(0);
+            (penaltyEvent[0].args.value).should.be.bignumber.equal(computingPrice);
+        });
+
+        it('DeclinesJob', async () => {
+            const workerNode1 = await createWorkerNode(pandora, owner10, computingPrice, pan, controller);
+            await workerNode1.alive({from: owner10});
+            await createCognitiveJob(pandora, 1, {}, owner10, pan, controller);
+            const stakeBefore = await controller.balanceOf(owner10);
+
+            await workerNode1.declineAssignment({from: owner10});
+
+            (await controller.balanceOf(owner10)).should.be.bignumber.equal(stakeBefore.toNumber() - computingPrice);
+            const result = await eventFired(controller, 'PenaltyApplied');
+            const penaltyEvent = result.filter(l => (
+                l.args.owner === owner10 
+            ));  
+            (penaltyEvent.length).should.equal(1);
+            (penaltyEvent[0].args.reason).should.be.bignumber.equal(1);
+            (penaltyEvent[0].args.value).should.be.bignumber.equal(computingPrice);
+        });
     });
 
     describe("cancelJob", () => {
