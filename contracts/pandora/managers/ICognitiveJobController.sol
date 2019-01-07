@@ -22,6 +22,7 @@ contract ICognitiveJobController is Ownable{
     external
     view
     returns (
+        address owner,
         address kernel,
         address dataset,
         uint256 complexity,
@@ -33,6 +34,7 @@ contract ICognitiveJobController is Ownable{
 
     function createCognitiveJob (
         bytes32 _id,
+        address _owner,
         address _kernel,
         address _dataset,
         address[] _assignedWorkers,

@@ -1,11 +1,14 @@
 pragma solidity 0.4.24;
 
-import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+import "../token/Pan.sol";
 import "./IEconomicController.sol";
+import "./ICognitiveJobController.sol";
 import "./ICognitiveJobManager.sol";
 import "../../libraries/LedgersLib.sol";
 import "../../nodes/IWorkerNode.sol";
+import "../../entities/IDataset.sol";
+import "../../entities/IKernel.sol";
 
 
 contract EconomicController is IEconomicController, Ownable {
@@ -17,7 +20,7 @@ contract EconomicController is IEconomicController, Ownable {
      */
     LedgersLib.LedgersStorage internal ledgers;
     
-    IERC20 internal panToken;
+    Pan internal panToken;
     
     ICognitiveJobManager internal pandora;
 
@@ -31,7 +34,7 @@ contract EconomicController is IEconomicController, Ownable {
         _;
     }
 
-    constructor (IERC20 _panToken) public {
+    constructor (Pan _panToken) public {
         panToken = _panToken;        
     }
 
@@ -94,28 +97,44 @@ contract EconomicController is IEconomicController, Ownable {
         }        
     }
 
-    function makeRewards() external {
-        // get maximum worker price: maximumWorkerPrice
-        // get job creator: jobCreator
-        // get worker nodes owners: workerNodesOwners[]
-        // get dataset owner: datasetOwner
-        // get kernel owner: kernelOwner
-        // get dataset batches count: batchesCount
-        // get dataset price: datasetPrice
-        // get kernel price: kernelPrice
-        // get each worker price: workersPrices[]
-        // get system commission value: systemCommission
-        
-        // calculate total job price: totalJobPrice = datasetPrice + kernelPrice + maximumWorkerPrice * batchesCount
-        // calculate tokens amount for mining: tokensMiningAmount = sum(maximumWorkerPrice - workersPrices[i])
-        // mint tokensMiningAmount: panToken.mint(tokensMiningAmount, economicController)
-        // calculate system commission amount: systemCommissionAmount = totalJobPrice * systemCommission / 10
+    function makeRewards(bytes32 _jobId) external {
+        // get maximum worker price
+        uint256 maximumWorkerPrice = pandora.getMaximumWorkerPrice();
 
-        // transfer systemCommissionAmount to economicController
-        // transfer datasetPrice minus (datasetPrice * systemCommission / 10) to datasetOwner
-        // transfer kernelPrice minus (kernelPrice * systemCommission / 10) to kernelOwner
-        // transfer maximumWorkerPrice minus (maximumWorkerPrice * systemCommission / 10) to workerNodesOwners[i]
-        // clear job creator blocked balance
+        // get job creator
+        (address owner, address kernel, address dataset, , , address[] memory activeWorkers, , ) = (pandora.jobController()).getCognitiveJobDetails(_jobId);
+
+        // get dataset and kernel price
+        uint256 datasetPrice = IDataset(dataset).currentPrice();
+        uint256 kernelPrice = IKernel(kernel).currentPrice();
+
+        // transfer datasetOwner reward
+        _unblock(owner, IDataset(dataset).owner(), datasetPrice - (datasetPrice / 100 * systemCommission));
+        emit RewardTransferred(_jobId, IDataset(dataset).owner(), datasetPrice - (datasetPrice / 100 * systemCommission));
+
+        // transfer kernelOwner reward
+        _unblock(owner, IKernel(kernel).owner(), kernelPrice - (kernelPrice / 100 * systemCommission));
+        emit RewardTransferred(_jobId, IKernel(kernel).owner(), kernelPrice - (kernelPrice / 100 * systemCommission));
+
+        // transfer rewards to workers
+        for (uint256 i = 0; i < activeWorkers.length; i++) {
+            
+            if (IWorkerNode(activeWorkers[i]).computingPrice() < maximumWorkerPrice) {
+                _unblock(owner, IWorkerNode(activeWorkers[i]).owner(), IWorkerNode(activeWorkers[i]).computingPrice());
+                // mint missing tokens
+                panToken.mint(IWorkerNode(activeWorkers[i]).owner(), maximumWorkerPrice - IWorkerNode(activeWorkers[i]).computingPrice());
+                emit TokensMined(_jobId, maximumWorkerPrice - IWorkerNode(activeWorkers[i]).computingPrice());                
+            } else {
+                _unblock(owner, IWorkerNode(activeWorkers[i]).owner(), maximumWorkerPrice - (maximumWorkerPrice / 100 * systemCommission));
+            }
+            
+            emit RewardTransferred(_jobId, IWorkerNode(activeWorkers[i]).owner(), maximumWorkerPrice - (maximumWorkerPrice / 100 * systemCommission));
+        }
+
+        // transfer system commission
+        uint256 totalJobPrice = datasetPrice + kernelPrice + maximumWorkerPrice * IDataset(dataset).batchesCount();
+        _unblock(owner, address(this), totalJobPrice / 100 * systemCommission);
+        emit RewardTransferred(_jobId, address(this), totalJobPrice / 100 * systemCommission);
     }
 
     function blockTokens(uint256 value) public {

@@ -12,6 +12,7 @@ library JobQueueLib {
 
     struct QueuedJob {
         bytes32 id;
+        address owner;
         address kernel;
         address dataset;
         address customer;
@@ -34,6 +35,7 @@ library JobQueueLib {
     function put(
         Queue storage _queue,
         bytes32 _id,
+        address _owner,
         address _kernel,
         address _dataset,
         address _customer,
@@ -45,7 +47,7 @@ library JobQueueLib {
     internal
     {
         require((_queue.jobArray.length + 1) > _queue.jobArray.length); // exceeded 2^256 push requests
-        _queue.jobArray.push(QueuedJob(_id, _kernel, _dataset, _customer, _batches, _complexity, _description));
+        _queue.jobArray.push(QueuedJob(_id, _owner, _kernel, _dataset, _customer, _batches, _complexity, _description));
         _queue.deposits.push(_value);
     }
 

@@ -225,8 +225,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
         require(msg.value >= REQUIRED_DEPOSIT);
 
         // Block required amount of tokens
-        uint256 jobPrice = _dataset.currentPrice() + _kernel.currentPrice() + getMaximumWorkerPrice() * batchesCount;
-        economicController.blockTokensFrom(msg.sender, jobPrice);
+        economicController.blockTokensFrom(msg.sender, _dataset.currentPrice() + _kernel.currentPrice() + getMaximumWorkerPrice() * batchesCount);
 
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
@@ -242,6 +241,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
             // Put task in queue
             jobQueue.put(
                 o_jobId,
+                msg.sender,
                 address(_kernel),
                 address(_dataset),
                 msg.sender,
@@ -263,7 +263,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, batchesCount);
 
-            _initCognitiveJob(o_jobId, _kernel, _dataset, assignedWorkers, _complexity, _description);
+            _initCognitiveJob(o_jobId, msg.sender, _kernel, _dataset, assignedWorkers, _complexity, _description);
             o_resultCode = RESULT_CODE_JOB_CREATED;
 
             emit CognitiveJobCreated(o_jobId);
@@ -297,7 +297,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
             //todo add koef for complexity-reputation
             uint256 complexity;
             address[] memory activeWorkers;
-            ( , ,complexity, ,activeWorkers, , ) = jobController.getCognitiveJobDetails(_jobId);
+            ( , , ,complexity, ,activeWorkers, , ) = jobController.getCognitiveJobDetails(_jobId);
             for (uint256 i = 0; i < activeWorkers.length; i++) {
                 reputation.incrReputation(
                     activeWorkers[i],
@@ -349,6 +349,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
     ) {
         _initCognitiveJob(
             queuedJob.id,
+            queuedJob.owner,
             IKernel(queuedJob.kernel),
             IDataset(queuedJob.dataset),
             assignedWorkers,
@@ -363,6 +364,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
     /// Used both by `createCognitiveJob()` and `_checksJobQueue()` methods.
     function _initCognitiveJob(
         bytes32 _id,
+        address _owner,
         IKernel _kernel, /// Pre-initialized kernel data entity contract (taken from `createCognitiveJob` arguments or
     /// from the the `cognitiveJobQueue` `QueuedJob` structure)
         IDataset _dataset, /// Pre-initialized dataset entity contract (taken from `createCognitiveJob` arguments or
@@ -383,6 +385,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
 
         jobController.createCognitiveJob(
             _id,
+            _owner,
             address(_kernel),
             address(_dataset),
             workerAddresses,

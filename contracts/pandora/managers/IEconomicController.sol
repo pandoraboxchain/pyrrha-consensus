@@ -49,6 +49,17 @@ contract IEconomicController {
         uint256 value
     );
 
+    event TokensMined(
+        bytes32 indexed jobId,
+        uint256 value
+    );
+
+    event RewardTransferred(
+        bytes32 indexed jobId,
+        address indexed to,
+        uint256 value
+    );
+
     function blockWorkerNodeStake() external {}// block tokens from sender with worker node stake amount control
     function blockWorkerNodeStakeFrom(address from) external {}
     function hasAvailableFunds(address addr) external view returns (bool) {}
@@ -56,7 +67,7 @@ contract IEconomicController {
     function positiveWorkerNodeStake(address workerNodeAddr) external view returns (bool) {}
     function applyPenalty(address workerNodeAddr, IWorkerNode.Penalties reason) external {}
     function balanceOf(address addr) external view returns (uint256) {}
-    function makeRewards() external {}
+    function makeRewards(bytes32 _jobId) external {}
 
     function blockTokens(uint256 value) public {}// block tokens from sender
     function blockTokensFrom(address from, uint256 value) public {}

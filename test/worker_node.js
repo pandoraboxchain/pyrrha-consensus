@@ -11,17 +11,9 @@ const {
 } = require("./helpers/cognitive_job_manager");
 const { aliveWorker } = require("./helpers/worker_node");
 const toPan = require('./helpers/toPan');
+const deployAll = require('./helpers/deployAll');
 
-const Pandora = artifacts.require('Pandora');
-const Pan = artifacts.require('Pan');
-const Reputation = artifacts.require('Reputation');
-const CognitiveJobController = artifacts.require('CognitiveJobController');
-const Dataset = artifacts.require('Dataset');
-const Kernel = artifacts.require('Kernel');
-const WorkerNodeFactory = artifacts.require('WorkerNodeFactory');
 const WorkerNode = artifacts.require('WorkerNode');
-const EconomicController = artifacts.require('EconomicController');
-
 
 contract('WorkerNode', (
     [owner1, owner2, owner3, owner4, owner5, 
@@ -29,35 +21,25 @@ contract('WorkerNode', (
     owner11, owner12, owner13, owner14, owner15]
 ) => {
 
-    const funds50 = 50 * 1000000000000000000;
-    const funds100 = 100 * 1000000000000000000;
-    const funds200 = 200 * 1000000000000000000;
-    const computingPrice = 1 * 1000000000000000000;
-    
+    const funds50 = toPan(50);
+    const funds200 = toPan(200);
+    const computingPrice = toPan(1);
+
     let pandora;
     let pan;
-    let controller;
+    let economicController;
+    let jobController;
     let minStake;
 
     beforeEach('setup', async () => {
 
-        pan = await Pan.new({from: owner1});
-        await pan.initializeMintable(owner1, {from: owner1});
-        await pan.mint(owner1, 5000000 * 1000000000000000000, {from: owner1});
-        controller = await EconomicController.new(pan.address, {from: owner1});
-        await pan.addMinter(controller.address, {from: owner1});        
-        const jobController = await CognitiveJobController.new(controller.address, {from: owner1});
-        const nodeFactory = await WorkerNodeFactory.new({from: owner1});
-        const reputation = await Reputation.new({from: owner1});
-        pandora = await Pandora.new(jobController.address, controller.address, nodeFactory.address, reputation.address, {from: owner1});
-        await nodeFactory.transferOwnership(pandora.address);
-        await jobController.transferOwnership(pandora.address);
-        await controller.transferOwnership(pandora.address);
-        await reputation.transferOwnership(pandora.address);
-        await pandora.initialize();
-        await controller.initialize(pandora.address);
+        const contracts = await deployAll(owner1);
+        pan = contracts.pan;
+        pandora = contracts.pandora;
+        jobController = contracts.jobController;
+        economicController = contracts.economicController;
 
-        minStake = await controller.minimumWorkerNodeStake();
+        minStake = await economicController.minimumWorkerNodeStake();
         await pan.transfer(owner2, funds200, { from: owner1 });
         await pan.transfer(owner3, funds200, { from: owner1 });
         await pan.transfer(owner4, funds50, { from: owner1 });
@@ -77,7 +59,7 @@ contract('WorkerNode', (
     describe('#updateComputingPrice', () => {
 
         it('should update computing price', async () => {
-            const workerNode = await createWorkerNode(pandora, owner7, computingPrice, pan, controller);
+            const workerNode = await createWorkerNode(pandora, owner7, computingPrice, pan, economicController);
             (await workerNode.computingPrice()).should.be.bignumber.equal(computingPrice);
             const newPrice = computingPrice * 2;
             await workerNode.updateComputingPrice(newPrice, {from: owner7});
@@ -90,26 +72,26 @@ contract('WorkerNode', (
         it('should create a workerNode instance', async () => {
             await pandora.whitelistWorkerOwner(owner3);
             const nodeId = await pandora.workerNodesCount();
-            await pan.approve(controller.address, minStake, {from: owner3});
+            await pan.approve(economicController.address, minStake, {from: owner3});
             await pandora.createWorkerNode(computingPrice, {from: owner3});
             const wnAddress = await pandora.workerNodes(nodeId.toNumber());
             (await WorkerNode.at(wnAddress).currentState()).should.be.bignumber.equal(1);
         });
 
         it('should fail if worker not whitelisted', async () => {
-            await pan.approve(controller.address, minStake, {from: owner5});
+            await pan.approve(economicController.address, minStake, {from: owner5});
             await assertRevert(pandora.createWorkerNode(computingPrice, {from: owner5}));
         });
 
         it('should fail if worker has insufficient stake', async () => {
             await pandora.whitelistWorkerOwner(owner4);
-            await pan.approve(controller.address, minStake, {from: owner4});
+            await pan.approve(economicController.address, minStake, {from: owner4});
             await assertRevert(pandora.createWorkerNode(computingPrice, {from: owner4}));
         });
 
         it('should fail if computingPrice less then 1', async () => {
             await pandora.whitelistWorkerOwner(owner5);
-            await pan.approve(controller.address, minStake, {from: owner5});
+            await pan.approve(economicController.address, minStake, {from: owner5});
             await assertRevert(pandora.createWorkerNode(0, {from: owner5}));
         });
     });
@@ -117,7 +99,7 @@ contract('WorkerNode', (
     describe('#aliveWorker', () => {
 
         it('should move worker to iddle state', async () => {
-            const workerNode = await createWorkerNode(pandora, owner2, computingPrice, pan, controller);
+            const workerNode = await createWorkerNode(pandora, owner2, computingPrice, pan, economicController);
             await workerNode.alive({from: owner2});
             (await workerNode.currentState()).should.be.bignumber.equal(2);
             await workerNode.offline({from: owner2});// back to offline
@@ -127,49 +109,61 @@ contract('WorkerNode', (
     describe("Full workflow", () => {
 
         it("should transit thru all states", async () => {
-            const workerNode = await createWorkerNode(pandora, owner5, computingPrice, pan, controller);
+            const wrongOwner = owner4;
+            const workerNodeOwner = owner5;
+            const jobOwner = owner6;
+            const datasetOwner = owner7;
+            const kernelOwner = owner8;
+
+            const workerNode = await createWorkerNode(pandora, workerNodeOwner, computingPrice, pan, economicController);
             
-            // transit to state Alive
-            await workerNode.alive({from: owner5});
-            await createCognitiveJob(pandora, 1, {}, owner5, pan, controller);
-            
+            // transit worker node to state Alive
+            await workerNode.alive({from: workerNodeOwner});
+
+            // Create job
+            const jobTx = await createCognitiveJob(pandora, 1, {}, pan, economicController, jobOwner, datasetOwner, kernelOwner);
+            const jobId = jobTx.logs[0].args.jobId;
+            const jobDetails = await jobController.getCognitiveJobDetails(jobId);
+            const kernelAddr = jobDetails[1];
+            const datasetAddr = jobDetails[2];
+
             // state should be Assigned after job creation
             (await workerNode.currentState()).should.be.bignumber.equal(3);
 
             // transit to state ReadyForDataValidation
-            await assertRevert(workerNode.acceptAssignment({from: owner4}), '#acceptAssignment');// should fail with wrong owner
-            await workerNode.acceptAssignment({from: owner5});
+            await assertRevert(workerNode.acceptAssignment({from: wrongOwner}), '#acceptAssignment');// should fail with wrong owner
+            await workerNode.acceptAssignment({from: workerNodeOwner});
             (await workerNode.currentState()).should.be.bignumber.equal(4);
 
             // transit to state ValidatingData
-            await assertRevert(workerNode.processToDataValidation({from: owner4}), '#processToDataValidation');// should fail with wrong owner
-            await workerNode.processToDataValidation({from: owner5});
+            await assertRevert(workerNode.processToDataValidation({from: wrongOwner}), '#processToDataValidation');// should fail with wrong owner
+            await workerNode.processToDataValidation({from: workerNodeOwner});
             (await workerNode.currentState()).should.be.bignumber.equal(5);
 
             // transit to state ReadyForComputing
-            await assertRevert(workerNode.acceptValidData({from: owner4})), '#acceptValidData';// should fail with wrong owner
-            await workerNode.acceptValidData({from: owner5});
+            await assertRevert(workerNode.acceptValidData({from: wrongOwner})), '#acceptValidData';// should fail with wrong owner
+            await workerNode.acceptValidData({from: workerNodeOwner});
             (await workerNode.currentState()).should.be.bignumber.equal(6);
 
             // transit to state Computing
-            await assertRevert(workerNode.processToCognition({from: owner4}), '#processToCognition');// should fail with wrong owner
-            await workerNode.processToCognition({from: owner5});
+            await assertRevert(workerNode.processToCognition({from: wrongOwner}), '#processToCognition');// should fail with wrong owner
+            await workerNode.processToCognition({from: workerNodeOwner});
             (await workerNode.currentState()).should.be.bignumber.equal(7);
 
             // provide job progress
             const progress_one = await workerNode.jobProgress();
-            await assertRevert(workerNode.reportProgress(10, {from: owner4}), '#reportProgress');// should fail with wrong owner
-            await workerNode.reportProgress(10, {from: owner5});            
+            await assertRevert(workerNode.reportProgress(10, {from: wrongOwner}), '#reportProgress');// should fail with wrong owner
+            await workerNode.reportProgress(10, {from: workerNodeOwner});            
             const progress_two = await workerNode.jobProgress();
             (progress_two).should.be.be.bignumber.gt(progress_one);
 
             // provide results
-            await assertRevert(workerNode.provideResults(0x0, {from: owner4}), '#provideResults');// should fail with wrong owner
-            await workerNode.provideResults(0x0, {from: owner5});
+            await assertRevert(workerNode.provideResults(0x0, {from: wrongOwner}), '#provideResults');// should fail with wrong owner
+            await workerNode.provideResults(0x0, {from: workerNodeOwner});
 
             // transit to state Offline
-            await assertRevert(workerNode.offline({from: owner4}), '#transitionToState');// should fail with wrong owner
-            await workerNode.offline({from: owner5});
+            await assertRevert(workerNode.offline({from: wrongOwner}), '#transitionToState');// should fail with wrong owner
+            await workerNode.offline({from: workerNodeOwner});
 
             // const workersCount = await pandora.workerNodesCount();
             // let wnAddress;
@@ -186,18 +180,18 @@ contract('WorkerNode', (
     describe('Worker node penalties', () => {
 
         it('OfflineWhileGathering', async () => {
-            const workerNode1 = await createWorkerNode(pandora, owner8, computingPrice, pan, controller);
-            const workerNode2 = await createWorkerNode(pandora, owner9, computingPrice, pan, controller);
+            const workerNode1 = await createWorkerNode(pandora, owner8, computingPrice, pan, economicController);
+            const workerNode2 = await createWorkerNode(pandora, owner9, computingPrice, pan, economicController);
             
             await workerNode1.alive({from: owner8});
 
-            const stakeBefore = await controller.balanceOf(owner9);
+            const stakeBefore = await economicController.balanceOf(owner9);
 
-            await createCognitiveJob(pandora, 2, {}, owner10, pan, controller);// owner7 should be penalized and loss a stake in amount of computingPrice
+            await createCognitiveJob(pandora, 2, {}, pan, economicController, owner10, owner11, owner12);// owner7 should be penalized and loss a stake in amount of computingPrice
 
-            (await controller.balanceOf(owner9)).should.be.bignumber.equal(stakeBefore.toNumber() - computingPrice);
+            (await economicController.balanceOf(owner9)).should.be.bignumber.equal(stakeBefore.toNumber() - computingPrice);
             
-            const result = await eventFired(controller, 'PenaltyApplied');
+            const result = await eventFired(economicController, 'PenaltyApplied');
             const penaltyEvent = result.filter(l => (
                 l.args.owner === owner9 
             ));  
@@ -207,15 +201,15 @@ contract('WorkerNode', (
         });
 
         it('DeclinesJob', async () => {
-            const workerNode1 = await createWorkerNode(pandora, owner10, computingPrice, pan, controller);
+            const workerNode1 = await createWorkerNode(pandora, owner10, computingPrice, pan, economicController);
             await workerNode1.alive({from: owner10});
-            await createCognitiveJob(pandora, 1, {}, owner10, pan, controller);
-            const stakeBefore = await controller.balanceOf(owner10);
+            await createCognitiveJob(pandora, 1, {}, pan, economicController, owner10, owner11, owner12);
+            const stakeBefore = await economicController.balanceOf(owner10);
 
             await workerNode1.declineAssignment({from: owner10});
 
-            (await controller.balanceOf(owner10)).should.be.bignumber.equal(stakeBefore.toNumber() - computingPrice);
-            const result = await eventFired(controller, 'PenaltyApplied');
+            (await economicController.balanceOf(owner10)).should.be.bignumber.equal(stakeBefore.toNumber() - computingPrice);
+            const result = await eventFired(economicController, 'PenaltyApplied');
             const penaltyEvent = result.filter(l => (
                 l.args.owner === owner10 
             ));  

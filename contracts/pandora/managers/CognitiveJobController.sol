@@ -31,6 +31,7 @@ contract CognitiveJobController is ICognitiveJobController{
 
     struct CognitiveJob {
         bytes32 id;
+        address owner;
         address kernel;
         address dataset;
         uint256 complexity; //todo find better name
@@ -98,6 +99,7 @@ contract CognitiveJobController is ICognitiveJobController{
     external
     view
     returns (
+        address owner,
         address kernel,
         address dataset,
         uint256 complexity,
@@ -109,6 +111,7 @@ contract CognitiveJobController is ICognitiveJobController{
         CognitiveJob storage job = isActiveJob(_jobId) ?
             activeJobs[activeJobsIndexes[_jobId] - 1]
             : completedJobs[completedJobsIndexes[_jobId] - 1];
+        owner = job.owner;
         kernel = job.kernel;
         dataset = job.dataset;
         complexity = job.complexity;
@@ -154,6 +157,7 @@ contract CognitiveJobController is ICognitiveJobController{
     */
     function createCognitiveJob (
         bytes32 _id,
+        address _owner,
         address _kernel,
         address _dataset,
         address[] _assignedWorkers,
@@ -167,6 +171,7 @@ contract CognitiveJobController is ICognitiveJobController{
 
         activeJobs.push(CognitiveJob({
             id: _id,
+            owner: _owner,
             kernel: _kernel,
             dataset: _dataset,
             complexity: _complexity,
@@ -385,7 +390,7 @@ contract CognitiveJobController is ICognitiveJobController{
         activeJobs.length--;
 
         // economic calculations and rewards assignment
-        economicController.makeRewards();
+        economicController.makeRewards(_jobId);
     }
 
     /// @dev Checks that job with given id is active or not (tx will fail if job is not existed)
