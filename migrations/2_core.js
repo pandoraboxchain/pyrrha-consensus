@@ -48,7 +48,7 @@ module.exports = (deployer, network, accounts) => {
         .then(instance => {
             wnf = instance;
             deployer.link(JobQueueLib, Pandora);            
-            return deployer.deploy(Pandora, cognitiveJobController.address, economicController.address, wnf.address, reputation.address);
+            return deployer.deploy(Pandora, cognitiveJobController.address, economicController.address, wnf.address, reputation.address, pan.address);
         })
         .then(_ => Pandora.deployed())
         .then(instance => {

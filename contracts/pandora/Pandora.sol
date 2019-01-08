@@ -4,6 +4,7 @@ import "../lifecycle/OnlyOnce.sol";
 import "./factories/IWorkerNodeFactory.sol";
 import "./managers/CognitiveJobManager.sol";
 import "./managers/ICognitiveJobController.sol";
+import "./token/Pan.sol";
 
 
 /**
@@ -47,9 +48,10 @@ contract Pandora is OnlyOnce, CognitiveJobManager {
         ICognitiveJobController _jobController,
         IEconomicController _economicController,
         IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        IReputation _reputation
+        IReputation _reputation,
+        Pan _pan
     ) public
-    CognitiveJobManager(_jobController, _economicController, _nodeFactory, _reputation)
+    CognitiveJobManager(_jobController, _economicController, _nodeFactory, _reputation, _pan)
     // Ensure that the contract is still uninitialized and `initialize` function be called to check the proper
     // setup of class factories
     Initializable()

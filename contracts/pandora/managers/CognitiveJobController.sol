@@ -2,6 +2,7 @@ pragma solidity 0.4.24;
 
 import "./ICognitiveJobController.sol";
 import "./IEconomicController.sol";
+import "../../nodes/IWorkerNode.sol";
 
 
 // Contract implement main cognitive job functionality
@@ -10,39 +11,6 @@ contract CognitiveJobController is ICognitiveJobController{
     /*******************************************************************************************************************
      * ## Storage
      */
-
-    enum WorkerResponses {
-        Assignment,
-        DataValidation,
-        Result
-    }
-
-    enum States {
-        Uninitialized,
-        GatheringWorkers,
-        InsufficientWorkers,
-        DataValidation,
-        InvalidData,
-        Cognition,
-        PartialResult,
-        Completed,
-        Destroyed
-    }
-
-    struct CognitiveJob {
-        bytes32 id;
-        address owner;
-        address kernel;
-        address dataset;
-        uint256 complexity; //todo find better name
-        bytes32 description;
-        address[] activeWorkers;
-        bytes[] ipfsResults;
-        uint32[] responseTimestamps; // time of each worker response
-        bool[] responseFlags;
-        uint8 progress;
-        uint8 state;
-    }
 
     /// @dev Indexes (+1) of active (=running) cognitive jobs in `activeJobs` mapped from their creators
     /// (owners of the corresponding cognitive job contracts). Zero values corresponds to no active job,
@@ -298,9 +266,12 @@ contract CognitiveJobController is ICognitiveJobController{
             require(activeJobs[activeJobsIndexes[_jobId] - 1].state == uint8(States.Cognition));
         }
 
-        //todo implement penalties
         _updateResponse( _jobId, workerIndex, _response);
-        _trackOfflineWorkers( _jobId);
+        (address guiltyWorker, uint8 jobState) = _trackOfflineWorkers( _jobId);
+
+        if (guiltyWorker != address(0)) {
+            economicController.applyPenalty(guiltyWorker, IWorkerNode.Penalties.OfflineWhileCognition);
+        }
     }
 
     function _getWorkerIndex(
@@ -367,7 +338,7 @@ contract CognitiveJobController is ICognitiveJobController{
     ){
         CognitiveJob storage job = activeJobs[activeJobsIndexes[_jobId] - 1];
         for (uint256 i = 0; i < job.responseTimestamps.length; i++) {
-            if (uint8(block.timestamp) - job.responseTimestamps[i] > 30 minutes) {
+            if (block.timestamp - job.responseTimestamps[i] > 30 minutes) {
                 guiltyWorker = job.activeWorkers[i];
                 jobState = job.state;
             }
@@ -390,7 +361,7 @@ contract CognitiveJobController is ICognitiveJobController{
         activeJobs.length--;
 
         // economic calculations and rewards assignment
-        economicController.makeRewards(_jobId);
+        economicController.makeRewards(_jobId);        
     }
 
     /// @dev Checks that job with given id is active or not (tx will fail if job is not existed)

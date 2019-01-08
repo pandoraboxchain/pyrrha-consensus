@@ -14,6 +14,8 @@ const toPan = require('./helpers/toPan');
 const deployAll = require('./helpers/deployAll');
 
 const WorkerNode = artifacts.require('WorkerNode');
+const Kernel = artifacts.require('Kernel');
+const Dataset = artifacts.require('Dataset');
 
 contract('WorkerNode', (
     [owner1, owner2, owner3, owner4, owner5, 
@@ -115,17 +117,44 @@ contract('WorkerNode', (
             const datasetOwner = owner7;
             const kernelOwner = owner8;
 
+            // get current system commission and minimumWorkerNodeStake
+            const systemCommission = (await economicController.systemCommission()).toNumber();
+
+            // get initial system balance (pandoraOwner)
+            const initialSytemBalance = (await pan.balanceOf(pandora.address)).toNumber();
+
+            // Create worker node
             const workerNode = await createWorkerNode(pandora, workerNodeOwner, computingPrice, pan, economicController);
+
+            // get initial worker node balance
+            const initialWorkerNodeBalance = (await pan.balanceOf(workerNodeOwner)).toNumber();
+
+            // get worker node price (max)
+            const workerNodePrice = (await pandora.getMaximumWorkerPrice()).toNumber();
             
             // transit worker node to state Alive
             await workerNode.alive({from: workerNodeOwner});
 
             // Create job
-            const jobTx = await createCognitiveJob(pandora, 1, {}, pan, economicController, jobOwner, datasetOwner, kernelOwner);
+            const batchesCount = 1;
+            const jobTx = await createCognitiveJob(pandora, batchesCount, {}, pan, economicController, jobOwner, datasetOwner, kernelOwner);
             const jobId = jobTx.logs[0].args.jobId;
             const jobDetails = await jobController.getCognitiveJobDetails(jobId);
-            const kernelAddr = jobDetails[1];
-            const datasetAddr = jobDetails[2];
+            //console.log(jobDetails);
+            const kernel = jobDetails[1];
+            const dataset = jobDetails[2];
+            const kernelPrice = (await Kernel.at(kernel).currentPrice()).toNumber();
+            const datasetPrice = (await Dataset.at(dataset).currentPrice()).toNumber();
+
+            // calculate total job price
+            const totalJobPrice = kernelPrice + datasetPrice + (workerNodePrice * batchesCount);
+            
+            // Check blocked funds of jobOwner
+            (await economicController.balanceOf(jobOwner)).should.be.bignumber.equal(totalJobPrice);
+
+            // Check initial token balance of kernel and database owners
+            (await pan.balanceOf(kernelOwner)).should.be.bignumber.equal(funds200);
+            (await pan.balanceOf(datasetOwner)).should.be.bignumber.equal(funds200);
 
             // state should be Assigned after job creation
             (await workerNode.currentState()).should.be.bignumber.equal(3);
@@ -160,6 +189,13 @@ contract('WorkerNode', (
             // provide results
             await assertRevert(workerNode.provideResults(0x0, {from: wrongOwner}), '#provideResults');// should fail with wrong owner
             await workerNode.provideResults(0x0, {from: workerNodeOwner});
+
+            // Check job rewards (kernel owner, dataset owner, worker node owner, system)
+            (await pan.balanceOf(kernelOwner)).should.be.bignumber.equal(funds200 + (kernelPrice - (kernelPrice / 100 * systemCommission)));
+            (await pan.balanceOf(datasetOwner)).should.be.bignumber.equal(funds200 + (datasetPrice - (datasetPrice / 100 * systemCommission)));
+            (await pan.balanceOf(workerNodeOwner)).should.be.bignumber.equal(initialWorkerNodeBalance + (workerNodePrice - (workerNodePrice / 100 * systemCommission)));
+            (await pan.balanceOf(pandora.address)).should.be.bignumber.equal(initialSytemBalance + (totalJobPrice / 100 * systemCommission));
+            (await economicController.balanceOf(jobOwner)).should.be.bignumber.equal(0);// all blocked funds has been spent to rewards
 
             // transit to state Offline
             await assertRevert(workerNode.offline({from: wrongOwner}), '#transitionToState');// should fail with wrong owner

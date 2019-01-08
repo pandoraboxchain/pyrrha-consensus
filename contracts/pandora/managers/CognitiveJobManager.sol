@@ -9,6 +9,7 @@ import "../token/Reputation.sol";
 import "./ICognitiveJobController.sol";
 import "../../nodes/IWorkerNode.sol";
 import "./IEconomicController.sol";
+import "../token/Pan.sol";
 
 import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
 
@@ -59,6 +60,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
     // Controller for CognitiveJobs
     ICognitiveJobController public jobController;
 
+    // Pan token
+    Pan public panToken;
+
     using SafeMath for uint;
 
     /*******************************************************************************************************************
@@ -82,7 +86,8 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
         ICognitiveJobController _jobController, /// Controller with all cognitive job logic and storage
         IEconomicController _economicController, 
         IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        IReputation _reputation
+        IReputation _reputation,
+        Pan _pan
     )
     public
     WorkerNodeManager(_nodeFactory)
@@ -92,6 +97,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
 
         // Init reputation storage contract
         reputation = _reputation;
+
+        // Init Pan token
+        panToken = _pan;
 
         // Initializing worker lottery engine
         workerLotteryEngine = new RandomEngine();
@@ -119,6 +127,10 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
         return maximumPrice;
     }
 
+    function withdrawSystemTokens(address _to, uint256 _value) external onlyOwner {
+        require(panToken.balanceOf(address(this)) >= _value, "ERROR_INSUFFICIENT_FUNDS");
+        panToken.transfer(_to, _value);
+    }
 
     /// @notice Public function which checks queue of jobs and create new jobs
     /// #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address)
