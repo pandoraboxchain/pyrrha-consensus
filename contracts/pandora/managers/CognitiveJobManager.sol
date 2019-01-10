@@ -23,7 +23,6 @@ import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
  * See section ["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
  * for more details.
  */
-
 contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
 
     /*******************************************************************************************************************

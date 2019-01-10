@@ -4,6 +4,20 @@
     {
       "constant": true,
       "inputs": [],
+      "name": "jobController",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
       "name": "economicController",
       "outputs": [
         {
@@ -20,12 +34,26 @@
       "inputs": [
         {
           "indexed": false,
-          "name": "_jobId",
+          "name": "jobId",
           "type": "bytes32"
         }
       ],
       "name": "CognitiveJobCreated",
       "type": "event"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getMaximumWorkerPrice",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
     },
     {
       "constant": false,
@@ -90,80 +118,91 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity 0.4.24;\n\nimport \"../../nodes/IWorkerNode.sol\";\nimport \"../../entities/IDataEntity.sol\";\nimport \"../../entities/IKernel.sol\";\nimport \"../../entities/IDataset.sol\";\nimport \"./IEconomicController.sol\";\n\ncontract ICognitiveJobManager {\n\n    // Controller for economic\n    IEconomicController public economicController;\n\n    //workers interaction\n    function provideResults(bytes32 _jobId, bytes _ipfsResults) external;\n    function respondToJob(bytes32 _jobId, uint8 _responseType, bool _response) external;\n    function commitProgress(bytes32 _jobId, uint8 _percent) external;\n\n    event CognitiveJobCreated(bytes32 _jobId);\n}\n",
+  "source": "pragma solidity 0.4.24;\n\nimport \"../../nodes/IWorkerNode.sol\";\nimport \"../../entities/IDataEntity.sol\";\nimport \"../../entities/IKernel.sol\";\nimport \"../../entities/IDataset.sol\";\nimport \"./IEconomicController.sol\";\nimport \"./ICognitiveJobController.sol\";\n\ncontract ICognitiveJobManager {\n\n    // Controller for economic\n    IEconomicController public economicController;\n\n    // Controller for CognitiveJobs\n    ICognitiveJobController public jobController;\n\n    function getMaximumWorkerPrice() public view returns (uint256) {}\n\n    //workers interaction\n    function provideResults(bytes32 _jobId, bytes _ipfsResults) external;\n    function respondToJob(bytes32 _jobId, uint8 _responseType, bool _response) external;\n    function commitProgress(bytes32 _jobId, uint8 _percent) external;\n\n    event CognitiveJobCreated(bytes32 jobId);\n}\n",
   "sourcePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
   "ast": {
     "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
     "exportedSymbols": {
       "ICognitiveJobManager": [
-        5346
+        5581
       ]
     },
-    "id": 5347,
+    "id": 5582,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5311,
+        "id": 5537,
         "literals": [
           "solidity",
           "0.4",
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:29"
+        "src": "0:23:23"
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
         "file": "../../nodes/IWorkerNode.sol",
-        "id": 5312,
+        "id": 5538,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 1708,
-        "src": "25:37:29",
+        "scope": 5582,
+        "sourceUnit": 1079,
+        "src": "25:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
         "file": "../../entities/IDataEntity.sol",
-        "id": 5313,
+        "id": 5539,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 636,
-        "src": "63:40:29",
+        "scope": 5582,
+        "sourceUnit": 26,
+        "src": "63:40:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IKernel.sol",
         "file": "../../entities/IKernel.sol",
-        "id": 5314,
+        "id": 5540,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 652,
-        "src": "104:36:29",
+        "scope": 5582,
+        "sourceUnit": 42,
+        "src": "104:36:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataset.sol",
         "file": "../../entities/IDataset.sol",
-        "id": 5315,
+        "id": 5541,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 644,
-        "src": "141:37:29",
+        "scope": 5582,
+        "sourceUnit": 34,
+        "src": "141:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/IEconomicController.sol",
         "file": "./IEconomicController.sol",
-        "id": 5316,
+        "id": 5542,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 5464,
-        "src": "179:35:29",
+        "scope": 5582,
+        "sourceUnit": 5748,
+        "src": "179:35:23",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobController.sol",
+        "file": "./ICognitiveJobController.sol",
+        "id": 5543,
+        "nodeType": "ImportDirective",
+        "scope": 5582,
+        "sourceUnit": 5536,
+        "src": "215:39:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -173,35 +212,35 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5346,
+        "id": 5581,
         "linearizedBaseContracts": [
-          5346
+          5581
         ],
         "name": "ICognitiveJobManager",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 5318,
+            "id": 5545,
             "name": "economicController",
             "nodeType": "VariableDeclaration",
-            "scope": 5346,
-            "src": "284:45:29",
+            "scope": 5581,
+            "src": "324:45:23",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_IEconomicController_$5463",
+              "typeIdentifier": "t_contract$_IEconomicController_$5747",
               "typeString": "contract IEconomicController"
             },
             "typeName": {
               "contractScope": null,
-              "id": 5317,
+              "id": 5544,
               "name": "IEconomicController",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 5463,
-              "src": "284:19:29",
+              "referencedDeclaration": 5747,
+              "src": "324:19:23",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IEconomicController_$5463",
+                "typeIdentifier": "t_contract$_IEconomicController_$5747",
                 "typeString": "contract IEconomicController"
               }
             },
@@ -209,9 +248,98 @@
             "visibility": "public"
           },
           {
+            "constant": false,
+            "id": 5547,
+            "name": "jobController",
+            "nodeType": "VariableDeclaration",
+            "scope": 5581,
+            "src": "412:44:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_contract$_ICognitiveJobController_$5535",
+              "typeString": "contract ICognitiveJobController"
+            },
+            "typeName": {
+              "contractScope": null,
+              "id": 5546,
+              "name": "ICognitiveJobController",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 5535,
+              "src": "412:23:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ICognitiveJobController_$5535",
+                "typeString": "contract ICognitiveJobController"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 5552,
+              "nodeType": "Block",
+              "src": "526:2:23",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 5553,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getMaximumWorkerPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5548,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "493:2:23"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 5551,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5550,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5553,
+                  "src": "517:7:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 5549,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "517:7:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "516:9:23"
+            },
+            "scope": 5581,
+            "src": "463:65:23",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
             "body": null,
             "documentation": null,
-            "id": 5325,
+            "id": 5560,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -219,16 +347,16 @@
             "name": "provideResults",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5323,
+              "id": 5558,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5320,
+                  "id": 5555,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5325,
-                  "src": "386:14:29",
+                  "scope": 5560,
+                  "src": "584:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -236,10 +364,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5319,
+                    "id": 5554,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "386:7:29",
+                    "src": "584:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -250,11 +378,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5322,
+                  "id": 5557,
                   "name": "_ipfsResults",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5325,
-                  "src": "402:18:29",
+                  "scope": 5560,
+                  "src": "600:18:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -262,10 +390,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 5321,
+                    "id": 5556,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "402:5:29",
+                    "src": "600:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -275,17 +403,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "385:36:29"
+              "src": "583:36:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 5324,
+              "id": 5559,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "430:0:29"
+              "src": "628:0:23"
             },
-            "scope": 5346,
-            "src": "362:69:29",
+            "scope": 5581,
+            "src": "560:69:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -293,7 +421,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5334,
+            "id": 5569,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -301,16 +429,16 @@
             "name": "respondToJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5332,
+              "id": 5567,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5327,
+                  "id": 5562,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5334,
-                  "src": "458:14:29",
+                  "scope": 5569,
+                  "src": "656:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -318,10 +446,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5326,
+                    "id": 5561,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "458:7:29",
+                    "src": "656:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -332,11 +460,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5329,
+                  "id": 5564,
                   "name": "_responseType",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5334,
-                  "src": "474:19:29",
+                  "scope": 5569,
+                  "src": "672:19:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -344,10 +472,10 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 5328,
+                    "id": 5563,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
-                    "src": "474:5:29",
+                    "src": "672:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint8",
                       "typeString": "uint8"
@@ -358,11 +486,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5331,
+                  "id": 5566,
                   "name": "_response",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5334,
-                  "src": "495:14:29",
+                  "scope": 5569,
+                  "src": "693:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -370,10 +498,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5330,
+                    "id": 5565,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "495:4:29",
+                    "src": "693:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -383,17 +511,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "457:53:29"
+              "src": "655:53:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 5333,
+              "id": 5568,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "519:0:29"
+              "src": "717:0:23"
             },
-            "scope": 5346,
-            "src": "436:84:29",
+            "scope": 5581,
+            "src": "634:84:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -401,7 +529,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5341,
+            "id": 5576,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -409,16 +537,16 @@
             "name": "commitProgress",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5339,
+              "id": 5574,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5336,
+                  "id": 5571,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5341,
-                  "src": "549:14:29",
+                  "scope": 5576,
+                  "src": "747:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -426,10 +554,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5335,
+                    "id": 5570,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "549:7:29",
+                    "src": "747:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -440,11 +568,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5338,
+                  "id": 5573,
                   "name": "_percent",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5341,
-                  "src": "565:14:29",
+                  "scope": 5576,
+                  "src": "763:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -452,10 +580,10 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 5337,
+                    "id": 5572,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
-                    "src": "565:5:29",
+                    "src": "763:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint8",
                       "typeString": "uint8"
@@ -465,17 +593,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "548:32:29"
+              "src": "746:32:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 5340,
+              "id": 5575,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "589:0:29"
+              "src": "787:0:23"
             },
-            "scope": 5346,
-            "src": "525:65:29",
+            "scope": 5581,
+            "src": "723:65:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -483,21 +611,21 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 5345,
+            "id": 5580,
             "name": "CognitiveJobCreated",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 5344,
+              "id": 5579,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5343,
+                  "id": 5578,
                   "indexed": false,
-                  "name": "_jobId",
+                  "name": "jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5345,
-                  "src": "622:14:29",
+                  "scope": 5580,
+                  "src": "820:13:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -505,10 +633,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5342,
+                    "id": 5577,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "622:7:29",
+                    "src": "820:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -518,89 +646,100 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "621:16:29"
+              "src": "819:15:23"
             },
-            "src": "596:42:29"
+            "src": "794:41:23"
           }
         ],
-        "scope": 5347,
-        "src": "216:424:29"
+        "scope": 5582,
+        "src": "256:581:23"
       }
     ],
-    "src": "0:641:29"
+    "src": "0:838:23"
   },
   "legacyAST": {
     "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobManager.sol",
     "exportedSymbols": {
       "ICognitiveJobManager": [
-        5346
+        5581
       ]
     },
-    "id": 5347,
+    "id": 5582,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 5311,
+        "id": 5537,
         "literals": [
           "solidity",
           "0.4",
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:29"
+        "src": "0:23:23"
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
         "file": "../../nodes/IWorkerNode.sol",
-        "id": 5312,
+        "id": 5538,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 1708,
-        "src": "25:37:29",
+        "scope": 5582,
+        "sourceUnit": 1079,
+        "src": "25:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataEntity.sol",
         "file": "../../entities/IDataEntity.sol",
-        "id": 5313,
+        "id": 5539,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 636,
-        "src": "63:40:29",
+        "scope": 5582,
+        "sourceUnit": 26,
+        "src": "63:40:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IKernel.sol",
         "file": "../../entities/IKernel.sol",
-        "id": 5314,
+        "id": 5540,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 652,
-        "src": "104:36:29",
+        "scope": 5582,
+        "sourceUnit": 42,
+        "src": "104:36:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/entities/IDataset.sol",
         "file": "../../entities/IDataset.sol",
-        "id": 5315,
+        "id": 5541,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 644,
-        "src": "141:37:29",
+        "scope": 5582,
+        "sourceUnit": 34,
+        "src": "141:37:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/IEconomicController.sol",
         "file": "./IEconomicController.sol",
-        "id": 5316,
+        "id": 5542,
         "nodeType": "ImportDirective",
-        "scope": 5347,
-        "sourceUnit": 5464,
-        "src": "179:35:29",
+        "scope": 5582,
+        "sourceUnit": 5748,
+        "src": "179:35:23",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/pandora/managers/ICognitiveJobController.sol",
+        "file": "./ICognitiveJobController.sol",
+        "id": 5543,
+        "nodeType": "ImportDirective",
+        "scope": 5582,
+        "sourceUnit": 5536,
+        "src": "215:39:23",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -610,35 +749,35 @@
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 5346,
+        "id": 5581,
         "linearizedBaseContracts": [
-          5346
+          5581
         ],
         "name": "ICognitiveJobManager",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "constant": false,
-            "id": 5318,
+            "id": 5545,
             "name": "economicController",
             "nodeType": "VariableDeclaration",
-            "scope": 5346,
-            "src": "284:45:29",
+            "scope": 5581,
+            "src": "324:45:23",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
-              "typeIdentifier": "t_contract$_IEconomicController_$5463",
+              "typeIdentifier": "t_contract$_IEconomicController_$5747",
               "typeString": "contract IEconomicController"
             },
             "typeName": {
               "contractScope": null,
-              "id": 5317,
+              "id": 5544,
               "name": "IEconomicController",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 5463,
-              "src": "284:19:29",
+              "referencedDeclaration": 5747,
+              "src": "324:19:23",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IEconomicController_$5463",
+                "typeIdentifier": "t_contract$_IEconomicController_$5747",
                 "typeString": "contract IEconomicController"
               }
             },
@@ -646,9 +785,98 @@
             "visibility": "public"
           },
           {
+            "constant": false,
+            "id": 5547,
+            "name": "jobController",
+            "nodeType": "VariableDeclaration",
+            "scope": 5581,
+            "src": "412:44:23",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_contract$_ICognitiveJobController_$5535",
+              "typeString": "contract ICognitiveJobController"
+            },
+            "typeName": {
+              "contractScope": null,
+              "id": 5546,
+              "name": "ICognitiveJobController",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 5535,
+              "src": "412:23:23",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_ICognitiveJobController_$5535",
+                "typeString": "contract ICognitiveJobController"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 5552,
+              "nodeType": "Block",
+              "src": "526:2:23",
+              "statements": []
+            },
+            "documentation": null,
+            "id": 5553,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": true,
+            "modifiers": [],
+            "name": "getMaximumWorkerPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 5548,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "493:2:23"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 5551,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 5550,
+                  "name": "",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 5553,
+                  "src": "517:7:23",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 5549,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "517:7:23",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "516:9:23"
+            },
+            "scope": 5581,
+            "src": "463:65:23",
+            "stateMutability": "view",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
             "body": null,
             "documentation": null,
-            "id": 5325,
+            "id": 5560,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -656,16 +884,16 @@
             "name": "provideResults",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5323,
+              "id": 5558,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5320,
+                  "id": 5555,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5325,
-                  "src": "386:14:29",
+                  "scope": 5560,
+                  "src": "584:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -673,10 +901,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5319,
+                    "id": 5554,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "386:7:29",
+                    "src": "584:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -687,11 +915,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5322,
+                  "id": 5557,
                   "name": "_ipfsResults",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5325,
-                  "src": "402:18:29",
+                  "scope": 5560,
+                  "src": "600:18:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -699,10 +927,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 5321,
+                    "id": 5556,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "402:5:29",
+                    "src": "600:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -712,17 +940,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "385:36:29"
+              "src": "583:36:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 5324,
+              "id": 5559,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "430:0:29"
+              "src": "628:0:23"
             },
-            "scope": 5346,
-            "src": "362:69:29",
+            "scope": 5581,
+            "src": "560:69:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -730,7 +958,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5334,
+            "id": 5569,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -738,16 +966,16 @@
             "name": "respondToJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5332,
+              "id": 5567,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5327,
+                  "id": 5562,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5334,
-                  "src": "458:14:29",
+                  "scope": 5569,
+                  "src": "656:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -755,10 +983,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5326,
+                    "id": 5561,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "458:7:29",
+                    "src": "656:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -769,11 +997,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5329,
+                  "id": 5564,
                   "name": "_responseType",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5334,
-                  "src": "474:19:29",
+                  "scope": 5569,
+                  "src": "672:19:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -781,10 +1009,10 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 5328,
+                    "id": 5563,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
-                    "src": "474:5:29",
+                    "src": "672:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint8",
                       "typeString": "uint8"
@@ -795,11 +1023,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5331,
+                  "id": 5566,
                   "name": "_response",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5334,
-                  "src": "495:14:29",
+                  "scope": 5569,
+                  "src": "693:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -807,10 +1035,10 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 5330,
+                    "id": 5565,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
-                    "src": "495:4:29",
+                    "src": "693:4:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bool",
                       "typeString": "bool"
@@ -820,17 +1048,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "457:53:29"
+              "src": "655:53:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 5333,
+              "id": 5568,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "519:0:29"
+              "src": "717:0:23"
             },
-            "scope": 5346,
-            "src": "436:84:29",
+            "scope": 5581,
+            "src": "634:84:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -838,7 +1066,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 5341,
+            "id": 5576,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -846,16 +1074,16 @@
             "name": "commitProgress",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 5339,
+              "id": 5574,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5336,
+                  "id": 5571,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5341,
-                  "src": "549:14:29",
+                  "scope": 5576,
+                  "src": "747:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -863,10 +1091,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5335,
+                    "id": 5570,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "549:7:29",
+                    "src": "747:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -877,11 +1105,11 @@
                 },
                 {
                   "constant": false,
-                  "id": 5338,
+                  "id": 5573,
                   "name": "_percent",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5341,
-                  "src": "565:14:29",
+                  "scope": 5576,
+                  "src": "763:14:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -889,10 +1117,10 @@
                     "typeString": "uint8"
                   },
                   "typeName": {
-                    "id": 5337,
+                    "id": 5572,
                     "name": "uint8",
                     "nodeType": "ElementaryTypeName",
-                    "src": "565:5:29",
+                    "src": "763:5:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_uint8",
                       "typeString": "uint8"
@@ -902,17 +1130,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "548:32:29"
+              "src": "746:32:23"
             },
             "payable": false,
             "returnParameters": {
-              "id": 5340,
+              "id": 5575,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "589:0:29"
+              "src": "787:0:23"
             },
-            "scope": 5346,
-            "src": "525:65:29",
+            "scope": 5581,
+            "src": "723:65:23",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -920,21 +1148,21 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 5345,
+            "id": 5580,
             "name": "CognitiveJobCreated",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 5344,
+              "id": 5579,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 5343,
+                  "id": 5578,
                   "indexed": false,
-                  "name": "_jobId",
+                  "name": "jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 5345,
-                  "src": "622:14:29",
+                  "scope": 5580,
+                  "src": "820:13:23",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -942,10 +1170,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 5342,
+                    "id": 5577,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "622:7:29",
+                    "src": "820:7:23",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -955,16 +1183,16 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "621:16:29"
+              "src": "819:15:23"
             },
-            "src": "596:42:29"
+            "src": "794:41:23"
           }
         ],
-        "scope": 5347,
-        "src": "216:424:29"
+        "scope": 5582,
+        "src": "256:581:23"
       }
     ],
-    "src": "0:641:29"
+    "src": "0:838:23"
   },
   "compiler": {
     "name": "solc",
@@ -972,5 +1200,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.1",
-  "updatedAt": "2018-12-27T18:52:29.497Z"
+  "updatedAt": "2019-01-10T18:19:11.994Z"
 }

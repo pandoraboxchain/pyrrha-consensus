@@ -18,6 +18,20 @@
     {
       "constant": true,
       "inputs": [],
+      "name": "computingPrice",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
       "name": "Uninitialized",
       "outputs": [
         {
@@ -318,6 +332,15 @@
     {
       "constant": false,
       "inputs": [],
+      "name": "penalized",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
       "name": "acceptAssignment",
       "outputs": [],
       "payable": false,
@@ -406,58 +429,58 @@
   "deployedBytecode": "0x",
   "sourceMap": "",
   "deployedSourceMap": "",
-  "source": "pragma solidity 0.4.24;\n\nimport \"openzeppelin-solidity/contracts/ownership/Ownable.sol\";\n\nimport \"../libraries/IStateMachine.sol\";\nimport \"./WorkerNodeStates.sol\";\n\ncontract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {\n    /// @notice Defines possible cases for penalize worker nodes. Used in `WorkerNodeManager.penaltizeWorkerNode`\n    enum Penalties {\n        OfflineWhileGathering,\n        DeclinesJob,\n        OfflineWhileDataValidation,\n        FalseReportInvalidData,\n        OfflineWhileCognition\n    }\n\n    bytes32 public activeJob;\n\n    function destroy() external;\n    function alive() external;\n    function assignJob(bytes32 _jobId) external;\n    function cancelJob() external;\n    function acceptAssignment() external;\n    function declineAssignment() external;\n    function processToDataValidation() external;\n    function acceptValidData() external;\n    function declineValidData() external;\n    function reportInvalidData() external;\n    function processToCognition() external;\n    function provideResults(bytes _ipfsAddress) external;\n    function withdrawBalance() external;\n\n    event WorkerDestroyed();\n}\n\n",
+  "source": "pragma solidity 0.4.24;\n\nimport \"openzeppelin-solidity/contracts/ownership/Ownable.sol\";\n\nimport \"../libraries/IStateMachine.sol\";\nimport \"./WorkerNodeStates.sol\";\n\ncontract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {\n    /// @notice Defines possible cases for penalize worker nodes. Used in `WorkerNodeManager.penaltizeWorkerNode`\n    enum Penalties {\n        OfflineWhileGathering,\n        DeclinesJob,\n        OfflineWhileDataValidation,\n        FalseReportInvalidData,\n        OfflineWhileCognition\n    }\n\n    bytes32 public activeJob;\n\n    uint256 public computingPrice;\n\n    function destroy() external;\n    function alive() external;\n    function assignJob(bytes32 _jobId) external;\n    function cancelJob() external;\n    function penalized() external;\n    function acceptAssignment() external;\n    function declineAssignment() external;\n    function processToDataValidation() external;\n    function acceptValidData() external;\n    function declineValidData() external;\n    function reportInvalidData() external;\n    function processToCognition() external;\n    function provideResults(bytes _ipfsAddress) external;\n    function withdrawBalance() external;\n\n    event WorkerDestroyed();\n}\n\n",
   "sourcePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
   "ast": {
     "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
     "exportedSymbols": {
       "IWorkerNode": [
-        1707
+        1078
       ]
     },
-    "id": 1708,
+    "id": 1079,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1644,
+        "id": 1010,
         "literals": [
           "solidity",
           "0.4",
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:17"
+        "src": "0:23:11"
       },
       {
         "absolutePath": "openzeppelin-solidity/contracts/ownership/Ownable.sol",
         "file": "openzeppelin-solidity/contracts/ownership/Ownable.sol",
-        "id": 1645,
+        "id": 1011,
         "nodeType": "ImportDirective",
-        "scope": 1708,
-        "sourceUnit": 6510,
-        "src": "25:63:17",
+        "scope": 1079,
+        "sourceUnit": 6789,
+        "src": "25:63:11",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/libraries/IStateMachine.sol",
         "file": "../libraries/IStateMachine.sol",
-        "id": 1646,
+        "id": 1012,
         "nodeType": "ImportDirective",
-        "scope": 1708,
-        "sourceUnit": 714,
-        "src": "90:40:17",
+        "scope": 1079,
+        "sourceUnit": 56,
+        "src": "90:40:11",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/WorkerNodeStates.sol",
         "file": "./WorkerNodeStates.sol",
-        "id": 1647,
+        "id": 1013,
         "nodeType": "ImportDirective",
-        "scope": 1708,
-        "sourceUnit": 2334,
-        "src": "131:32:17",
+        "scope": 1079,
+        "sourceUnit": 1756,
+        "src": "131:32:11",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -467,121 +490,121 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1648,
+              "id": 1014,
               "name": "IStateMachine",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 713,
-              "src": "189:13:17",
+              "referencedDeclaration": 55,
+              "src": "189:13:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IStateMachine_$713",
+                "typeIdentifier": "t_contract$_IStateMachine_$55",
                 "typeString": "contract IStateMachine"
               }
             },
-            "id": 1649,
+            "id": 1015,
             "nodeType": "InheritanceSpecifier",
-            "src": "189:13:17"
+            "src": "189:13:11"
           },
           {
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1650,
+              "id": 1016,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 6509,
-              "src": "204:7:17",
+              "referencedDeclaration": 6788,
+              "src": "204:7:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$6509",
+                "typeIdentifier": "t_contract$_Ownable_$6788",
                 "typeString": "contract Ownable"
               }
             },
-            "id": 1651,
+            "id": 1017,
             "nodeType": "InheritanceSpecifier",
-            "src": "204:7:17"
+            "src": "204:7:11"
           },
           {
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1652,
+              "id": 1018,
               "name": "WorkerNodeStates",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2333,
-              "src": "213:16:17",
+              "referencedDeclaration": 1755,
+              "src": "213:16:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_WorkerNodeStates_$2333",
+                "typeIdentifier": "t_contract$_WorkerNodeStates_$1755",
                 "typeString": "contract WorkerNodeStates"
               }
             },
-            "id": 1653,
+            "id": 1019,
             "nodeType": "InheritanceSpecifier",
-            "src": "213:16:17"
+            "src": "213:16:11"
           }
         ],
         "contractDependencies": [
-          713,
-          2333,
-          6509
+          55,
+          1755,
+          6788
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 1707,
+        "id": 1078,
         "linearizedBaseContracts": [
-          1707,
-          2333,
-          6509,
-          713
+          1078,
+          1755,
+          6788,
+          55
         ],
         "name": "IWorkerNode",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "IWorkerNode.Penalties",
-            "id": 1659,
+            "id": 1025,
             "members": [
               {
-                "id": 1654,
+                "id": 1020,
                 "name": "OfflineWhileGathering",
                 "nodeType": "EnumValue",
-                "src": "375:21:17"
+                "src": "375:21:11"
               },
               {
-                "id": 1655,
+                "id": 1021,
                 "name": "DeclinesJob",
                 "nodeType": "EnumValue",
-                "src": "406:11:17"
+                "src": "406:11:11"
               },
               {
-                "id": 1656,
+                "id": 1022,
                 "name": "OfflineWhileDataValidation",
                 "nodeType": "EnumValue",
-                "src": "427:26:17"
+                "src": "427:26:11"
               },
               {
-                "id": 1657,
+                "id": 1023,
                 "name": "FalseReportInvalidData",
                 "nodeType": "EnumValue",
-                "src": "463:22:17"
+                "src": "463:22:11"
               },
               {
-                "id": 1658,
+                "id": 1024,
                 "name": "OfflineWhileCognition",
                 "nodeType": "EnumValue",
-                "src": "495:21:17"
+                "src": "495:21:11"
               }
             ],
             "name": "Penalties",
             "nodeType": "EnumDefinition",
-            "src": "350:172:17"
+            "src": "350:172:11"
           },
           {
             "constant": false,
-            "id": 1661,
+            "id": 1027,
             "name": "activeJob",
             "nodeType": "VariableDeclaration",
-            "scope": 1707,
-            "src": "528:24:17",
+            "scope": 1078,
+            "src": "528:24:11",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -589,10 +612,10 @@
               "typeString": "bytes32"
             },
             "typeName": {
-              "id": 1660,
+              "id": 1026,
               "name": "bytes32",
               "nodeType": "ElementaryTypeName",
-              "src": "528:7:17",
+              "src": "528:7:11",
               "typeDescriptions": {
                 "typeIdentifier": "t_bytes32",
                 "typeString": "bytes32"
@@ -602,9 +625,35 @@
             "visibility": "public"
           },
           {
+            "constant": false,
+            "id": 1029,
+            "name": "computingPrice",
+            "nodeType": "VariableDeclaration",
+            "scope": 1078,
+            "src": "559:29:11",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1028,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "559:7:11",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
             "body": null,
             "documentation": null,
-            "id": 1664,
+            "id": 1032,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -612,20 +661,20 @@
             "name": "destroy",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1662,
+              "id": 1030,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "575:2:17"
+              "src": "611:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1663,
+              "id": 1031,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "586:0:17"
+              "src": "622:0:11"
             },
-            "scope": 1707,
-            "src": "559:28:17",
+            "scope": 1078,
+            "src": "595:28:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -633,7 +682,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1667,
+            "id": 1035,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -641,20 +690,20 @@
             "name": "alive",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1665,
+              "id": 1033,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "606:2:17"
+              "src": "642:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1666,
+              "id": 1034,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "617:0:17"
+              "src": "653:0:11"
             },
-            "scope": 1707,
-            "src": "592:26:17",
+            "scope": 1078,
+            "src": "628:26:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -662,7 +711,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1672,
+            "id": 1040,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -670,16 +719,16 @@
             "name": "assignJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1670,
+              "id": 1038,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1669,
+                  "id": 1037,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1672,
-                  "src": "642:14:17",
+                  "scope": 1040,
+                  "src": "678:14:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -687,10 +736,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 1668,
+                    "id": 1036,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "642:7:17",
+                    "src": "678:7:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -700,17 +749,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "641:16:17"
+              "src": "677:16:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1671,
+              "id": 1039,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "666:0:17"
+              "src": "702:0:11"
             },
-            "scope": 1707,
-            "src": "623:44:17",
+            "scope": 1078,
+            "src": "659:44:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -718,7 +767,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1675,
+            "id": 1043,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -726,20 +775,20 @@
             "name": "cancelJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1673,
+              "id": 1041,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "690:2:17"
+              "src": "726:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1674,
+              "id": 1042,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "701:0:17"
+              "src": "737:0:11"
             },
-            "scope": 1707,
-            "src": "672:30:17",
+            "scope": 1078,
+            "src": "708:30:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -747,7 +796,36 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1678,
+            "id": 1046,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "penalized",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1044,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "761:2:11"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 1045,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "772:0:11"
+            },
+            "scope": 1078,
+            "src": "743:30:11",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 1049,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -755,20 +833,20 @@
             "name": "acceptAssignment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1676,
+              "id": 1047,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "732:2:17"
+              "src": "803:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1677,
+              "id": 1048,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "743:0:17"
+              "src": "814:0:11"
             },
-            "scope": 1707,
-            "src": "707:37:17",
+            "scope": 1078,
+            "src": "778:37:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -776,7 +854,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1681,
+            "id": 1052,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -784,20 +862,20 @@
             "name": "declineAssignment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1679,
+              "id": 1050,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "775:2:17"
+              "src": "846:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1680,
+              "id": 1051,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "786:0:17"
+              "src": "857:0:11"
             },
-            "scope": 1707,
-            "src": "749:38:17",
+            "scope": 1078,
+            "src": "820:38:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -805,7 +883,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1684,
+            "id": 1055,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -813,20 +891,20 @@
             "name": "processToDataValidation",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1682,
+              "id": 1053,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "824:2:17"
+              "src": "895:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1683,
+              "id": 1054,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "835:0:17"
+              "src": "906:0:11"
             },
-            "scope": 1707,
-            "src": "792:44:17",
+            "scope": 1078,
+            "src": "863:44:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -834,7 +912,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1687,
+            "id": 1058,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -842,20 +920,20 @@
             "name": "acceptValidData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1685,
+              "id": 1056,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "865:2:17"
+              "src": "936:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1686,
+              "id": 1057,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "876:0:17"
+              "src": "947:0:11"
             },
-            "scope": 1707,
-            "src": "841:36:17",
+            "scope": 1078,
+            "src": "912:36:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -863,7 +941,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1690,
+            "id": 1061,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -871,20 +949,20 @@
             "name": "declineValidData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1688,
+              "id": 1059,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "907:2:17"
+              "src": "978:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1689,
+              "id": 1060,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "918:0:17"
+              "src": "989:0:11"
             },
-            "scope": 1707,
-            "src": "882:37:17",
+            "scope": 1078,
+            "src": "953:37:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -892,7 +970,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1693,
+            "id": 1064,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -900,20 +978,20 @@
             "name": "reportInvalidData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1691,
+              "id": 1062,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "950:2:17"
+              "src": "1021:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1692,
+              "id": 1063,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "961:0:17"
+              "src": "1032:0:11"
             },
-            "scope": 1707,
-            "src": "924:38:17",
+            "scope": 1078,
+            "src": "995:38:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -921,7 +999,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1696,
+            "id": 1067,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -929,20 +1007,20 @@
             "name": "processToCognition",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1694,
+              "id": 1065,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "994:2:17"
+              "src": "1065:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1695,
+              "id": 1066,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1005:0:17"
+              "src": "1076:0:11"
             },
-            "scope": 1707,
-            "src": "967:39:17",
+            "scope": 1078,
+            "src": "1038:39:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -950,7 +1028,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1701,
+            "id": 1072,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -958,16 +1036,16 @@
             "name": "provideResults",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1699,
+              "id": 1070,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1698,
+                  "id": 1069,
                   "name": "_ipfsAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1701,
-                  "src": "1035:18:17",
+                  "scope": 1072,
+                  "src": "1106:18:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -975,10 +1053,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1697,
+                    "id": 1068,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1035:5:17",
+                    "src": "1106:5:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -988,17 +1066,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1034:20:17"
+              "src": "1105:20:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1700,
+              "id": 1071,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1063:0:17"
+              "src": "1134:0:11"
             },
-            "scope": 1707,
-            "src": "1011:53:17",
+            "scope": 1078,
+            "src": "1082:53:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1006,7 +1084,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1704,
+            "id": 1075,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1014,20 +1092,20 @@
             "name": "withdrawBalance",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1702,
+              "id": 1073,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1093:2:17"
+              "src": "1164:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1703,
+              "id": 1074,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1104:0:17"
+              "src": "1175:0:11"
             },
-            "scope": 1707,
-            "src": "1069:36:17",
+            "scope": 1078,
+            "src": "1140:36:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1035,74 +1113,74 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1706,
+            "id": 1077,
             "name": "WorkerDestroyed",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1705,
+              "id": 1076,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1132:2:17"
+              "src": "1203:2:11"
             },
-            "src": "1111:24:17"
+            "src": "1182:24:11"
           }
         ],
-        "scope": 1708,
-        "src": "165:972:17"
+        "scope": 1079,
+        "src": "165:1043:11"
       }
     ],
-    "src": "0:1139:17"
+    "src": "0:1210:11"
   },
   "legacyAST": {
     "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/IWorkerNode.sol",
     "exportedSymbols": {
       "IWorkerNode": [
-        1707
+        1078
       ]
     },
-    "id": 1708,
+    "id": 1079,
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 1644,
+        "id": 1010,
         "literals": [
           "solidity",
           "0.4",
           ".24"
         ],
         "nodeType": "PragmaDirective",
-        "src": "0:23:17"
+        "src": "0:23:11"
       },
       {
         "absolutePath": "openzeppelin-solidity/contracts/ownership/Ownable.sol",
         "file": "openzeppelin-solidity/contracts/ownership/Ownable.sol",
-        "id": 1645,
+        "id": 1011,
         "nodeType": "ImportDirective",
-        "scope": 1708,
-        "sourceUnit": 6510,
-        "src": "25:63:17",
+        "scope": 1079,
+        "sourceUnit": 6789,
+        "src": "25:63:11",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/libraries/IStateMachine.sol",
         "file": "../libraries/IStateMachine.sol",
-        "id": 1646,
+        "id": 1012,
         "nodeType": "ImportDirective",
-        "scope": 1708,
-        "sourceUnit": 714,
-        "src": "90:40:17",
+        "scope": 1079,
+        "sourceUnit": 56,
+        "src": "90:40:11",
         "symbolAliases": [],
         "unitAlias": ""
       },
       {
         "absolutePath": "/home/kostysh/dev/pyrrha-consensus/contracts/nodes/WorkerNodeStates.sol",
         "file": "./WorkerNodeStates.sol",
-        "id": 1647,
+        "id": 1013,
         "nodeType": "ImportDirective",
-        "scope": 1708,
-        "sourceUnit": 2334,
-        "src": "131:32:17",
+        "scope": 1079,
+        "sourceUnit": 1756,
+        "src": "131:32:11",
         "symbolAliases": [],
         "unitAlias": ""
       },
@@ -1112,121 +1190,121 @@
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1648,
+              "id": 1014,
               "name": "IStateMachine",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 713,
-              "src": "189:13:17",
+              "referencedDeclaration": 55,
+              "src": "189:13:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_IStateMachine_$713",
+                "typeIdentifier": "t_contract$_IStateMachine_$55",
                 "typeString": "contract IStateMachine"
               }
             },
-            "id": 1649,
+            "id": 1015,
             "nodeType": "InheritanceSpecifier",
-            "src": "189:13:17"
+            "src": "189:13:11"
           },
           {
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1650,
+              "id": 1016,
               "name": "Ownable",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 6509,
-              "src": "204:7:17",
+              "referencedDeclaration": 6788,
+              "src": "204:7:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_Ownable_$6509",
+                "typeIdentifier": "t_contract$_Ownable_$6788",
                 "typeString": "contract Ownable"
               }
             },
-            "id": 1651,
+            "id": 1017,
             "nodeType": "InheritanceSpecifier",
-            "src": "204:7:17"
+            "src": "204:7:11"
           },
           {
             "arguments": null,
             "baseName": {
               "contractScope": null,
-              "id": 1652,
+              "id": 1018,
               "name": "WorkerNodeStates",
               "nodeType": "UserDefinedTypeName",
-              "referencedDeclaration": 2333,
-              "src": "213:16:17",
+              "referencedDeclaration": 1755,
+              "src": "213:16:11",
               "typeDescriptions": {
-                "typeIdentifier": "t_contract$_WorkerNodeStates_$2333",
+                "typeIdentifier": "t_contract$_WorkerNodeStates_$1755",
                 "typeString": "contract WorkerNodeStates"
               }
             },
-            "id": 1653,
+            "id": 1019,
             "nodeType": "InheritanceSpecifier",
-            "src": "213:16:17"
+            "src": "213:16:11"
           }
         ],
         "contractDependencies": [
-          713,
-          2333,
-          6509
+          55,
+          1755,
+          6788
         ],
         "contractKind": "contract",
         "documentation": null,
         "fullyImplemented": false,
-        "id": 1707,
+        "id": 1078,
         "linearizedBaseContracts": [
-          1707,
-          2333,
-          6509,
-          713
+          1078,
+          1755,
+          6788,
+          55
         ],
         "name": "IWorkerNode",
         "nodeType": "ContractDefinition",
         "nodes": [
           {
             "canonicalName": "IWorkerNode.Penalties",
-            "id": 1659,
+            "id": 1025,
             "members": [
               {
-                "id": 1654,
+                "id": 1020,
                 "name": "OfflineWhileGathering",
                 "nodeType": "EnumValue",
-                "src": "375:21:17"
+                "src": "375:21:11"
               },
               {
-                "id": 1655,
+                "id": 1021,
                 "name": "DeclinesJob",
                 "nodeType": "EnumValue",
-                "src": "406:11:17"
+                "src": "406:11:11"
               },
               {
-                "id": 1656,
+                "id": 1022,
                 "name": "OfflineWhileDataValidation",
                 "nodeType": "EnumValue",
-                "src": "427:26:17"
+                "src": "427:26:11"
               },
               {
-                "id": 1657,
+                "id": 1023,
                 "name": "FalseReportInvalidData",
                 "nodeType": "EnumValue",
-                "src": "463:22:17"
+                "src": "463:22:11"
               },
               {
-                "id": 1658,
+                "id": 1024,
                 "name": "OfflineWhileCognition",
                 "nodeType": "EnumValue",
-                "src": "495:21:17"
+                "src": "495:21:11"
               }
             ],
             "name": "Penalties",
             "nodeType": "EnumDefinition",
-            "src": "350:172:17"
+            "src": "350:172:11"
           },
           {
             "constant": false,
-            "id": 1661,
+            "id": 1027,
             "name": "activeJob",
             "nodeType": "VariableDeclaration",
-            "scope": 1707,
-            "src": "528:24:17",
+            "scope": 1078,
+            "src": "528:24:11",
             "stateVariable": true,
             "storageLocation": "default",
             "typeDescriptions": {
@@ -1234,10 +1312,10 @@
               "typeString": "bytes32"
             },
             "typeName": {
-              "id": 1660,
+              "id": 1026,
               "name": "bytes32",
               "nodeType": "ElementaryTypeName",
-              "src": "528:7:17",
+              "src": "528:7:11",
               "typeDescriptions": {
                 "typeIdentifier": "t_bytes32",
                 "typeString": "bytes32"
@@ -1247,9 +1325,35 @@
             "visibility": "public"
           },
           {
+            "constant": false,
+            "id": 1029,
+            "name": "computingPrice",
+            "nodeType": "VariableDeclaration",
+            "scope": 1078,
+            "src": "559:29:11",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1028,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "559:7:11",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
             "body": null,
             "documentation": null,
-            "id": 1664,
+            "id": 1032,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1257,20 +1361,20 @@
             "name": "destroy",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1662,
+              "id": 1030,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "575:2:17"
+              "src": "611:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1663,
+              "id": 1031,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "586:0:17"
+              "src": "622:0:11"
             },
-            "scope": 1707,
-            "src": "559:28:17",
+            "scope": 1078,
+            "src": "595:28:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1278,7 +1382,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1667,
+            "id": 1035,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1286,20 +1390,20 @@
             "name": "alive",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1665,
+              "id": 1033,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "606:2:17"
+              "src": "642:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1666,
+              "id": 1034,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "617:0:17"
+              "src": "653:0:11"
             },
-            "scope": 1707,
-            "src": "592:26:17",
+            "scope": 1078,
+            "src": "628:26:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1307,7 +1411,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1672,
+            "id": 1040,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1315,16 +1419,16 @@
             "name": "assignJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1670,
+              "id": 1038,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1669,
+                  "id": 1037,
                   "name": "_jobId",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1672,
-                  "src": "642:14:17",
+                  "scope": 1040,
+                  "src": "678:14:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1332,10 +1436,10 @@
                     "typeString": "bytes32"
                   },
                   "typeName": {
-                    "id": 1668,
+                    "id": 1036,
                     "name": "bytes32",
                     "nodeType": "ElementaryTypeName",
-                    "src": "642:7:17",
+                    "src": "678:7:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes32",
                       "typeString": "bytes32"
@@ -1345,17 +1449,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "641:16:17"
+              "src": "677:16:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1671,
+              "id": 1039,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "666:0:17"
+              "src": "702:0:11"
             },
-            "scope": 1707,
-            "src": "623:44:17",
+            "scope": 1078,
+            "src": "659:44:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1363,7 +1467,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1675,
+            "id": 1043,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1371,20 +1475,20 @@
             "name": "cancelJob",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1673,
+              "id": 1041,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "690:2:17"
+              "src": "726:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1674,
+              "id": 1042,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "701:0:17"
+              "src": "737:0:11"
             },
-            "scope": 1707,
-            "src": "672:30:17",
+            "scope": 1078,
+            "src": "708:30:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1392,7 +1496,36 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1678,
+            "id": 1046,
+            "implemented": false,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "penalized",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1044,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "761:2:11"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 1045,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "772:0:11"
+            },
+            "scope": 1078,
+            "src": "743:30:11",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          },
+          {
+            "body": null,
+            "documentation": null,
+            "id": 1049,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1400,20 +1533,20 @@
             "name": "acceptAssignment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1676,
+              "id": 1047,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "732:2:17"
+              "src": "803:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1677,
+              "id": 1048,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "743:0:17"
+              "src": "814:0:11"
             },
-            "scope": 1707,
-            "src": "707:37:17",
+            "scope": 1078,
+            "src": "778:37:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1421,7 +1554,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1681,
+            "id": 1052,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1429,20 +1562,20 @@
             "name": "declineAssignment",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1679,
+              "id": 1050,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "775:2:17"
+              "src": "846:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1680,
+              "id": 1051,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "786:0:17"
+              "src": "857:0:11"
             },
-            "scope": 1707,
-            "src": "749:38:17",
+            "scope": 1078,
+            "src": "820:38:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1450,7 +1583,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1684,
+            "id": 1055,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1458,20 +1591,20 @@
             "name": "processToDataValidation",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1682,
+              "id": 1053,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "824:2:17"
+              "src": "895:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1683,
+              "id": 1054,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "835:0:17"
+              "src": "906:0:11"
             },
-            "scope": 1707,
-            "src": "792:44:17",
+            "scope": 1078,
+            "src": "863:44:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1479,7 +1612,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1687,
+            "id": 1058,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1487,20 +1620,20 @@
             "name": "acceptValidData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1685,
+              "id": 1056,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "865:2:17"
+              "src": "936:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1686,
+              "id": 1057,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "876:0:17"
+              "src": "947:0:11"
             },
-            "scope": 1707,
-            "src": "841:36:17",
+            "scope": 1078,
+            "src": "912:36:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1508,7 +1641,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1690,
+            "id": 1061,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1516,20 +1649,20 @@
             "name": "declineValidData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1688,
+              "id": 1059,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "907:2:17"
+              "src": "978:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1689,
+              "id": 1060,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "918:0:17"
+              "src": "989:0:11"
             },
-            "scope": 1707,
-            "src": "882:37:17",
+            "scope": 1078,
+            "src": "953:37:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1537,7 +1670,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1693,
+            "id": 1064,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1545,20 +1678,20 @@
             "name": "reportInvalidData",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1691,
+              "id": 1062,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "950:2:17"
+              "src": "1021:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1692,
+              "id": 1063,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "961:0:17"
+              "src": "1032:0:11"
             },
-            "scope": 1707,
-            "src": "924:38:17",
+            "scope": 1078,
+            "src": "995:38:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1566,7 +1699,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1696,
+            "id": 1067,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1574,20 +1707,20 @@
             "name": "processToCognition",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1694,
+              "id": 1065,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "994:2:17"
+              "src": "1065:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1695,
+              "id": 1066,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1005:0:17"
+              "src": "1076:0:11"
             },
-            "scope": 1707,
-            "src": "967:39:17",
+            "scope": 1078,
+            "src": "1038:39:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1595,7 +1728,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1701,
+            "id": 1072,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1603,16 +1736,16 @@
             "name": "provideResults",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1699,
+              "id": 1070,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 1698,
+                  "id": 1069,
                   "name": "_ipfsAddress",
                   "nodeType": "VariableDeclaration",
-                  "scope": 1701,
-                  "src": "1035:18:17",
+                  "scope": 1072,
+                  "src": "1106:18:11",
                   "stateVariable": false,
                   "storageLocation": "default",
                   "typeDescriptions": {
@@ -1620,10 +1753,10 @@
                     "typeString": "bytes"
                   },
                   "typeName": {
-                    "id": 1697,
+                    "id": 1068,
                     "name": "bytes",
                     "nodeType": "ElementaryTypeName",
-                    "src": "1035:5:17",
+                    "src": "1106:5:11",
                     "typeDescriptions": {
                       "typeIdentifier": "t_bytes_storage_ptr",
                       "typeString": "bytes"
@@ -1633,17 +1766,17 @@
                   "visibility": "internal"
                 }
               ],
-              "src": "1034:20:17"
+              "src": "1105:20:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1700,
+              "id": 1071,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1063:0:17"
+              "src": "1134:0:11"
             },
-            "scope": 1707,
-            "src": "1011:53:17",
+            "scope": 1078,
+            "src": "1082:53:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1651,7 +1784,7 @@
           {
             "body": null,
             "documentation": null,
-            "id": 1704,
+            "id": 1075,
             "implemented": false,
             "isConstructor": false,
             "isDeclaredConst": false,
@@ -1659,20 +1792,20 @@
             "name": "withdrawBalance",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 1702,
+              "id": 1073,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1093:2:17"
+              "src": "1164:2:11"
             },
             "payable": false,
             "returnParameters": {
-              "id": 1703,
+              "id": 1074,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1104:0:17"
+              "src": "1175:0:11"
             },
-            "scope": 1707,
-            "src": "1069:36:17",
+            "scope": 1078,
+            "src": "1140:36:11",
             "stateMutability": "nonpayable",
             "superFunction": null,
             "visibility": "external"
@@ -1680,23 +1813,23 @@
           {
             "anonymous": false,
             "documentation": null,
-            "id": 1706,
+            "id": 1077,
             "name": "WorkerDestroyed",
             "nodeType": "EventDefinition",
             "parameters": {
-              "id": 1705,
+              "id": 1076,
               "nodeType": "ParameterList",
               "parameters": [],
-              "src": "1132:2:17"
+              "src": "1203:2:11"
             },
-            "src": "1111:24:17"
+            "src": "1182:24:11"
           }
         ],
-        "scope": 1708,
-        "src": "165:972:17"
+        "scope": 1079,
+        "src": "165:1043:11"
       }
     ],
-    "src": "0:1139:17"
+    "src": "0:1210:11"
   },
   "compiler": {
     "name": "solc",
@@ -1704,5 +1837,5 @@
   },
   "networks": {},
   "schemaVersion": "2.0.1",
-  "updatedAt": "2018-12-27T18:52:29.500Z"
+  "updatedAt": "2019-01-10T18:19:11.997Z"
 }
