@@ -12,13 +12,16 @@ library LedgersLib {
 
     using SafeMath for uint256;
 
+    // Minimum tokens value what can be added to the ledger
     uint256 private constant minimumTokensValue = 1;
 
+    // Ledger struct for storing blocked balance
     struct Ledger {
         address addr;
         uint256 balance;
     }
 
+    // Ledgers storage
     struct LedgersStorage {
         uint256 count;
         mapping (address => Ledger) ledgers;
@@ -146,13 +149,5 @@ library LedgersLib {
         require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
         require(balanceOf(store, addr) >= value, "ERROR_INSUFFICIENT_FUNDS");
         store.ledgers[addr].balance = store.ledgers[addr].balance.sub(value);
-    }
-    
-    function subX(
-        LedgersStorage storage store,
-        address addr,
-        uint256 value
-    ) internal returns (bool) {
-        return balanceOf(store, addr) >= value;
     }
 }
