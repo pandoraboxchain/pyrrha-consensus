@@ -111,11 +111,18 @@ contract('WorkerNode', (
     describe("Full workflow", () => {
 
         it("should transit thru all states", async () => {
+            
             const wrongOwner = owner4;
             const workerNodeOwner = owner5;
+            const workerNodeOwner2 = owner9;
+            const workerNodeOwner3 = owner10;
             const jobOwner = owner6;
             const datasetOwner = owner7;
             const kernelOwner = owner8;
+
+            const workerPrice1 = computingPrice;
+            const workerPrice2 = computingPrice / 2;
+            const workerPrice3 = computingPrice / 4;
 
             // get current system commission and minimumWorkerNodeStake
             const systemCommission = (await economicController.systemCommission()).toNumber();
@@ -123,20 +130,26 @@ contract('WorkerNode', (
             // get initial system balance (pandoraOwner)
             const initialSytemBalance = (await pan.balanceOf(pandora.address)).toNumber();
 
-            // Create worker node
-            const workerNode = await createWorkerNode(pandora, workerNodeOwner, computingPrice, pan, economicController);
+            // Create worker nodes
+            const workerNode = await createWorkerNode(pandora, workerNodeOwner, workerPrice1, pan, economicController);
+            const workerNode2 = await createWorkerNode(pandora, workerNodeOwner2, workerPrice2, pan, economicController);
+            const workerNode3 = await createWorkerNode(pandora, workerNodeOwner3, workerPrice3, pan, economicController);
 
             // get initial worker node balance
             const initialWorkerNodeBalance = (await pan.balanceOf(workerNodeOwner)).toNumber();
+            const initialWorkerNodeBalance2 = (await pan.balanceOf(workerNodeOwner2)).toNumber();
+            const initialWorkerNodeBalance3 = (await pan.balanceOf(workerNodeOwner3)).toNumber();
 
-            // get worker node price (max)
+            // get worker node price (max value)
             const workerNodePrice = (await pandora.getMaximumWorkerPrice()).toNumber();
             
-            // transit worker node to state Alive
+            // transit worker nodes to state Alive
             await workerNode.alive({from: workerNodeOwner});
+            await workerNode2.alive({from: workerNodeOwner2});
+            await workerNode3.alive({from: workerNodeOwner3});
 
             // Create job
-            const batchesCount = 1;
+            const batchesCount = 3;// in count of worker nodes
             const jobTx = await createCognitiveJob(pandora, batchesCount, {}, pan, economicController, jobOwner, datasetOwner, kernelOwner);
             const jobId = jobTx.logs[0].args.jobId;
             const jobDetails = await jobController.getCognitiveJobDetails(jobId);
@@ -158,48 +171,95 @@ contract('WorkerNode', (
 
             // state should be Assigned after job creation
             (await workerNode.currentState()).should.be.bignumber.equal(3);
+            (await workerNode2.currentState()).should.be.bignumber.equal(3);
+            (await workerNode3.currentState()).should.be.bignumber.equal(3);
 
             // transit to state ReadyForDataValidation
             await assertRevert(workerNode.acceptAssignment({from: wrongOwner}), '#acceptAssignment');// should fail with wrong owner
+            await assertRevert(workerNode2.acceptAssignment({from: wrongOwner}), '#acceptAssignment');// should fail with wrong owner
+            await assertRevert(workerNode3.acceptAssignment({from: wrongOwner}), '#acceptAssignment');// should fail with wrong owner
             await workerNode.acceptAssignment({from: workerNodeOwner});
+            await workerNode2.acceptAssignment({from: workerNodeOwner2});
+            await workerNode3.acceptAssignment({from: workerNodeOwner3});
             (await workerNode.currentState()).should.be.bignumber.equal(4);
+            (await workerNode2.currentState()).should.be.bignumber.equal(4);
+            (await workerNode3.currentState()).should.be.bignumber.equal(4);
 
             // transit to state ValidatingData
             await assertRevert(workerNode.processToDataValidation({from: wrongOwner}), '#processToDataValidation');// should fail with wrong owner
+            await assertRevert(workerNode2.processToDataValidation({from: wrongOwner}), '#processToDataValidation');// should fail with wrong owner
+            await assertRevert(workerNode3.processToDataValidation({from: wrongOwner}), '#processToDataValidation');// should fail with wrong owner
             await workerNode.processToDataValidation({from: workerNodeOwner});
+            await workerNode2.processToDataValidation({from: workerNodeOwner2});
+            await workerNode3.processToDataValidation({from: workerNodeOwner3});
             (await workerNode.currentState()).should.be.bignumber.equal(5);
+            (await workerNode2.currentState()).should.be.bignumber.equal(5);
+            (await workerNode3.currentState()).should.be.bignumber.equal(5);
 
             // transit to state ReadyForComputing
             await assertRevert(workerNode.acceptValidData({from: wrongOwner})), '#acceptValidData';// should fail with wrong owner
+            await assertRevert(workerNode2.acceptValidData({from: wrongOwner})), '#acceptValidData';// should fail with wrong owner
+            await assertRevert(workerNode3.acceptValidData({from: wrongOwner})), '#acceptValidData';// should fail with wrong owner
             await workerNode.acceptValidData({from: workerNodeOwner});
+            await workerNode2.acceptValidData({from: workerNodeOwner2});
+            await workerNode3.acceptValidData({from: workerNodeOwner3});
             (await workerNode.currentState()).should.be.bignumber.equal(6);
 
             // transit to state Computing
             await assertRevert(workerNode.processToCognition({from: wrongOwner}), '#processToCognition');// should fail with wrong owner
+            await assertRevert(workerNode2.processToCognition({from: wrongOwner}), '#processToCognition');// should fail with wrong owner
+            await assertRevert(workerNode3.processToCognition({from: wrongOwner}), '#processToCognition');// should fail with wrong owner
             await workerNode.processToCognition({from: workerNodeOwner});
+            await workerNode2.processToCognition({from: workerNodeOwner2});
+            await workerNode3.processToCognition({from: workerNodeOwner3});
             (await workerNode.currentState()).should.be.bignumber.equal(7);
+            (await workerNode2.currentState()).should.be.bignumber.equal(7);
+            (await workerNode3.currentState()).should.be.bignumber.equal(7);
 
             // provide job progress
             const progress_one = await workerNode.jobProgress();
+            const progress_one2 = await workerNode2.jobProgress();
+            const progress_one3 = await workerNode3.jobProgress();            
             await assertRevert(workerNode.reportProgress(10, {from: wrongOwner}), '#reportProgress');// should fail with wrong owner
-            await workerNode.reportProgress(10, {from: workerNodeOwner});            
+            await assertRevert(workerNode2.reportProgress(10, {from: wrongOwner}), '#reportProgress');// should fail with wrong owner
+            await assertRevert(workerNode3.reportProgress(10, {from: wrongOwner}), '#reportProgress');// should fail with wrong owner
+            await workerNode.reportProgress(10, {from: workerNodeOwner});
+            await workerNode2.reportProgress(10, {from: workerNodeOwner2});
+            await workerNode3.reportProgress(10, {from: workerNodeOwner3});
             const progress_two = await workerNode.jobProgress();
+            const progress_two2 = await workerNode2.jobProgress();
+            const progress_two3 = await workerNode3.jobProgress();
             (progress_two).should.be.be.bignumber.gt(progress_one);
+            (progress_two2).should.be.be.bignumber.gt(progress_one2);
+            (progress_two3).should.be.be.bignumber.gt(progress_one3);
 
             // provide results
             await assertRevert(workerNode.provideResults(0x0, {from: wrongOwner}), '#provideResults');// should fail with wrong owner
+            await assertRevert(workerNode2.provideResults(0x0, {from: wrongOwner}), '#provideResults');// should fail with wrong owner
+            await assertRevert(workerNode3.provideResults(0x0, {from: wrongOwner}), '#provideResults');// should fail with wrong owner
             await workerNode.provideResults(0x0, {from: workerNodeOwner});
+            await workerNode2.provideResults(0x0, {from: workerNodeOwner2});
+            await workerNode3.provideResults(0x0, {from: workerNodeOwner3});
 
             // Check job rewards (kernel owner, dataset owner, worker node owner, system)
             (await pan.balanceOf(kernelOwner)).should.be.bignumber.equal(funds200 + (kernelPrice - (kernelPrice / 100 * systemCommission)));
             (await pan.balanceOf(datasetOwner)).should.be.bignumber.equal(funds200 + (datasetPrice - (datasetPrice / 100 * systemCommission)));
-            (await pan.balanceOf(workerNodeOwner)).should.be.bignumber.equal(initialWorkerNodeBalance + (workerNodePrice - (workerNodePrice / 100 * systemCommission)));
+            const workerReward = initialWorkerNodeBalance + (workerNodePrice - (workerNodePrice / 100 * systemCommission));
+            const workerReward2 = initialWorkerNodeBalance2 + (workerNodePrice - (workerNodePrice / 100 * systemCommission));
+            const workerReward3 = initialWorkerNodeBalance3 + (workerNodePrice - (workerNodePrice / 100 * systemCommission));
+            (await pan.balanceOf(workerNodeOwner)).should.be.bignumber.equal(workerReward);
+            (await pan.balanceOf(workerNodeOwner2)).should.be.bignumber.equal(workerReward2);
+            (await pan.balanceOf(workerNodeOwner3)).should.be.bignumber.equal(workerReward3);
             (await pan.balanceOf(pandora.address)).should.be.bignumber.equal(initialSytemBalance + (totalJobPrice / 100 * systemCommission));
             (await economicController.balanceOf(jobOwner)).should.be.bignumber.equal(0);// all blocked funds has been spent to rewards
 
             // transit to state Offline
             await assertRevert(workerNode.offline({from: wrongOwner}), '#transitionToState');// should fail with wrong owner
+            await assertRevert(workerNode2.offline({from: wrongOwner}), '#transitionToState');// should fail with wrong owner
+            await assertRevert(workerNode3.offline({from: wrongOwner}), '#transitionToState');// should fail with wrong owner
             await workerNode.offline({from: workerNodeOwner});
+            await workerNode2.offline({from: workerNodeOwner2});
+            await workerNode3.offline({from: workerNodeOwner3});
 
             // const workersCount = await pandora.workerNodesCount();
             // let wnAddress;

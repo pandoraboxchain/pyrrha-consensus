@@ -105,7 +105,7 @@ contract EconomicController is IEconomicController, Ownable {
     }
 
     function makeRewards(bytes32 _jobId) external onlyInitiazed onlyPandoraOrJobController {
-        // get job creator
+        // get job 
         (address owner, address kernel, address dataset, , , address[] memory activeWorkers, , uint8 state) = (pandora.jobController()).getCognitiveJobDetails(_jobId);
 
         require(!rewardedJobs[_jobId], "ERROR_JOB_ALREADY_REWARDED");
@@ -125,12 +125,21 @@ contract EconomicController is IEconomicController, Ownable {
         _unblock(owner, IDataset(dataset).owner(), datasetPrice - (datasetPrice / 100 * systemCommission));
         emit RewardTransferred(_jobId, IDataset(dataset).owner(), datasetPrice - (datasetPrice / 100 * systemCommission));
 
+        // system commission from dataset
+        _unblock(owner, address(pandora), datasetPrice / 100 * systemCommission);
+        emit RewardTransferred(_jobId, address(pandora), datasetPrice / 100 * systemCommission);
+
         // transfer kernelOwner reward
         _unblock(owner, IKernel(kernel).owner(), kernelPrice - (kernelPrice / 100 * systemCommission));
         emit RewardTransferred(_jobId, IKernel(kernel).owner(), kernelPrice - (kernelPrice / 100 * systemCommission));
 
+        // system commission from kernel
+        _unblock(owner, address(pandora), kernelPrice / 100 * systemCommission);
+        emit RewardTransferred(_jobId, address(pandora), kernelPrice / 100 * systemCommission);
+
         uint256 workerPrice;
         uint256 priceDelta;
+        uint256 workersDeltaTotal = 0;
 
         // transfer rewards to workers
         for (uint256 i = 0; i < activeWorkers.length; i++) {
@@ -141,29 +150,38 @@ contract EconomicController is IEconomicController, Ownable {
             if (workerPrice < maximumWorkerPrice) {
 
                 priceDelta = maximumWorkerPrice - workerPrice;
+                workersDeltaTotal += priceDelta;
                 
                 _unblock(owner, IWorkerNode(activeWorkers[i]).owner(), workerPrice - (workerPrice / 100 * systemCommission));
                 emit RewardTransferred(_jobId, IWorkerNode(activeWorkers[i]).owner(), workerPrice - (workerPrice / 100 * systemCommission));
 
+                // System commission from the workers original price
+                _unblock(owner, address(pandora), workerPrice / 100 * systemCommission);
+                emit RewardTransferred(_jobId, address(pandora), workerPrice / 100 * systemCommission);
+
                 // Mine missing tokens
-                // workers part of mined tokens
                 panToken.mint(IWorkerNode(activeWorkers[i]).owner(), priceDelta - (priceDelta / 100 * systemCommission));
                 emit TokensMined(_jobId, priceDelta - (priceDelta / 100 * systemCommission));
                 emit RewardTransferred(_jobId, IWorkerNode(activeWorkers[i]).owner(), priceDelta - (priceDelta / 100 * systemCommission));
-                // systems part of mined tokens
+                
+                // System commission from the workers mined part
                 panToken.mint(address(pandora), priceDelta / 100 * systemCommission);
-                emit TokensMined(_jobId, priceDelta / 100 * systemCommission);
                 emit RewardTransferred(_jobId, address(pandora), priceDelta / 100 * systemCommission);
             } else {
                 _unblock(owner, IWorkerNode(activeWorkers[i]).owner(), maximumWorkerPrice - (maximumWorkerPrice / 100 * systemCommission));
                 emit RewardTransferred(_jobId, IWorkerNode(activeWorkers[i]).owner(), maximumWorkerPrice - (maximumWorkerPrice / 100 * systemCommission));
+
+                // system commission from worker
+                _unblock(owner, address(pandora), maximumWorkerPrice / 100 * systemCommission);
+                emit RewardTransferred(_jobId, address(pandora), maximumWorkerPrice / 100 * systemCommission);
             }
         }
 
-        // transfer system commission
-        uint256 totalJobPrice = datasetPrice + kernelPrice + maximumWorkerPrice * IDataset(dataset).batchesCount();
-        _unblock(owner, address(pandora), totalJobPrice / 100 * systemCommission);
-        emit RewardTransferred(_jobId, address(pandora), totalJobPrice / 100 * systemCommission);
+        if (workersDeltaTotal > 0) {
+            // Refund workers price delta to the job owner
+            _unblock(owner, owner, workersDeltaTotal);
+            emit RefundedDelta(_jobId, owner, workersDeltaTotal);
+        }
     }
 
     function blockTokens(uint256 value) public {
@@ -195,13 +213,6 @@ contract EconomicController is IEconomicController, Ownable {
         ledgers.add(addr, value);
     }
 
-    function _sub(
-        address from,
-        uint256 value
-    ) private onlyInitiazed {
-        ledgers.sub(from, value);
-    }
-
     function _block(
         address from,
         uint256 value
@@ -218,7 +229,7 @@ contract EconomicController is IEconomicController, Ownable {
     ) private onlyInitiazed {
         require(to != address(0), "ERROR_INVALID_ADDRESS");
         panToken.transfer(to, value);
-        _sub(from, value);
+        ledgers.sub(from, value);
         emit UnblockedTokens(from, to, value);
     }
 }

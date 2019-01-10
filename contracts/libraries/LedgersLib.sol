@@ -146,5 +146,13 @@ library LedgersLib {
         require(isLedgerExists(store, addr), "ERROR_LEDGER_NOT_EXISTS");
         require(balanceOf(store, addr) >= value, "ERROR_INSUFFICIENT_FUNDS");
         store.ledgers[addr].balance = store.ledgers[addr].balance.sub(value);
-    }    
+    }
+    
+    function subX(
+        LedgersStorage storage store,
+        address addr,
+        uint256 value
+    ) internal returns (bool) {
+        return balanceOf(store, addr) >= value;
+    }
 }

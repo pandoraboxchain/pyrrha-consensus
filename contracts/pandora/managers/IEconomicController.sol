@@ -60,6 +60,12 @@ contract IEconomicController {
         uint256 value
     );
 
+    event RefundedDelta(
+        bytes32 indexed jobId,
+        address indexed to,
+        uint256 value
+    );
+
     function blockWorkerNodeStake() external {}// block tokens from sender with worker node stake amount control
     function blockWorkerNodeStakeFrom(address from) external {}
     function hasAvailableFunds(address addr) external view returns (bool) {}
