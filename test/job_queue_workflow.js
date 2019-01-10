@@ -1,17 +1,22 @@
+const Pan = artifacts.require('Pan');
 const Pandora = artifacts.require('Pandora');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
 const WorkerNode = artifacts.require('WorkerNode');
+const EconomicController = artifacts.require('EconomicController');
 // const CognitiveJob = artifacts.require('CognitiveJob');
 
 const assertRevert = require('./helpers/assertRevert');
+const toPan = require('./helpers/toPan');
 
 contract('CognitiveJobQueue', accounts => {
 
     let datasetIpfsAddress = 'QmSFdikKbHCBnTRMgxcakjLQD5E6Nbmoo69YbQPM9ACXJj';
     let kernelIpfsAddress = 'QmZ2ThDyq5jZSGpniUMg1gbJPzGk4ASBxztvNYvaqq6MzZ';
 
+    let pan;
     let pandora;
+    let economicController;
 
     let workerNode;
     let workerNode1;
@@ -25,12 +30,24 @@ contract('CognitiveJobQueue', accounts => {
     const workerOwner2 = accounts[4];
     const customer = accounts[5];
 
+    const computingPrice = 1000000000000000000;
+
     before('setup test job queue workflow', async () => {
 
         pandora = await Pandora.deployed();
+        pan = await Pan.deployed();
+        economicController = await EconomicController.deployed();
+
+        await pan.transfer(workerOwner0, toPan(200), { from: accounts[0] });
+        await pan.transfer(workerOwner1, toPan(200), { from: accounts[0] });
+        await pan.transfer(workerOwner2, toPan(200), { from: accounts[0] });
 
         await pandora.whitelistWorkerOwner(workerOwner0);
-        workerNode = await pandora.createWorkerNode({
+
+        const minStake = await economicController.minimumWorkerNodeStake();
+        await pan.approve(economicController.address, minStake, {from: workerOwner0});
+
+        workerNode = await pandora.createWorkerNode(computingPrice, {
             from: workerOwner0
         });
 
@@ -80,8 +97,11 @@ contract('CognitiveJobQueue', accounts => {
 
         // Setup 2 additional worker nodes, so they could take queued job after any current job being finished;
 
+        const minStake = await economicController.minimumWorkerNodeStake();
+
         //#2
         await pandora.whitelistWorkerOwner(workerOwner1);
+        await pan.approve(economicController.address, minStake, {from: workerOwner1});
         workerNode1 = await pandora.createWorkerNode({from: workerOwner1});
 
         const idleWorkerAddress1 = await pandora.workerNodes.call(1);
@@ -91,6 +111,7 @@ contract('CognitiveJobQueue', accounts => {
 
         //#3
         await pandora.whitelistWorkerOwner(workerOwner2);
+        await pan.approve(economicController.address, minStake, {from: workerOwner2});
         workerNode2 = await pandora.createWorkerNode({from: workerOwner2});
 
         const idleWorkerAddress2 = await pandora.workerNodes.call(2);

@@ -40,6 +40,14 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
         _;
     }
 
+    modifier requireOfflineStates() {
+        require(
+            stateMachine.currentState == Uninitialized ||
+            stateMachine.currentState == Offline ||
+            stateMachine.currentState == UnderPenalty);
+        _;
+    }
+
     /// @dev Private method initializing state machine. Must be called only once from the contract constructor
     function _initStateMachine() internal {
         // Creating table of possible state transitions
@@ -133,7 +141,7 @@ contract WorkerNode is IWorkerNode, StateMachine   /* final */ {
 
     function alive() external
         onlyOwner
-        requireState(Offline)
+        requireOfflineStates
     {
         if (economicController.hasAvailableFunds(owner())) {
             _transitionToState(Idle);
