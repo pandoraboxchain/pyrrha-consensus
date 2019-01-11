@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "./ICognitiveJobController.sol";
 import "./IEconomicController.sol";

@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../../lifecycle/Initializable.sol";
 import "./IWorkerNodeManager.sol";

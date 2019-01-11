@@ -1,4 +1,4 @@
-pragma solidity 0.4.24;
+pragma solidity ^0.4.24;
 
 import "../entities/IKernel.sol";
 import "../entities/IDataset.sol";
