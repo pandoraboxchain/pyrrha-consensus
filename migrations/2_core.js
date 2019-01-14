@@ -60,6 +60,8 @@ module.exports = (deployer, network, accounts) => {
         .then(_ => reputation.transferOwnership(pandora.address))
         .then(_ => pandora.initialize())
         .then(_ => economicController.initialize(pandora.address))
+        .then(_ => saveAddressToFile(deployer.basePath, 'Pan.json', JSON.stringify(pan.address)))
+        .then(_ => saveAddressToFile(deployer.basePath, 'EconomicController.json', JSON.stringify(economicController.address)))
         .then(_ => saveAddressToFile(deployer.basePath, 'Pandora.json', JSON.stringify(pandora.address)))
         .catch(console.error);
 };
