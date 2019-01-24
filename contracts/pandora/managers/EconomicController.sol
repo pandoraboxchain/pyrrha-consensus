@@ -137,28 +137,31 @@ contract EconomicController is IEconomicController, Ownable {
         address workerNodeAddr,
         IWorkerNode.Penalties reason
     ) external onlyInitiazed onlyPandoraOrJobController {        
-        IWorkerNode workerNode = IWorkerNode(workerNodeAddr);
-        uint256 penaltyValue;
 
-        if (reason == IWorkerNode.Penalties.OfflineWhileGathering) {
-            penaltyValue = workerNode.computingPrice();
-        } else if (reason == IWorkerNode.Penalties.DeclinesJob) {
-            penaltyValue = workerNode.computingPrice();
-        } else if (reason == IWorkerNode.Penalties.OfflineWhileDataValidation) {
-            // ??? not implemented yet
-        } else if (reason == IWorkerNode.Penalties.FalseReportInvalidData) {
-            penaltyValue = ledgers.balanceOf(workerNode.owner());// expropriate a whole worker node stake
-        } else if (reason == IWorkerNode.Penalties.OfflineWhileCognition) {
-           penaltyValue = workerNode.computingPrice(); 
-        } else {
-            revert("ERROR_UNKNOWN_PENALTY_REASON");
-        }
+        /// @todo Uncomment disabled penalty application
 
-        if (penaltyValue > 0) {
-            _unblock(workerNode.owner(), address(pandora), penaltyValue);
-            workerNode.penalized();// Move worker node to the UnderPenalty state
-            emit PenaltyApplied(workerNode.owner(), reason, penaltyValue);
-        }        
+        // IWorkerNode workerNode = IWorkerNode(workerNodeAddr);
+        // uint256 penaltyValue;
+
+        // if (reason == IWorkerNode.Penalties.OfflineWhileGathering) {
+        //     penaltyValue = workerNode.computingPrice();
+        // } else if (reason == IWorkerNode.Penalties.DeclinesJob) {
+        //     penaltyValue = workerNode.computingPrice();
+        // } else if (reason == IWorkerNode.Penalties.OfflineWhileDataValidation) {
+        //     // ??? not implemented yet
+        // } else if (reason == IWorkerNode.Penalties.FalseReportInvalidData) {
+        //     penaltyValue = ledgers.balanceOf(workerNode.owner());// expropriate a whole worker node stake
+        // } else if (reason == IWorkerNode.Penalties.OfflineWhileCognition) {
+        //    penaltyValue = workerNode.computingPrice(); 
+        // } else {
+        //     revert("ERROR_UNKNOWN_PENALTY_REASON");
+        // }
+
+        // if (penaltyValue > 0) {
+        //     _unblock(workerNode.owner(), address(pandora), penaltyValue);
+        //     workerNode.penalized();// Move worker node to the UnderPenalty state
+        //     emit PenaltyApplied(workerNode.owner(), reason, penaltyValue);
+        // }        
     }
 
     /**
