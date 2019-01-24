@@ -273,7 +273,7 @@ contract('WorkerNode', (
         });        
     });
 
-    describe('Worker node penalties', () => {
+    describe.skip('Worker node penalties', () => {
 
         it('OfflineWhileGathering', async () => {
             const workerNode1 = await createWorkerNode(pandora, owner8, computingPrice, pan, economicController);
