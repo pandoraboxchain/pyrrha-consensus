@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
@@ -17,10 +17,13 @@ contract IWorkerNode is IStateMachine, Ownable, WorkerNodeStates {
 
     bytes32 public activeJob;
 
+    uint256 public computingPrice;
+
     function destroy() external;
     function alive() external;
     function assignJob(bytes32 _jobId) external;
     function cancelJob() external;
+    function penalized() external;
     function acceptAssignment() external;
     function declineAssignment() external;
     function processToDataValidation() external;

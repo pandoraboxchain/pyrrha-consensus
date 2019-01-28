@@ -1,4 +1,5 @@
 const assertRevert = require('./helpers/assertRevert');
+const Pan = artifacts.require('Pan');
 const Pandora = artifacts.require('Pandora');
 const CognitiveJobController = artifacts.require('CognitiveJobController');
 const Dataset = artifacts.require('Dataset');
@@ -29,13 +30,15 @@ contract.skip('Entities', accounts => {
     const workerOwner2 = accounts[4];
     const customer = accounts[5];
 
+    const computingPrice = 1000000000000000000;
+
     before('setup test entities', async () => {
 
         jobController = await CognitiveJobController.deployed();
         pandora = await Pandora.deployed();
 
         await pandora.whitelistWorkerOwner(workerOwner);
-        workerNode = await pandora.createWorkerNode({from: workerOwner});
+        workerNode = await pandora.createWorkerNode(computingPrice, {from: workerOwner});
 
         const idleWorkerAddress = await pandora.workerNodes.call(0);
 

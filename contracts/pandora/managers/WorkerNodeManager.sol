@@ -1,7 +1,9 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "../../lifecycle/Initializable.sol";
 import "./IWorkerNodeManager.sol";
+import "./ICognitiveJobManager.sol";
+
 
 /**
  * @title Pandora Smart Contract
@@ -17,7 +19,7 @@ import "./IWorkerNodeManager.sol";
  * and Pandora contracts just simply inherits PAN contract.
  */
 
-contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
+contract WorkerNodeManager is Initializable, Ownable, ICognitiveJobManager, IWorkerNodeManager {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -117,7 +119,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
     onlyOwner // Only by owner of Pandora contract
     external {
         // Whitelist is organised in a form of mapping with whitelisted addresses set to "true"
-        workerNodeOwners[_workerOwner] = true;
+        workerNodeOwners[_workerOwner] = true;        
     }
 
     /// @notice Removes address from the whitelist of owners allowed to create WorkerNodes contracts
@@ -144,7 +146,7 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
 
     /// @notice Creates, registers and returns a new worker node owned by the caller of the contract.
     /// Can be called only by the whitelisted node owner address.
-    function createWorkerNode()
+    function createWorkerNode(uint256 computingPrice)
     external
     onlyInitialized
     onlyWhitelistedOwners
@@ -157,10 +159,13 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
         /// Check that we do not reach limits in the node count
         require(workerNodes.length < 2 ^ 16 - 1);
 
-        // @todo Check the stake and bind it
+        require(computingPrice >= 1, "ERROR_INVALID_COMPUTING_PRICE");
+
+        // Check the stake and bind it
+        economicController.blockWorkerNodeStakeFrom(msg.sender);
 
         // Creating worker node by using factory. See `properlyInitialized` comments for more details on factories
-        IWorkerNode workerNode = workerNodeFactory.create(msg.sender);
+        IWorkerNode workerNode = workerNodeFactory.create(msg.sender, address(economicController), computingPrice);
         // We do not check the created `workerNode` since all checks are done by the factory class
         workerNodes.push(workerNode);
         // Saving index of the node in the `workerNodes` array (index + 1, zero is reserved for non-existing values)
@@ -180,7 +185,8 @@ contract WorkerNodeManager is Initializable, Ownable, IWorkerNodeManager {
         // @fixme Implement the modifier and uncomment
     onlyInitialized {
         /// Can be called only by the assigned cognitive job
-        /// @todo Implement penalties from the bound worker node stakes
+        
+        // applyPenalty(_reason, _guiltyWorker.owner());
     }
 
     /// @notice Removes worker from the workers list and destroys it. Can be called only by the worker node owner

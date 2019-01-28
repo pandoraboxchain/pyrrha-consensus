@@ -21,9 +21,9 @@ fi
 
 start_ganache() {
   if [ "$SOLIDITY_COVERAGE" = true ]; then
-    npx testrpc-sc --gasLimit 0xfffffffffff --port="$ganache_port" --defaultBalanceEther=1000000 --accounts=10 > /dev/null &
-  else
-    npx ganache-cli --gasLimit 0xfffffffffff --port="$ganache_port" --defaultBalanceEther=1000000 --accounts=10 > /dev/null &
+    npx testrpc-sc --gasLimit 0xfffffffffff --port="$ganache_port" --defaultBalanceEther=1000000 --accounts=20 > /dev/null &
+  else 
+    npx ganache-cli --gasLimit 0xfffffffffff --port="$ganache_port" --defaultBalanceEther=1000000 --accounts=20 > /dev/null &
   fi    
 
   ganache_pid=$!
@@ -35,7 +35,7 @@ ganache_running() {
 }
 
 if ganache_running; then
-  echo "Using existing ganache instance"
+  echo "Using existing ganache instance (pid: $ganache_pid)"
 else
   echo "Starting our own ganache instance"
   start_ganache
@@ -44,5 +44,5 @@ fi
 if [ "$SOLIDITY_COVERAGE" = true ]; then
   npx solidity-coverage  
 else
-  npx --node-arg=--max-old-space-size=4096 truffle test --network ganache_cli
+  npx --node-arg=--max-old-space-size=4096 truffle test --network ganache #./test/worker_node.js
 fi

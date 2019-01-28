@@ -1,7 +1,9 @@
+const Pan = artifacts.require('Pan');
 const Pandora = artifacts.require('Pandora');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
 const WorkerNode = artifacts.require('WorkerNode');
+const EconomicController = artifacts.require('EconomicController');
 // const CognitiveJob = artifacts.require('CognitiveJob');
 
 const {
@@ -35,7 +37,9 @@ const {
 
 contract.skip('WorkerNodeManager', accounts => {
 
+    let pan;
     let pandora;
+    let economicController;
 
     let workerInstance0;
     let workerInstance1;
@@ -48,6 +52,13 @@ contract.skip('WorkerNodeManager', accounts => {
 
     before('setup test worker node manager', async () => {
         pandora = await Pandora.deployed();
+        pan = await Pan.deployed();
+        economicController = await EconomicController.deployed();
+
+        await pan.transfer(workerOwner0, toPan(200), { from: accounts[0] });
+        await pan.transfer(workerOwner1, toPan(200), { from: accounts[0] });
+        await pan.transfer(workerOwner2, toPan(200), { from: accounts[0] });
+        await pan.transfer(customer, toPan(200), { from: accounts[0] });
     });
 
     describe("whitelistWorkerOwner", () => {
@@ -122,7 +133,7 @@ contract.skip('WorkerNodeManager', accounts => {
         });
 
         it.skip("should destroy worker node", async() => {
-            workerInstance1 = await createWorkerNode(pandora, workerOwner1);
+            workerInstance1 = await createWorkerNode(pandora, workerOwner1, computingPrice, pan, economicController);
             await aliveWorker(workerInstance1, workerOwner1);
             
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE);

@@ -6,6 +6,39 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 // Contract implement main cognitive job functionality
 contract ICognitiveJobController is Ownable{
 
+    enum WorkerResponses {
+        Assignment,
+        DataValidation,
+        Result
+    }
+
+    enum States {
+        Uninitialized,
+        GatheringWorkers,
+        InsufficientWorkers,
+        DataValidation,
+        InvalidData,
+        Cognition,
+        PartialResult,
+        Completed,
+        Destroyed
+    }
+
+    struct CognitiveJob {
+        bytes32 id;
+        address owner;
+        address kernel;
+        address dataset;
+        uint256 complexity; //todo find better name
+        bytes32 description;
+        address[] activeWorkers;
+        bytes[] ipfsResults;
+        uint32[] responseTimestamps; // time of each worker response
+        bool[] responseFlags;
+        uint8 progress;
+        uint8 state;
+    }
+
     /*******************************************************************************************************************
      * ## Storage
      */
@@ -22,6 +55,7 @@ contract ICognitiveJobController is Ownable{
     external
     view
     returns (
+        address owner,
         address kernel,
         address dataset,
         uint256 complexity,
@@ -33,6 +67,7 @@ contract ICognitiveJobController is Ownable{
 
     function createCognitiveJob (
         bytes32 _id,
+        address _owner,
         address _kernel,
         address _dataset,
         address[] _assignedWorkers,

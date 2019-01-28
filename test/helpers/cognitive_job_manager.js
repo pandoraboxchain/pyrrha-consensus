@@ -16,6 +16,7 @@ const {
     JOB_STATES,
     EMPTY
 } = require("../constants");
+const toPan = require('./toPan');
 
 const datasetIpfsAddress = 'QmSFdikKbHCBnTRMgxcakjLQD5E6Nbmoo69YbQPM9ACXJj';
 const kernelIpfsAddress = 'QmZ2ThDyq5jZSGpniUMg1gbJPzGk4ASBxztvNYvaqq6MzZ';
@@ -74,11 +75,22 @@ module.exports.provideResults = async (pandora, workerInstance, workerOwner, opt
     assert.equal(workerState, WORKER_STATE_IDLE);
 };
 
-module.exports.createCognitiveJob = async (pandora, batchesCount, opts = {}) => {
-    const options = assign({}, {value: web3.toWei(0.5)}, opts);
-    const testDataset = await Dataset.new(datasetIpfsAddress, 1, batchesCount, 10, "m-a", "d-n");
-    const testKernel = await Kernel.new(kernelIpfsAddress, 1, 2, 3, "m-a", "d-n");
+module.exports.createCognitiveJob = async (pandora, batchesCount, opts = {}, pan, controller, jobOwner, datasetOwner, kernelOwner) => {
+    const datasetPrice = toPan(5);
+    const kernelPrice = toPan(3);
+    
+    const testDataset = await Dataset.new(datasetIpfsAddress, 1, batchesCount, datasetPrice, "m-a", "d-n", {from: datasetOwner});
+    const testKernel = await Kernel.new(kernelIpfsAddress, 1, 2, kernelPrice, "m-a", "d-n", {from: kernelOwner});
+    
+    const batchPrice = await pandora.getMaximumWorkerPrice({from: jobOwner});    
+    const totalJobPrice = Math.ceil(datasetPrice + kernelPrice + batchPrice.toNumber() * batchesCount);
 
+    await pan.approve(controller.address, totalJobPrice, {from: jobOwner});
+    
+    const options = assign({}, {
+        value: web3.toWei(0.5),
+        from: jobOwner
+    }, opts);
     return await pandora.createCognitiveJob(testKernel.address, testDataset.address, 100, "d-n", options);
 };
 

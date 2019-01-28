@@ -17,13 +17,6 @@ Core contract is [`Pandora.sol`](contracts/pandora/Pandora.sol), you can look th
 ## Deployment
 Contract deployment is tested with local Ganache, Ethereum Testnets (Ropsten, Rinkeby) and RSK testnet.  
 
-## Contracts documentation
-Automatically generated documentation is placed in repository folder [./docs](https://github.com/pandoraboxchain/pyrrha-consensus/tree/master/docs)
-For updating a documentation please run:
-```sh
-npm run docs
-```
-
 ## Linting and testing
 ```sh
 npm run lint
@@ -35,6 +28,9 @@ npm run test:coverage
 npm run coveralls
 ```  
 Linting and test covering will be done automatically (by CI system) every commit to the repository.
+
+## Notes about internal economic
+Notes about changes related to the internal economic can be found here: [economic-notes.md](./economic-notes.md)
 
 ## Known problems
 ### Deployment to the Ropsten network

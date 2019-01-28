@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 
 import "../factories/WorkerNodeFactory.sol";
@@ -12,7 +12,7 @@ contract IWorkerNodeManager {
     /// @notice Returns count of registered worker nodes
     function workerNodesCount() public view returns (uint);
 
-    function createWorkerNode() external returns (IWorkerNode);
+    function createWorkerNode(uint256 computingPrice) external returns (IWorkerNode);
     function penaltizeWorkerNode(IWorkerNode guilty, IWorkerNode.Penalties reason) external;
     function destroyWorkerNode(IWorkerNode node) external;
 

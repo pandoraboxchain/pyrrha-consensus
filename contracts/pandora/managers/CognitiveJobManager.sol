@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "../../lifecycle/Initializable.sol";
@@ -7,6 +7,9 @@ import "./ICognitiveJobManager.sol";
 import "./WorkerNodeManager.sol";
 import "../token/Reputation.sol";
 import "./ICognitiveJobController.sol";
+import "../../nodes/IWorkerNode.sol";
+import "./IEconomicController.sol";
+import "../token/Pan.sol";
 
 import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
 
@@ -20,8 +23,7 @@ import {JobQueueLib as JQL} from "../../libraries/JobQueueLib.sol";
  * See section ["3.3. Proof of Cognitive Work (PoCW)" in Pandora white paper](https://steemit.com/cryptocurrency/%40pandoraboxchain/world-decentralized-ai-on-blockchain-with-cognitive-mining-and-open-markets-for-data-and-algorithms-pandora-boxchain)
  * for more details.
  */
-
-contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
+contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager  {
 
     /*******************************************************************************************************************
      * ## Storage
@@ -57,6 +59,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     // Controller for CognitiveJobs
     ICognitiveJobController public jobController;
 
+    // Pan token
+    Pan public panToken;
+
     using SafeMath for uint;
 
     /*******************************************************************************************************************
@@ -78,15 +83,22 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     /// of worker nodes contracts
     constructor(
         ICognitiveJobController _jobController, /// Controller with all cognitive job logic and storage
+        IEconomicController _economicController, 
         IWorkerNodeFactory _nodeFactory, /// Factory class for creating WorkerNode contracts
-        IReputation _reputation
+        IReputation _reputation,
+        Pan _pan
     )
     public
-    WorkerNodeManager(_nodeFactory) {
-
+    WorkerNodeManager(_nodeFactory)
+    {
         jobController = _jobController;
+        economicController = _economicController;
+
         // Init reputation storage contract
         reputation = _reputation;
+
+        // Init Pan token
+        panToken = _pan;
 
         // Initializing worker lottery engine
         workerLotteryEngine = new RandomEngine();
@@ -97,6 +109,27 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
      */
 
     /// ### Public
+
+    /**
+     * @dev Gets a maximum worker price value
+     */
+    function getMaximumWorkerPrice() public view returns (uint256 maximumPrice) {
+        maximumPrice = 0;
+
+        for (uint i = 0; i < workerNodes.length; i++) {
+
+            if (workerNodes[i].computingPrice() > maximumPrice) {
+                maximumPrice = workerNodes[i].computingPrice();
+            }
+        }
+
+        return maximumPrice;
+    }
+
+    function withdrawSystemTokens(address _to, uint256 _value) external onlyOwner {
+        require(panToken.balanceOf(address(this)) >= _value, "ERROR_INSUFFICIENT_FUNDS");
+        panToken.transfer(_to, _value);
+    }
 
     /// @notice Public function which checks queue of jobs and create new jobs
     /// #dev Function is called by worker owner, after finalize congitiveJob (but could be called by any address)
@@ -202,6 +235,9 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         // @todo check payment corresponds to required amount + gas payment - (fixed value + #batches * value)
         require(msg.value >= REQUIRED_DEPOSIT);
 
+        // Block required amount of tokens
+        economicController.blockTokensFrom(msg.sender, _dataset.currentPrice() + _kernel.currentPrice() + getMaximumWorkerPrice() * batchesCount);
+
         // Counting number of available worker nodes (in Idle state)
         // Since Solidity does not supports dynamic in-memory arrays (yet), has to be done in two-staged way:
         // first by counting array size and then by allocating and populating array itself
@@ -216,6 +252,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             // Put task in queue
             jobQueue.put(
                 o_jobId,
+                msg.sender,
                 address(_kernel),
                 address(_dataset),
                 msg.sender,
@@ -237,7 +274,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
             // Running lottery to select worker node to be assigned cognitive job contract
             IWorkerNode[] memory assignedWorkers = _selectWorkersWithLottery(idleWorkers, batchesCount);
 
-            _initCognitiveJob(o_jobId, _kernel, _dataset, assignedWorkers, _complexity, _description);
+            _initCognitiveJob(o_jobId, msg.sender, _kernel, _dataset, assignedWorkers, _complexity, _description);
             o_resultCode = RESULT_CODE_JOB_CREATED;
 
             emit CognitiveJobCreated(o_jobId);
@@ -253,18 +290,25 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         return jobQueue.queueDepth();
     }
 
+    /**
+     * @dev Provide job result by worker
+     * @param _jobId Job Id
+     * @param _ipfsResults IPFS link to job result
+     * @notice Throw if worker has no funds on stake balance
+     */
     function provideResults(
         bytes32 _jobId,
         bytes _ipfsResults
     )
-    external {
+    external     
+    {
         //todo get workerId with workerController in new v.
         if (jobController.completeWork(_jobId, msg.sender, _ipfsResults)) {
             // Increase reputation of workers involved to computation
             //todo add koef for complexity-reputation
             uint256 complexity;
             address[] memory activeWorkers;
-            ( , ,complexity, ,activeWorkers, , ) = jobController.getCognitiveJobDetails(_jobId);
+            ( , , ,complexity, ,activeWorkers, , ) = jobController.getCognitiveJobDetails(_jobId);
             for (uint256 i = 0; i < activeWorkers.length; i++) {
                 reputation.incrReputation(
                     activeWorkers[i],
@@ -276,16 +320,30 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     function respondToJob(
         bytes32 _jobId,
         uint8 _responseType,
-        bool _response)
-    external {
-        //todo implement get workerId with worker controller in new version
+        bool _response) 
+    external     
+    {
+        require(economicController.positiveWorkerNodeStake(msg.sender), "ERROR_NEGATIVE_WORKER_NODE_STAKE");
+
+        // Apply penalty to worker node if assigned job has been declined
+        if (_responseType == 0 && _response == false) {
+            economicController.applyPenalty(msg.sender, IWorkerNode.Penalties.DeclinesJob);            
+        }
+
         jobController.respondToJob(_jobId, msg.sender, _responseType, _response);
     }
 
+    /**
+     * @dev Commit progress of job by worker
+     * @param _jobId Job Id
+     * @param _percent Prcesnt of job to finish
+     * @notice Throw if worker has no funds on stake balance
+     */
     function commitProgress(
         bytes32 _jobId,
         uint8 _percent)
-    external {
+    external     
+    {
         //todo implement get workerId with worker controller in new version
         jobController.commitProgress(_jobId, msg.sender, _percent);
     }
@@ -302,6 +360,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     ) {
         _initCognitiveJob(
             queuedJob.id,
+            queuedJob.owner,
             IKernel(queuedJob.kernel),
             IDataset(queuedJob.dataset),
             assignedWorkers,
@@ -316,6 +375,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     /// Used both by `createCognitiveJob()` and `_checksJobQueue()` methods.
     function _initCognitiveJob(
         bytes32 _id,
+        address _owner,
         IKernel _kernel, /// Pre-initialized kernel data entity contract (taken from `createCognitiveJob` arguments or
     /// from the the `cognitiveJobQueue` `QueuedJob` structure)
         IDataset _dataset, /// Pre-initialized dataset entity contract (taken from `createCognitiveJob` arguments or
@@ -336,6 +396,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
 
         jobController.createCognitiveJob(
             _id,
+            _owner,
             address(_kernel),
             address(_dataset),
             workerAddresses,
@@ -361,6 +422,7 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
     ) {
         assignedWorkers = new IWorkerNode[](_numberWorkersRequired);
         uint no = workerLotteryEngine.getRandom(assignedWorkers.length);
+
         for (uint i = 0; i < assignedWorkers.length; i++) {
             assignedWorkers[i] = _idleWorkers[no];
             no = (no == assignedWorkers.length - 1) ? 0 : no + 1;
@@ -378,11 +440,20 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         uint o_estimatedSize /// Amount of currently available (Idle) WorkerNodes
     ) {
         o_estimatedSize = 0;
+
         for (uint i = 0; i < workerNodes.length; i++) {
-            if (workerNodes[i].currentState() == workerNodes[i].Idle()) {
+
+            if (workerNodes[i].currentState() == workerNodes[i].Offline()) {
+                economicController.applyPenalty(workerNodes[i], IWorkerNode.Penalties.OfflineWhileGathering);                
+            }
+
+            if (workerNodes[i].currentState() == workerNodes[i].Idle() && 
+                economicController.positiveWorkerNodeStake(workerNodes[i])) {
+
                 o_estimatedSize++;
             }
         }
+
         return o_estimatedSize;
     }
 
@@ -400,7 +471,11 @@ contract CognitiveJobManager is ICognitiveJobManager, WorkerNodeManager {
         IWorkerNode[] memory idleWorkers = new IWorkerNode[](_estimatedSize);
         uint256 actualSize = 0;
         for (uint j = 0; j < workerNodes.length; j++) {
-            if (workerNodes[j].currentState() == workerNodes[j].Idle()) {
+
+            // Choose idle workers with positive stake
+            if (workerNodes[j].currentState() == workerNodes[j].Idle() && 
+                economicController.positiveWorkerNodeStake(workerNodes[j])) {
+
                 idleWorkers[actualSize++] = workerNodes[j];
             }
         }

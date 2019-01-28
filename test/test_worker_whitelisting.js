@@ -1,19 +1,24 @@
+const BigNumber = web3.BigNumber;
+require('chai')
+    .use(require('chai-bignumber')(BigNumber))
+    .should();
+const assertRevert = require('./helpers/assertRevert');
+
 const Pandora = artifacts.require('Pandora');
 
-contract('Pandora', accounts => {
+contract('Pandora', ([owner1, owner2, owner3]) => {
 
-    let pandora;
+    let pandora;    
 
     before('setup', async () => {
-
-        pandora = await Pandora.deployed();
+        pandora = await Pandora.deployed();        
     });
 
-    it('Account #0 should be whitelisted during deployment', async () => {
+    describe('#whitelistWorkerOwner', () => {
 
-        const result = await pandora.workerNodeOwners(accounts[0]);
-        // console.log(result);
-
-        assert.equal(result, true, 'account #0 should be whitelisted');
-    });
+        it('add an owner to the whitelist', async () => {
+            await pandora.whitelistWorkerOwner(owner2);
+            (await pandora.workerNodeOwners(owner2)).should.equal(true);
+        });        
+    });    
 });

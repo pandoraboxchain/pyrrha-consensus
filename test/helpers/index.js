@@ -6,6 +6,7 @@ const assertSuccessResultCode = require('./assertSuccessResultCode');
 const assertWorkerState = require('./assertWorkerState');
 const expectThrow = require('./expectThrow');
 const getGasPrice = require('./getGasPrice');
+const eventFired = require('./eventFired');
 
 
 module.exports.assertFailureResultCode = assertFailureResultCode;
@@ -16,3 +17,4 @@ module.exports.assertSuccessResultCode = assertSuccessResultCode;
 module.exports.assertWorkerState = assertWorkerState;
 module.exports.expectThrow = expectThrow;
 module.exports.getGasPrice = getGasPrice;
+module.exports.eventFired = eventFired;

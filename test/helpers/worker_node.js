@@ -1,4 +1,6 @@
-module.exports.aliveWorker = async (worker, owner) => {
+module.exports.aliveWorker = async (worker, owner, pan, controller) => {
+    const minStake = await controller.minimumWorkerNodeStake();
+    await pan.approve(controller.address, minStake, {from: owner});
     return await worker.alive({from: owner});
 };
 

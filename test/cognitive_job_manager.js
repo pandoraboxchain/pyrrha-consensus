@@ -1,8 +1,10 @@
+const Pan = artifacts.require('Pan');
 const Pandora = artifacts.require('Pandora');
 const Dataset = artifacts.require('Dataset');
 const Kernel = artifacts.require('Kernel');
 const WorkerNode = artifacts.require('WorkerNode');
 const CognitiveJobController = artifacts.require('CognitiveJobController');
+const EconomicController = artifacts.require('EconomicController');
 
 const assertRevert = require('./helpers/assertRevert');
 const assertWorkerState = require('./helpers/assertWorkerState');
@@ -18,6 +20,8 @@ const {
 const {
     aliveWorker
 } = require("./helpers/worker_node");
+
+const toPan = require('./helpers/toPan');
 
 const {
     acceptAssignment,
@@ -46,8 +50,10 @@ const {
 
 contract('CognitiveJobManager', accounts => {
 
+    let pan;
     let pandora;
     let jobController;
+    let economicController;
 
     let workerInstance0;
     let workerInstance1;
@@ -57,14 +63,24 @@ contract('CognitiveJobManager', accounts => {
     const workerOwner1 = accounts[3];
     const workerOwner2 = accounts[4];
     const customer = accounts[5];
+    const datasetOwner = accounts[6];
+    const kernelOwner = accounts[7];
+
+    const computingPrice = 1000000000000000000;
 
     before('setup test cognitive job manager', async () => {
+        pan = await Pan.deployed();
         pandora = await Pandora.deployed();
         jobController = await CognitiveJobController.deployed();
+        economicController = await EconomicController.deployed();
 
-        workerInstance0 = await createWorkerNode(pandora, workerOwner0);
-        workerInstance1 = await createWorkerNode(pandora, workerOwner1);
-        await aliveWorker(workerInstance0, workerOwner0);
+        await pan.transfer(workerOwner0, toPan(200), { from: accounts[0] });
+        await pan.transfer(workerOwner1, toPan(200), { from: accounts[0] });
+        await pan.transfer(customer, toPan(200), { from: accounts[0] });
+
+        workerInstance0 = await createWorkerNode(pandora, workerOwner0, computingPrice, pan, economicController);
+        workerInstance1 = await createWorkerNode(pandora, workerOwner1, computingPrice, pan, economicController);
+        await aliveWorker(workerInstance0, workerOwner0, pan, economicController);
     });
 
     beforeEach(async () =>{
@@ -74,7 +90,7 @@ contract('CognitiveJobManager', accounts => {
     describe("createCognitiveJob", async () => {
 
         it(`should not create job if number of batches more then ${BATCHES_COUNT_LIMIT}`, async () => {
-            assertRevert(createCognitiveJob(pandora, 11));
+            assertRevert(createCognitiveJob(pandora, 11, {}, pan, economicController, customer, datasetOwner, kernelOwner));
             assertWorkerState(workerInstance0, WORKER_STATE_IDLE, 0);
         });
 
@@ -91,7 +107,7 @@ contract('CognitiveJobManager', accounts => {
 
         it('Cognitive job should be successfully completed after computation', async () => {
 
-            let receipt = await createCognitiveJob(pandora, 1);
+            let receipt = await createCognitiveJob(pandora, 1, {}, pan, economicController, customer, datasetOwner, kernelOwner);
 
             // let result = await jobController.getCognitiveJobDetails.call(args.jobId);
             // console.log(result);
@@ -110,16 +126,16 @@ contract('CognitiveJobManager', accounts => {
 
         it(`should not create job if customer doesn't have founds enough (${web3.fromWei(REQUIRED_DEPOSIT, "ether")} ether) to deposit`, async () => {
 
-            assertRevert(createCognitiveJob(pandora, 1, {value: REQUIRED_DEPOSIT - 1000}));
+            assertRevert(createCognitiveJob(pandora, 1, {value: REQUIRED_DEPOSIT - 1000}, pan, economicController, customer, datasetOwner, kernelOwner));
         });
 
         it('should not create job, and put it to queue if # of idle workers < number of batches', async () => {
 
-            await createCognitiveJob(pandora, 1);
+            await createCognitiveJob(pandora, 1, {}, pan, economicController, customer, datasetOwner, kernelOwner);
 
             const activeJobCountStart = await jobController.activeJobsCount();
 
-            const result = await createCognitiveJob(pandora, 2);
+            const result = await createCognitiveJob(pandora, 2, {}, pan, economicController, customer, datasetOwner, kernelOwner);
 
             const activeJobCountEnd = await jobController.activeJobsCount();
 
@@ -139,7 +155,7 @@ contract('CognitiveJobManager', accounts => {
             assert.isNotOk(logCreated, 'Should not be fired successful creation event');
 
             // Erase queue
-            await aliveWorker(workerInstance1, workerOwner1);
+            await aliveWorker(workerInstance1, workerOwner1, pan, economicController);
 
             await acceptAssignment(pandora, workerInstance0, workerOwner0);
             await processToDataValidation(pandora, workerInstance0, workerOwner0);
@@ -269,11 +285,11 @@ contract('CognitiveJobManager', accounts => {
         it.skip(`should proceed job only if there is at least one idle worker`, async () => {});
         it.skip(`should proceed job only if butches count at least equal to number of idle workers`, async () => {});
         it(`should init cognitive job from queue`, async () => {
-            let result = await createCognitiveJob(pandora, 2);
+            let result = await createCognitiveJob(pandora, 2, {}, pan, economicController, customer, datasetOwner, kernelOwner);
 
             // assertSuccessResultCode(result, RESULT_CODE_JOB_CREATED);
 
-            result = await createCognitiveJob(pandora, 2);
+            result = await createCognitiveJob(pandora, 2, {}, pan, economicController, customer, datasetOwner, kernelOwner);
 
             // assertFailureResultCode(result, RESULT_CODE_ADD_TO_QUEUE);
 

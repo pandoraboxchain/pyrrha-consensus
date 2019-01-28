@@ -1,4 +1,4 @@
-pragma solidity ^0.4.23;
+pragma solidity ^0.4.24;
 
 import "./IStateMachine.sol";
 import "../lifecycle/OnlyOnce.sol";
@@ -35,7 +35,7 @@ contract StateMachine is IStateMachine, OnlyOnce {
     /// @dev State transition function
     function transitionToState(
         uint8 _newState /// New state to transition into
-    ) public {
+    ) internal {
         uint8 oldState = stateMachine.currentState;
         stateMachine.currentState = _newState;
         emit StateChanged(oldState, stateMachine.currentState);

@@ -16,8 +16,7 @@ module.exports = {
         ganache: {
             host: 'localhost',
             port: 8545,
-            network_id: '*',
-            gas: 76000000
+            network_id: '*'
         },
         coverage: {
             host: 'localhost',
@@ -39,7 +38,8 @@ module.exports = {
         pandora_rinkeby: {
             host:  'http://rinkeby.pandora.network',
             port: 8545,
-            network_id: '*'
+            network_id: '*',
+            gas: highGas
         }
     },
     mocha: {
